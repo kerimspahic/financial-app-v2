@@ -48,6 +48,8 @@
 }
 
 :root {
+  --sidebar-width: 16rem;
+  --sidebar-collapsed-width: 5rem;
   --primary-50: #ecfdf5;
   --primary-100: #d1fae5;
   --primary-500: #10b981;
@@ -302,14 +304,36 @@
 }
 
 /* ════════════════════════════════════════════════════════
-   Sidebar transitions
+   Sidebar layout & transitions
+   Uses --sidebar-width / --sidebar-collapsed-width from :root.
+   Initial state is set via `sidebar-collapsed` class on <html>
+   in the <head> script (before paint) to prevent FOUC.
+   The sidebar Stimulus controller toggles the same class for
+   dynamic expand/collapse after page load.
    ════════════════════════════════════════════════════════ */
 .sidebar {
-  transition: width 300ms ease-in-out;
+  width: var(--sidebar-width);
 }
 
 .sidebar-content {
-  transition: margin-left 300ms ease-in-out;
+  margin-left: var(--sidebar-width);
+}
+
+/* Enable transitions only after first paint to prevent flash */
+html.sidebar-ready .sidebar { transition: width 300ms ease-in-out; }
+html.sidebar-ready .sidebar-content { transition: margin-left 300ms ease-in-out; }
+
+/* Collapsed sidebar (class set in <head> before paint) */
+@media (min-width: 1024px) {
+  html.sidebar-collapsed .sidebar { width: var(--sidebar-collapsed-width); }
+  html.sidebar-collapsed .sidebar-content { margin-left: var(--sidebar-collapsed-width); }
+  html.sidebar-collapsed [data-sidebar-target="label"] { display: none; }
+  html.sidebar-collapsed [data-sidebar-target="logo"] { display: none; }
+}
+
+/* Mobile: no margin, sidebar off-screen by default */
+@media (width < 1024px) {
+  .sidebar-content { margin-left: 0; }
 }
 
 /* ════════════════════════════════════════════════════════

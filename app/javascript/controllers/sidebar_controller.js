@@ -10,6 +10,8 @@ export default class extends Controller {
     this.saveBeforeVisit = this.saveScrollPosition.bind(this)
     window.addEventListener("resize", this.handleResize)
     document.addEventListener("turbo:before-visit", this.saveBeforeVisit)
+    // Enable transitions after initial state is applied (prevents flash on load)
+    requestAnimationFrame(() => document.documentElement.classList.add("sidebar-ready"))
   }
 
   disconnect() {
@@ -50,19 +52,18 @@ export default class extends Controller {
     setTimeout(() => this.overlayTarget.classList.add("hidden"), 300)
   }
 
+  // Widths and label/logo visibility are driven by the `sidebar-collapsed` class on <html>.
+  // CSS handles layout (see application.css); JS toggles the class and also manages
+  // the `hidden` class on label/logo targets for Stimulus target consistency.
   applyState() {
     const expanded = this.isExpanded
-    const sidebar = this.sidebarTarget
-    const content = this.contentTarget
 
     if (this.isMobile) {
-      sidebar.classList.add("-translate-x-full")
-      sidebar.style.width = "16rem"
-      content.style.marginLeft = "0"
+      this.sidebarTarget.classList.add("-translate-x-full")
+      document.documentElement.classList.remove("sidebar-collapsed")
     } else {
-      sidebar.classList.remove("-translate-x-full")
-      sidebar.style.width = expanded ? "16rem" : "5rem"
-      content.style.marginLeft = expanded ? "16rem" : "5rem"
+      this.sidebarTarget.classList.remove("-translate-x-full")
+      document.documentElement.classList.toggle("sidebar-collapsed", !expanded)
     }
 
     this.labelTargets.forEach(el => el.classList.toggle("hidden", !expanded && !this.isMobile))

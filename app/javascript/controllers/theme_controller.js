@@ -48,6 +48,7 @@ export default class extends Controller {
   setTheme(theme) {
     localStorage.setItem("theme", theme)
     this.applyTheme()
+    this.persistToServer({ theme_mode: theme })
   }
 
   applyTheme() {
@@ -66,6 +67,7 @@ export default class extends Controller {
 
     localStorage.setItem("colorMode", color)
     this.applyColor()
+    this.persistToServer({ color_mode: color })
   }
 
   applyColor() {
@@ -108,5 +110,25 @@ export default class extends Controller {
 
   get systemPrefersDark() {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
+  }
+
+  // Only persist to DB when a user is signed in (server-provided values present)
+  get isSignedIn() {
+    return this.themeModeValue !== "" || this.colorModeValue !== ""
+  }
+
+  persistToServer(params) {
+    if (!this.isSignedIn) return
+    const csrfToken = document.querySelector("meta[name='csrf-token']")?.content
+    if (!csrfToken) return
+
+    fetch("/settings/theme", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken
+      },
+      body: JSON.stringify(params)
+    }).catch(() => {})
   }
 }

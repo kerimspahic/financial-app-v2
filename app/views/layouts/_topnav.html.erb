@@ -18,7 +18,12 @@
     </div>
 
     <%# Right side actions %>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1">
+      <button data-action="click->theme#toggle" aria-label="Toggle dark mode"
+              class="p-2 rounded-lg text-text-secondary hover:glass hover:text-text-primary transition-all duration-200" title="Toggle theme">
+        <%= heroicon "sun", variant: :outline, options: { class: "w-5 h-5 block dark:hidden" } %>
+        <%= heroicon "moon", variant: :outline, options: { class: "w-5 h-5 hidden dark:block" } %>
+      </button>
       <button disabled class="p-2 rounded-lg text-text-muted cursor-not-allowed" title="Notifications (coming soon)">
         <%= heroicon "bell", variant: :outline, options: { class: "w-5 h-5" } %>
       </button>

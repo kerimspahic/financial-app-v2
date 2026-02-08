@@ -30,6 +30,10 @@
         var color = localStorage.getItem("colorMode");
         if (validColors.indexOf(color) === -1) color = "green";
         if (color !== "green") document.documentElement.classList.add("color-" + color);
+        var sidebarExpanded = localStorage.getItem("sidebarExpanded");
+        if (window.innerWidth >= 1024 && sidebarExpanded === "false") {
+          document.documentElement.classList.add("sidebar-collapsed");
+        }
       })();
     </script>
 
@@ -44,7 +48,7 @@
       <div data-controller="sidebar">
         <%= render "layouts/sidebar" %>
 
-        <div data-sidebar-target="content" class="sidebar-content min-h-screen flex flex-col" style="margin-left: 16rem;">
+        <div data-sidebar-target="content" class="sidebar-content min-h-screen flex flex-col">
           <%= render "layouts/topnav" %>
 
           <main id="main-content" class="flex-1 px-4 sm:px-6 lg:px-8 pt-8 pb-12 max-w-7xl w-full mx-auto relative">

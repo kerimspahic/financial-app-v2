@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :categories, except: :show
   resources :budgets, except: :show
   resource :settings, only: [ :show, :update ]
+  patch "settings/theme", to: "settings#update_theme", as: :settings_theme
   get "style_guide", to: "style_guide#index" if Rails.env.development?
 
   # Admin panel
