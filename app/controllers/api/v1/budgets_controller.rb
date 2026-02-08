@@ -41,7 +41,7 @@ module Api
       end
 
       def budget_params
-        params.permit(:amount, :month, :year, :category_id)
+        params.require(:budget).permit(:amount, :month, :year, :category_id)
       end
     end
   end

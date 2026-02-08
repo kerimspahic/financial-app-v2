@@ -43,7 +43,7 @@ module Api
       end
 
       def transaction_params
-        params.permit(:description, :amount, :transaction_type, :date, :notes, :account_id, :category_id)
+        params.require(:transaction).permit(:description, :amount, :transaction_type, :date, :notes, :account_id, :category_id)
       end
     end
   end

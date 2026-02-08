@@ -37,7 +37,7 @@ module Api
       end
 
       def category_params
-        params.permit(:name, :category_type, :color, :icon)
+        params.require(:category).permit(:name, :category_type, :color, :icon)
       end
     end
   end

@@ -1,0 +1,10 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "d9bf627200918d7560243f75ce659d634b8d3c0783eb11368eb3f9f52b7c3ca3",
+      "note": "account_id/category_id are scoped through current_user associations, preventing unauthorized access"
+    }
+  ],
+  "updated": "2026-02-08",
+  "brakeman_version": "8.0.2"
+}
