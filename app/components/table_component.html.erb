@@ -1,0 +1,29 @@
+<div class="overflow-hidden rounded-xl border border-glass-border">
+  <div class="overflow-x-auto">
+    <table class="<%= table_classes %>">
+      <% if header? %>
+        <thead class="glass">
+          <tr>
+            <%= header %>
+          </tr>
+        </thead>
+      <% end %>
+
+      <% if body? %>
+        <tbody class="divide-y divide-glass-border bg-surface/50">
+          <%= body %>
+        </tbody>
+      <% else %>
+        <% if empty_state? %>
+          <tbody>
+            <tr>
+              <td colspan="100" class="py-8">
+                <%= empty_state %>
+              </td>
+            </tr>
+          </tbody>
+        <% end %>
+      <% end %>
+    </table>
+  </div>
+</div>

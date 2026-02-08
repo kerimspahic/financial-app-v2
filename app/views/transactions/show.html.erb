@@ -1,44 +1,51 @@
 <div class="max-w-2xl space-y-6">
-  <div class="flex justify-between items-center">
-    <h1 class="text-3xl font-bold text-gray-900"><%= @transaction.description %></h1>
-    <div class="flex space-x-3">
-      <%= link_to "Edit", edit_transaction_path(@transaction), class: "bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50" %>
-      <%= button_to "Delete", transaction_path(@transaction), method: :delete, class: "bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700", data: { turbo_confirm: "Are you sure?" } %>
-    </div>
-  </div>
-
-  <div class="bg-white rounded-lg shadow p-6 space-y-4">
-    <div class="flex justify-between">
-      <span class="text-gray-500">Amount</span>
-      <span class="text-xl font-bold <%= @transaction.income? ? 'text-green-600' : 'text-red-600' %>">
-        <%= @transaction.income? ? '+' : '-' %><%= number_to_currency(@transaction.amount) %>
-      </span>
-    </div>
-    <div class="flex justify-between">
-      <span class="text-gray-500">Type</span>
-      <span class="font-medium"><%= @transaction.transaction_type.humanize %></span>
-    </div>
-    <div class="flex justify-between">
-      <span class="text-gray-500">Date</span>
-      <span><%= @transaction.date.strftime("%B %d, %Y") %></span>
-    </div>
-    <div class="flex justify-between">
-      <span class="text-gray-500">Account</span>
-      <%= link_to @transaction.account.name, account_path(@transaction.account), class: "text-indigo-600 hover:text-indigo-800" %>
-    </div>
-    <div class="flex justify-between">
-      <span class="text-gray-500">Category</span>
-      <span><%= @transaction.category.name %></span>
-    </div>
-    <% if @transaction.notes.present? %>
-      <div class="pt-4 border-t border-gray-200">
-        <p class="text-sm text-gray-500 mb-1">Notes</p>
-        <p class="text-gray-700"><%= @transaction.notes %></p>
-      </div>
+  <%= render PageHeaderComponent.new(title: @transaction.description) do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :secondary, href: edit_transaction_path(@transaction), icon: "pencil") do %>
+        Edit
+      <% end %>
+      <%= render ButtonComponent.new(variant: :danger, href: transaction_path(@transaction), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
+        Delete
+      <% end %>
     <% end %>
-  </div>
+  <% end %>
+
+  <%= render CardComponent.new do %>
+    <div class="space-y-4">
+      <div class="flex justify-between">
+        <span class="text-text-secondary">Amount</span>
+        <span class="text-xl font-bold <%= amount_color_class(@transaction) %>">
+          <%= formatted_amount(@transaction) %>
+        </span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-text-secondary">Type</span>
+        <%= render BadgeComponent.new(variant: @transaction.income? ? :success : :danger) do %>
+          <%= @transaction.transaction_type.humanize %>
+        <% end %>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-text-secondary">Date</span>
+        <span class="text-text-primary"><%= @transaction.date.strftime("%B %d, %Y") %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-text-secondary">Account</span>
+        <%= link_to @transaction.account.name, account_path(@transaction.account), class: "text-primary-600 hover:text-primary-700" %>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-text-secondary">Category</span>
+        <span class="text-text-primary"><%= @transaction.category.name %></span>
+      </div>
+      <% if @transaction.notes.present? %>
+        <div class="pt-4 border-t border-border">
+          <p class="text-sm text-text-secondary mb-1">Notes</p>
+          <p class="text-text-primary"><%= @transaction.notes %></p>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 
   <div>
-    <%= link_to "Back to transactions", transactions_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+    <%= link_to "Back to transactions", transactions_path, class: "text-sm text-text-secondary hover:text-text-primary" %>
   </div>
 </div>

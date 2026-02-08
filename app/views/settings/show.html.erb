@@ -1,0 +1,93 @@
+<div class="max-w-2xl mx-auto">
+  <%= render PageHeaderComponent.new(title: "Settings", subtitle: "Customize your experience") %>
+
+  <%= form_with(model: @preference, url: settings_path, method: :patch, class: "space-y-8") do |form| %>
+    <% if @preference.errors.any? %>
+      <%= render AlertComponent.new(variant: :danger, dismissable: false) do %>
+        <div>
+          <p class="font-medium"><%= pluralize(@preference.errors.count, "error") %> prevented saving:</p>
+          <ul class="mt-1 list-disc list-inside text-sm">
+            <% @preference.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    <% end %>
+
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">Color Theme</h2>
+        <% end %>
+        <p class="text-sm text-text-secondary mb-4">Choose your accent color</p>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-4">
+          <% UserPreference::COLOR_MODES.each do |color| %>
+            <label class="cursor-pointer">
+              <%= form.radio_button :color_mode, color, class: "peer sr-only",
+                  data: { action: "change->theme#setColor", theme_color_param: color } %>
+              <div class="peer-checked:ring-2 peer-checked:ring-primary-500 peer-checked:ring-offset-2
+                          glass rounded-xl p-4 text-center transition-all hover-lift
+                          hover:shadow-md">
+                <div class="mx-auto w-10 h-10 rounded-full mb-2 shadow-lg <%= color_swatch_class(color) %>"></div>
+                <span class="text-sm font-medium text-text-primary capitalize"><%= color %></span>
+              </div>
+            </label>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">Appearance</h2>
+        <% end %>
+        <p class="text-sm text-text-secondary mb-4">Choose light, dark, or match your system</p>
+        <div class="grid grid-cols-3 gap-4">
+          <% UserPreference::THEME_MODES.each do |mode| %>
+            <label class="cursor-pointer">
+              <%= form.radio_button :theme_mode, mode, class: "peer sr-only",
+                  data: { action: "change->theme##{mode}" } %>
+              <div class="peer-checked:ring-2 peer-checked:ring-primary-500 peer-checked:ring-offset-2
+                          glass rounded-xl p-4 text-center transition-all hover-lift
+                          hover:shadow-md">
+                <%= heroicon theme_mode_icon(mode), variant: :outline,
+                    options: { class: "w-8 h-8 mx-auto mb-2 text-text-secondary" } %>
+                <span class="text-sm font-medium text-text-primary capitalize"><%= mode %></span>
+              </div>
+            </label>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">Pagination</h2>
+        <% end %>
+        <p class="text-sm text-text-secondary mb-4">Number of items shown per page in lists</p>
+        <div class="grid grid-cols-4 gap-4">
+          <% UserPreference::PER_PAGE_OPTIONS.each do |option| %>
+            <label class="cursor-pointer">
+              <%= form.radio_button :per_page, option, class: "peer sr-only" %>
+              <div class="peer-checked:ring-2 peer-checked:ring-primary-500 peer-checked:ring-offset-2
+                          glass rounded-xl p-4 text-center transition-all hover-lift
+                          hover:shadow-md">
+                <span class="text-lg font-bold text-text-primary"><%= option %></span>
+                <span class="block text-xs text-text-muted mt-1">items</span>
+              </div>
+            </label>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="flex justify-end">
+      <%= render ButtonComponent.new(variant: :primary, submit: true) do %>
+        Save Settings
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,7 +1,3 @@
-<div class="max-w-2xl">
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">Edit Transaction</h1>
+<%= render layout: "shared/form_page", locals: { title: "Edit Transaction", back_text: "Back to transaction", back_path: transaction_path(@transaction) } do %>
   <%= render "form", transaction: @transaction %>
-  <div class="mt-4">
-    <%= link_to "Back to transaction", transaction_path(@transaction), class: "text-sm text-gray-500 hover:text-gray-700" %>
-  </div>
-</div>
+<% end %>

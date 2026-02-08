@@ -41,7 +41,11 @@ module Api
       end
 
       def account_params
-        params.require(:account).permit(:name, :account_type, :balance, :currency)
+        if action_name == "create"
+          params.require(:account).permit(:name, :account_type, :balance, :currency)
+        else
+          params.require(:account).permit(:name, :account_type, :currency)
+        end
       end
     end
   end

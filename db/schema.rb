@@ -10,16 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_08_113015) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_08_185448) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "accounts", force: :cascade do |t|
-    t.integer "account_type"
+    t.integer "account_type", null: false
     t.decimal "balance", precision: 12, scale: 2, default: "0.0"
     t.datetime "created_at", null: false
     t.string "currency", default: "USD"
-    t.string "name"
+    t.string "name", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_accounts_on_user_id"
@@ -29,20 +29,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_113015) do
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
-    t.integer "month"
+    t.integer "month", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.integer "year"
+    t.integer "year", null: false
     t.index ["category_id"], name: "index_budgets_on_category_id"
+    t.index ["user_id", "category_id", "month", "year"], name: "idx_budgets_unique_per_category_month", unique: true
+    t.index ["user_id", "month", "year"], name: "idx_budgets_user_month_year"
     t.index ["user_id"], name: "index_budgets_on_user_id"
   end
 
   create_table "categories", force: :cascade do |t|
-    t.integer "category_type"
+    t.integer "category_type", null: false
     t.string "color"
     t.datetime "created_at", null: false
     t.string "icon"
-    t.string "name"
+    t.string "name", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_categories_on_user_id"
@@ -53,15 +55,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_113015) do
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
-    t.date "date"
-    t.string "description"
+    t.date "date", null: false
+    t.string "description", null: false
     t.text "notes"
-    t.integer "transaction_type"
+    t.integer "transaction_type", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
+    t.index ["user_id", "date"], name: "idx_transactions_user_date"
+    t.index ["user_id", "transaction_type", "date"], name: "idx_transactions_user_type_date"
     t.index ["user_id"], name: "index_transactions_on_user_id"
+  end
+
+  create_table "user_preferences", force: :cascade do |t|
+    t.string "color_mode", default: "green", null: false
+    t.datetime "created_at", null: false
+    t.integer "per_page", default: 25, null: false
+    t.string "theme_mode", default: "system", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_user_preferences_on_user_id", unique: true
   end
 
   create_table "users", force: :cascade do |t|
@@ -87,4 +101,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_113015) do
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "categories"
   add_foreign_key "transactions", "users"
+  add_foreign_key "user_preferences", "users"
 end

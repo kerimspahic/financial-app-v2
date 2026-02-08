@@ -1,0 +1,18 @@
+<div class="space-y-1.5">
+  <% if @label || @show_percentage %>
+    <div class="flex justify-between items-center">
+      <% if @label %>
+        <span class="text-sm font-medium text-text-primary"><%= @label %></span>
+      <% end %>
+      <% if @show_percentage %>
+        <span class="text-sm font-semibold text-text-secondary"><%= percentage %>%</span>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="relative w-full h-2.5 rounded-full glass overflow-hidden">
+    <div class="absolute inset-y-0 left-0 rounded-full <%= bar_color %> animate-progress-fill transition-all duration-500"
+         style="width: <%= percentage %>%">
+      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+    </div>
+  </div>
+</div>

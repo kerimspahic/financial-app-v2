@@ -1,11 +1,14 @@
 class TransactionsController < ApplicationController
+  include BalanceUpdatable
+
   before_action :set_transaction, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @transactions = current_user.transactions.recent.includes(:account, :category)
-    @transactions = @transactions.where(account_id: params[:account_id]) if params[:account_id].present?
-    @transactions = @transactions.where(category_id: params[:category_id]) if params[:category_id].present?
-    @transactions = @transactions.where(transaction_type: params[:transaction_type]) if params[:transaction_type].present?
+    transactions = current_user.transactions.recent.includes(:account, :category)
+    transactions = transactions.where(account_id: params[:account_id]) if params[:account_id].present?
+    transactions = transactions.where(category_id: params[:category_id]) if params[:category_id].present?
+    transactions = transactions.where(transaction_type: params[:transaction_type]) if params[:transaction_type].present?
+    @pagy, @transactions = pagy(transactions, limit: user_per_page)
   end
 
   def show
@@ -17,8 +20,7 @@ class TransactionsController < ApplicationController
 
   def create
     @transaction = current_user.transactions.build(transaction_params)
-    if @transaction.save
-      update_account_balance(@transaction)
+    if save_transaction_with_balance(@transaction)
       redirect_to @transaction, notice: "Transaction was successfully created."
     else
       render :new, status: :unprocessable_entity
@@ -30,9 +32,7 @@ class TransactionsController < ApplicationController
 
   def update
     old_transaction = @transaction.dup
-    if @transaction.update(transaction_params)
-      reverse_account_balance(old_transaction)
-      update_account_balance(@transaction)
+    if update_transaction_with_balance(@transaction, old_transaction, transaction_params)
       redirect_to @transaction, notice: "Transaction was successfully updated."
     else
       render :edit, status: :unprocessable_entity
@@ -40,8 +40,7 @@ class TransactionsController < ApplicationController
   end
 
   def destroy
-    reverse_account_balance(@transaction)
-    @transaction.destroy
+    destroy_transaction_with_balance(@transaction)
     redirect_to transactions_path, notice: "Transaction was successfully deleted."
   end
 
@@ -53,23 +52,5 @@ class TransactionsController < ApplicationController
 
   def transaction_params
     params.expect(transaction: [ :description, :amount, :transaction_type, :date, :notes, :account_id, :category_id ])
-  end
-
-  def update_account_balance(transaction)
-    account = transaction.account
-    if transaction.income?
-      account.increment!(:balance, transaction.amount)
-    elsif transaction.expense?
-      account.decrement!(:balance, transaction.amount)
-    end
-  end
-
-  def reverse_account_balance(transaction)
-    account = transaction.account
-    if transaction.income?
-      account.decrement!(:balance, transaction.amount)
-    elsif transaction.expense?
-      account.increment!(:balance, transaction.amount)
-    end
   end
 end

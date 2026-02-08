@@ -1,0 +1,31 @@
+<div data-controller="modal">
+  <% if trigger? %>
+    <div data-action="click->modal#open">
+      <%= trigger %>
+    </div>
+  <% end %>
+
+  <div data-modal-target="dialog" class="hidden fixed inset-0 z-50 flex items-center justify-center" aria-hidden="true"
+       data-action="keydown.esc->modal#close">
+    <div data-modal-target="backdrop" data-action="click->modal#closeOnBackdrop"
+         class="fixed inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity duration-200 opacity-0"></div>
+
+    <div class="relative glass-strong rounded-2xl shadow-2xl w-full <%= size_class %> mx-4 z-10 overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent pointer-events-none"></div>
+      <div class="relative">
+        <% if @title %>
+          <div class="flex items-center justify-between px-6 py-4 border-b border-glass-border">
+            <h3 class="text-lg font-semibold text-text-primary"><%= @title %></h3>
+            <button data-action="click->modal#close" class="text-text-muted hover:text-text-primary transition-colors">
+              <%= heroicon "x-mark", variant: :outline, options: { class: "w-5 h-5" } %>
+            </button>
+          </div>
+        <% end %>
+
+        <div class="p-6">
+          <%= content %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

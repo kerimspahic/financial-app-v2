@@ -1,100 +1,196 @@
 <div class="space-y-8">
-  <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+  <%= render PageHeaderComponent.new(title: "Dashboard") %>
 
-  <!-- Summary Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-    <div class="bg-white rounded-lg shadow p-6">
-      <p class="text-sm font-medium text-gray-500">Total Balance</p>
-      <p class="text-2xl font-bold text-gray-900"><%= number_to_currency(@total_balance) %></p>
+  <%# Summary Cards with staggered entrance animations %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="animate-card-entrance stagger-1" data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Total Balance",
+        value: number_to_currency(@total_balance),
+        icon: "banknotes"
+      ) %>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-      <p class="text-sm font-medium text-gray-500">Monthly Income</p>
-      <p class="text-2xl font-bold text-green-600"><%= number_to_currency(@monthly_income) %></p>
+    <div class="animate-card-entrance stagger-2" data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Monthly Income",
+        value: number_to_currency(@monthly_income),
+        icon: "arrow-trending-up",
+        color: "text-success-600"
+      ) %>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-      <p class="text-sm font-medium text-gray-500">Monthly Expenses</p>
-      <p class="text-2xl font-bold text-red-600"><%= number_to_currency(@monthly_expenses) %></p>
+    <div class="animate-card-entrance stagger-3" data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Monthly Expenses",
+        value: number_to_currency(@monthly_expenses),
+        icon: "arrow-trending-down",
+        color: "text-danger-600"
+      ) %>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-      <p class="text-sm font-medium text-gray-500">Net This Month</p>
-      <% net = @monthly_income - @monthly_expenses %>
-      <p class="text-2xl font-bold <%= net >= 0 ? 'text-green-600' : 'text-red-600' %>">
-        <%= number_to_currency(net) %>
-      </p>
+    <% net = @monthly_income - @monthly_expenses %>
+    <div class="animate-card-entrance stagger-4" data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Net This Month",
+        value: number_to_currency(net),
+        icon: "calculator",
+        color: net >= 0 ? "text-success-600" : "text-danger-600"
+      ) %>
     </div>
   </div>
 
-  <!-- Budget Progress -->
-  <% if @budgets.any? %>
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">Budget Progress</h2>
-      <div class="space-y-4">
-        <% @budgets.each do |budget| %>
+  <%# Monthly Overview Chart %>
+  <div class="animate-card-entrance stagger-5">
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <div class="flex justify-between items-center">
           <div>
-            <div class="flex justify-between mb-1">
-              <span class="text-sm font-medium text-gray-700"><%= budget.category.name %></span>
-              <span class="text-sm text-gray-500">
-                <%= number_to_currency(budget.spent) %> / <%= number_to_currency(budget.amount) %>
-              </span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <% pct = [budget.percent_used, 100].min %>
-              <div class="h-2.5 rounded-full <%= pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-yellow-500' : 'bg-green-500' %>"
-                   style="width: <%= pct %>%"></div>
-            </div>
+            <h2 class="text-xl font-semibold text-text-primary">Monthly Overview</h2>
+            <p class="text-sm text-text-muted mt-0.5">Income vs Expenses (last 6 months)</p>
           </div>
-        <% end %>
+        </div>
+      <% end %>
+      <div class="h-64">
+        <canvas data-controller="chart"
+                data-chart-type-value="bar"
+                data-chart-data-value="<%= @monthly_chart_data.to_json %>"></canvas>
       </div>
-    </div>
-  <% end %>
-
-  <!-- Accounts Overview -->
-  <div class="bg-white rounded-lg shadow p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-gray-900">Accounts</h2>
-      <%= link_to "View all", accounts_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
-    </div>
-    <% if @accounts.any? %>
-      <div class="divide-y divide-gray-200">
-        <% @accounts.each do |account| %>
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <p class="font-medium text-gray-900"><%= account.name %></p>
-              <p class="text-sm text-gray-500"><%= account.account_type.humanize %></p>
-            </div>
-            <p class="font-semibold <%= account.balance >= 0 ? 'text-gray-900' : 'text-red-600' %>">
-              <%= number_to_currency(account.balance) %>
-            </p>
-          </div>
-        <% end %>
-      </div>
-    <% else %>
-      <p class="text-gray-500">No accounts yet. <%= link_to "Create one", new_account_path, class: "text-indigo-600 hover:text-indigo-800" %>.</p>
     <% end %>
   </div>
 
-  <!-- Recent Transactions -->
-  <div class="bg-white rounded-lg shadow p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-gray-900">Recent Transactions</h2>
-      <%= link_to "View all", transactions_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
-    </div>
-    <% if @recent_transactions.any? %>
-      <div class="divide-y divide-gray-200">
-        <% @recent_transactions.each do |t| %>
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <p class="font-medium text-gray-900"><%= t.description %></p>
-              <p class="text-sm text-gray-500"><%= t.date.strftime("%b %d, %Y") %> &middot; <%= t.account.name %> &middot; <%= t.category.name %></p>
-            </div>
-            <p class="font-semibold <%= t.income? ? 'text-green-600' : 'text-red-600' %>">
-              <%= t.income? ? '+' : '-' %><%= number_to_currency(t.amount) %>
-            </p>
-          </div>
+  <%# Charts Row: Category Breakdown + Cash Flow %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="animate-card-entrance stagger-6">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-xl font-semibold text-text-primary">Expenses by Category</h2>
         <% end %>
-      </div>
-    <% else %>
-      <p class="text-gray-500">No transactions yet. <%= link_to "Add one", new_transaction_path, class: "text-indigo-600 hover:text-indigo-800" %>.</p>
+        <div class="h-64">
+          <canvas data-controller="chart"
+                  data-chart-type-value="doughnut"
+                  data-chart-data-value="<%= @category_breakdown_data.to_json %>"></canvas>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="animate-card-entrance stagger-7">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-xl font-semibold text-text-primary">Cash Flow</h2>
+        <% end %>
+        <div class="h-64">
+          <canvas data-controller="chart"
+                  data-chart-type-value="line"
+                  data-chart-data-value="<%= @cash_flow_data.to_json %>"></canvas>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Budget Progress %>
+  <% if @budgets.any? %>
+    <div class="animate-card-entrance stagger-5">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-xl font-semibold text-text-primary">Budget Progress</h2>
+        <% end %>
+        <div class="space-y-4">
+          <% @budgets.each do |budget| %>
+            <div>
+              <%= render ProgressBarComponent.new(
+                value: budget.spent,
+                max: budget.amount,
+                label: budget.category.name
+              ) %>
+              <p class="text-xs text-text-muted mt-0.5">
+                <%= number_to_currency(budget.spent) %> / <%= number_to_currency(budget.amount) %>
+              </p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Accounts Overview with semantic colors %>
+  <div class="animate-card-entrance stagger-6">
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-text-primary">Accounts</h2>
+          <%= link_to "View all", accounts_path, class: "text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors" %>
+        </div>
+      <% end %>
+      <% if @accounts.any? %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <% @accounts.each do |account| %>
+            <% colors = account_type_color(account.account_type) %>
+            <%= link_to account_path(account),
+                class: "glass rounded-xl p-4 hover-lift transition-all group block" do %>
+              <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-12 h-12 rounded-xl <%= colors[:icon_bg] %> flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <%= heroicon account_type_icon(account.account_type), variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-text-primary truncate group-hover:text-primary-600 transition-colors">
+                    <%= account.name %>
+                  </p>
+                  <p class="text-xs <%= colors[:text] %> font-medium">
+                    <%= account.account_type.humanize %>
+                  </p>
+                  <p class="text-lg font-bold text-text-primary mt-2">
+                    <%= number_to_currency(account.balance) %>
+                  </p>
+                </div>
+                <div class="flex-shrink-0">
+                  <%= heroicon "chevron-right", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <%= render EmptyStateComponent.new(
+          title: "No accounts yet",
+          description: "Create your first account to start tracking your finances.",
+          icon: "building-library",
+          action_text: "Create Account",
+          action_url: new_account_path
+        ) %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Recent Transactions %>
+  <div class="animate-card-entrance stagger-7">
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-text-primary">Recent Transactions</h2>
+          <%= link_to "View all", transactions_path, class: "text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors" %>
+        </div>
+      <% end %>
+      <% if @recent_transactions.any? %>
+        <div class="divide-y divide-glass-border">
+          <% @recent_transactions.each do |t| %>
+            <div class="py-3 flex justify-between items-center group hover:bg-surface-hover/30 -mx-6 px-6 transition-colors">
+              <div>
+                <p class="font-medium text-text-primary"><%= t.description %></p>
+                <p class="text-sm text-text-secondary"><%= t.date.strftime("%b %d, %Y") %> &middot; <%= t.account.name %> &middot; <%= t.category.name %></p>
+              </div>
+              <p class="font-semibold <%= amount_color_class(t) %>">
+                <%= formatted_amount(t) %>
+              </p>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <%= render EmptyStateComponent.new(
+          title: "No transactions yet",
+          description: "Add your first transaction to get started.",
+          icon: "banknotes",
+          action_text: "Add Transaction",
+          action_url: new_transaction_path
+        ) %>
+      <% end %>
     <% end %>
   </div>
 </div>

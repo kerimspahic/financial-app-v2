@@ -1,29 +1,19 @@
-<h2>Sign up</h2>
+<%= render layout: "devise/shared/auth_layout", locals: { title: "Create an account", subtitle: "Start managing your finances today" } do %>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+    <%= render "devise/shared/error_messages", resource: resource %>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+    <div class="space-y-4">
+      <%= render InputComponent.new(form: f, field: :email, type: :email, label: "Email address", required: true, autofocus: true, autocomplete: "email") %>
+      <%= render InputComponent.new(
+        form: f, field: :password, type: :password, label: "Password", required: true,
+        autocomplete: "new-password",
+        hint: @minimum_password_length ? "#{@minimum_password_length} characters minimum" : nil
+      ) %>
+      <%= render InputComponent.new(form: f, field: :password_confirmation, type: :password, label: "Confirm password", required: true, autocomplete: "new-password") %>
 
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
-  </div>
-
-  <div class="field">
-    <p><%= f.label :password %></p>
-    <% if @minimum_password_length %>
-      <p><em>(<%= @minimum_password_length %> characters minimum)</em></p>
-    <% end %>
-    <p><%= f.password_field :password, autocomplete: "new-password" %></p>
-  </div>
-
-  <div class="field">
-    <p><%= f.label :password_confirmation %></p>
-    <p><%= f.password_field :password_confirmation, autocomplete: "new-password" %></p>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Sign up" %>
-  </div>
+      <%= render ButtonComponent.new(variant: :primary, submit: true, class: "w-full justify-center") do %>
+        Sign up
+      <% end %>
+    </div>
+  <% end %>
 <% end %>
-
-<%= render "devise/shared/links" %>

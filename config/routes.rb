@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   resources :transactions
   resources :categories, except: :show
   resources :budgets, except: :show
+  resource :settings, only: [ :show, :update ]
+  get "style_guide", to: "style_guide#index" if Rails.env.development?
 
   # API routes
   namespace :api do
@@ -22,6 +24,7 @@ Rails.application.routes.draw do
       resources :categories, only: [ :index, :create, :update, :destroy ]
       resources :budgets, only: [ :index, :create, :update, :destroy ]
       get "dashboard", to: "dashboard#index"
+      resource :settings, only: [ :show, :update ]
     end
   end
 

@@ -6,7 +6,7 @@ class AccountsController < ApplicationController
   end
 
   def show
-    @transactions = @account.transactions.recent.includes(:category).limit(20)
+    @pagy, @transactions = pagy(@account.transactions.recent.includes(:category), limit: user_per_page)
   end
 
   def new
@@ -45,6 +45,10 @@ class AccountsController < ApplicationController
   end
 
   def account_params
-    params.expect(account: [ :name, :account_type, :balance, :currency ])
+    if action_name == "create"
+      params.expect(account: [ :name, :account_type, :balance, :currency ])
+    else
+      params.expect(account: [ :name, :account_type, :currency ])
+    end
   end
 end

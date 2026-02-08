@@ -9,9 +9,15 @@ class User < ApplicationRecord
   has_many :categories, dependent: :destroy
   has_many :transactions, dependent: :destroy
   has_many :budgets, dependent: :destroy
+  has_one :user_preference, dependent: :destroy
 
   before_create :set_jti
   after_create :create_default_categories
+  after_create :create_default_preferences
+
+  def preference
+    user_preference || build_user_preference
+  end
 
   def jwt_payload
     super
@@ -21,6 +27,10 @@ class User < ApplicationRecord
 
   def set_jti
     self.jti ||= SecureRandom.uuid
+  end
+
+  def create_default_preferences
+    create_user_preference!
   end
 
   def create_default_categories

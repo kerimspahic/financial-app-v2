@@ -1,42 +1,51 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
-
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
-  </div>
-
-  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+<div class="max-w-2xl mx-auto">
+  <%= render PageHeaderComponent.new(title: "Edit Profile") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :secondary, href: root_path) do %>
+        Back
+      <% end %>
+    <% end %>
   <% end %>
 
-  <div class="field">
-    <p><%= f.label :password %> <i>(leave blank if you don't want to change it)</i></p>
-    <p><%= f.password_field :password, autocomplete: "new-password" %></p>
-    <% if @minimum_password_length %>
-      <p><em><%= @minimum_password_length %> characters minimum</em></p>
+  <%= render CardComponent.new do %>
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="space-y-4">
+        <%= render InputComponent.new(form: f, field: :email, type: :email, label: "Email address", autofocus: true, autocomplete: "email") %>
+
+        <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+          <%= render AlertComponent.new(variant: :info, dismissable: false) do %>
+            Currently waiting confirmation for: <strong><%= resource.unconfirmed_email %></strong>
+          <% end %>
+        <% end %>
+
+        <%= render InputComponent.new(
+          form: f, field: :password, type: :password, label: "New password",
+          autocomplete: "new-password",
+          hint: @minimum_password_length ? "#{@minimum_password_length} characters minimum. Leave blank if you don't want to change it." : "Leave blank if you don't want to change it."
+        ) %>
+        <%= render InputComponent.new(form: f, field: :password_confirmation, type: :password, label: "Confirm new password", autocomplete: "new-password") %>
+
+        <hr class="border-border">
+
+        <%= render InputComponent.new(form: f, field: :current_password, type: :password, label: "Current password", required: true, autocomplete: "current-password", hint: "We need your current password to confirm your changes.") %>
+
+        <%= render ButtonComponent.new(variant: :primary, submit: true, class: "w-full justify-center") do %>
+          Update Profile
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="mt-8">
+    <%= render CardComponent.new do %>
+      <h3 class="text-lg font-semibold text-danger-600 mb-2">Danger Zone</h3>
+      <p class="text-sm text-text-secondary mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+      <%= button_to "Delete my account", registration_path(resource_name),
+          method: :delete,
+          data: { turbo_confirm: "Are you sure you want to delete your account? This action cannot be undone." },
+          class: "inline-flex items-center gap-2 rounded-lg font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500" %>
     <% end %>
   </div>
-
-  <div class="field">
-    <p><%= f.label :password_confirmation %></p>
-    <p><%= f.password_field :password_confirmation, autocomplete: "new-password" %></p>
-  </div>
-
-  <div class="field">
-    <p><%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i></p>
-    <p><%= f.password_field :current_password, autocomplete: "current-password" %></p>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Update" %>
-  </div>
-<% end %>
-
-<h3>Cancel my account</h3>
-
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
-
-<%= link_to "Back", :back %>
+</div>

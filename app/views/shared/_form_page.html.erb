@@ -1,0 +1,9 @@
+<div class="max-w-2xl">
+  <%= render PageHeaderComponent.new(title: title) %>
+  <%= render CardComponent.new do %>
+    <%= yield %>
+  <% end %>
+  <div class="mt-4">
+    <%= link_to back_text, back_path, class: "text-sm text-text-secondary hover:text-text-primary" %>
+  </div>
+</div>

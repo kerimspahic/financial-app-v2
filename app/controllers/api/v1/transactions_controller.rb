@@ -1,6 +1,8 @@
 module Api
   module V1
     class TransactionsController < BaseController
+      include BalanceUpdatable
+
       before_action :set_transaction, only: [ :show, :update, :destroy ]
 
       def index
@@ -16,7 +18,7 @@ module Api
 
       def create
         @transaction = current_user.transactions.build(transaction_params)
-        if @transaction.save
+        if save_transaction_with_balance(@transaction)
           render json: @transaction, status: :created
         else
           render_errors(@transaction)
@@ -24,7 +26,8 @@ module Api
       end
 
       def update
-        if @transaction.update(transaction_params)
+        old_transaction = @transaction.dup
+        if update_transaction_with_balance(@transaction, old_transaction, transaction_params)
           render json: @transaction
         else
           render_errors(@transaction)
@@ -32,7 +35,7 @@ module Api
       end
 
       def destroy
-        @transaction.destroy
+        destroy_transaction_with_balance(@transaction)
         head :no_content
       end
 

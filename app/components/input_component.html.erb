@@ -1,0 +1,32 @@
+<div class="space-y-1">
+  <%= @form.label @field, class: "block text-sm font-medium text-text-primary" do %>
+    <%= label_text %><%= " *" if @required %>
+  <% end %>
+
+  <% case @type %>
+  <% when :select %>
+    <%= @form.select @field, @collection, { include_blank: @include_blank }, class: input_classes, **@options %>
+  <% when :textarea %>
+    <%= @form.text_area @field, class: input_classes, rows: @options.delete(:rows) || 3, **@options %>
+  <% when :number %>
+    <%= @form.number_field @field, class: input_classes, step: @options.delete(:step) || "any", **@options %>
+  <% when :date %>
+    <%= @form.date_field @field, class: input_classes, **@options %>
+  <% when :color %>
+    <%= @form.color_field @field, class: "h-10 w-20 rounded-lg border border-input-border cursor-pointer", **@options %>
+  <% when :email %>
+    <%= @form.email_field @field, class: input_classes, **@options %>
+  <% when :password %>
+    <%= @form.password_field @field, class: input_classes, **@options %>
+  <% else %>
+    <%= @form.text_field @field, class: input_classes, **@options %>
+  <% end %>
+
+  <% if @hint && !has_error? %>
+    <p class="text-xs text-text-muted"><%= @hint %></p>
+  <% end %>
+
+  <% if has_error? %>
+    <p class="text-xs text-danger-600"><%= error_messages %></p>
+  <% end %>
+</div>

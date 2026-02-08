@@ -1,40 +1,55 @@
 <div class="space-y-6">
-  <div class="flex justify-between items-center">
-    <h1 class="text-3xl font-bold text-gray-900">Budgets - <%= Date::MONTHNAMES[@month] %> <%= @year %></h1>
-    <%= link_to "New Budget", new_budget_path, class: "bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" %>
-  </div>
+  <%= render PageHeaderComponent.new(
+    title: "Budgets",
+    subtitle: "#{Date::MONTHNAMES[@month]} #{@year}"
+  ) do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_budget_path, icon: "plus") do %>
+        New Budget
+      <% end %>
+    <% end %>
+  <% end %>
 
   <% if @budgets.any? %>
     <div class="space-y-4">
       <% @budgets.each do |budget| %>
-        <div class="bg-white rounded-lg shadow p-6">
+        <%= render CardComponent.new do %>
           <div class="flex justify-between items-start mb-3">
             <div>
-              <h3 class="text-lg font-semibold text-gray-900"><%= budget.category.name %></h3>
-              <p class="text-sm text-gray-500">
+              <h3 class="text-lg font-semibold text-text-primary"><%= budget.category.name %></h3>
+              <p class="text-sm text-text-secondary">
                 <%= number_to_currency(budget.spent) %> of <%= number_to_currency(budget.amount) %> spent
               </p>
             </div>
-            <div class="flex space-x-3">
-              <%= link_to "Edit", edit_budget_path(budget), class: "text-sm text-indigo-600 hover:text-indigo-900" %>
-              <%= button_to "Delete", budget_path(budget), method: :delete, class: "text-sm text-red-600 hover:text-red-900", data: { turbo_confirm: "Are you sure?" } %>
+            <div class="flex items-center space-x-2">
+              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_budget_path(budget)) do %>
+                Edit
+              <% end %>
+              <%= render ButtonComponent.new(variant: :danger, size: :sm, href: budget_path(budget), method: :delete, confirm: "Are you sure?") do %>
+                Delete
+              <% end %>
             </div>
           </div>
-          <div class="w-full bg-gray-200 rounded-full h-3">
-            <% pct = [budget.percent_used, 100].min %>
-            <div class="h-3 rounded-full <%= pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-yellow-500' : 'bg-green-500' %>"
-                 style="width: <%= pct %>%"></div>
-          </div>
-          <p class="mt-2 text-sm text-gray-500">
+          <%= render ProgressBarComponent.new(
+            value: budget.spent,
+            max: budget.amount,
+            show_percentage: false
+          ) %>
+          <p class="mt-2 text-sm text-text-secondary">
             <%= number_to_currency(budget.remaining) %> remaining (<%= budget.percent_used %>% used)
           </p>
-        </div>
+        <% end %>
       <% end %>
     </div>
   <% else %>
-    <div class="bg-white rounded-lg shadow p-12 text-center">
-      <p class="text-gray-500 mb-4">No budgets set for this month.</p>
-      <%= link_to "Create your first budget", new_budget_path, class: "bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" %>
-    </div>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No budgets set",
+        description: "Create your first budget to start tracking spending.",
+        icon: "chart-pie",
+        action_text: "Create Budget",
+        action_url: new_budget_path
+      ) %>
+    <% end %>
   <% end %>
 </div>

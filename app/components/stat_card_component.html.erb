@@ -1,0 +1,31 @@
+<div class="glass rounded-2xl shadow-lg p-6 hover-lift relative overflow-hidden">
+  <%# Oversized faded icon background %>
+  <% if @icon %>
+    <div class="absolute -right-4 -top-4 opacity-[0.04]">
+      <%= heroicon @icon, variant: :solid, options: { class: "w-28 h-28" } %>
+    </div>
+  <% end %>
+
+  <div class="relative z-10">
+    <div class="flex items-start justify-between">
+      <div class="flex-1">
+        <p class="text-sm font-medium text-text-muted mb-2"><%= @label %></p>
+        <p class="text-3xl font-bold <%= value_color %>" data-counter-target="value"><%= @value %></p>
+      </div>
+
+      <% if @icon %>
+        <div class="flex-shrink-0 p-3 rounded-xl gradient-primary shadow-lg">
+          <%= heroicon @icon, variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @change %>
+      <div class="mt-3 flex items-center gap-1.5 <%= change_color %>">
+        <%= heroicon change_icon, variant: :solid, options: { class: "w-4 h-4" } %>
+        <span class="text-sm font-semibold"><%= @change %></span>
+        <span class="text-xs text-text-muted">vs last month</span>
+      </div>
+    <% end %>
+  </div>
+</div>

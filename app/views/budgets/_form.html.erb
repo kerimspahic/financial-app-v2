@@ -1,37 +1,44 @@
 <%= form_with(model: budget, class: "space-y-6") do |form| %>
   <% if budget.errors.any? %>
-    <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
-      <h3 class="font-semibold"><%= pluralize(budget.errors.count, "error") %> prevented this budget from being saved:</h3>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(budget.errors.count, "error") %> prevented this budget from being saved:</strong>
       <ul class="mt-2 list-disc list-inside">
         <% budget.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
       </ul>
-    </div>
+    <% end %>
   <% end %>
 
-  <div>
-    <%= form.label :category_id, "Category", class: "block text-sm font-medium text-gray-700" %>
-    <%= form.collection_select :category_id, current_user.categories.expense, :id, :name, { prompt: "Select expense category" }, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-  </div>
+  <%= render InputComponent.new(
+    form: form,
+    field: :category_id,
+    label: "Category",
+    type: :select,
+    collection: current_user.categories.expense.map { |c| [c.name, c.id] },
+    include_blank: "Select expense category"
+  ) %>
 
-  <div>
-    <%= form.label :amount, "Budget Amount", class: "block text-sm font-medium text-gray-700" %>
-    <%= form.number_field :amount, step: 0.01, min: 0.01, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-  </div>
+  <%= render InputComponent.new(form: form, field: :amount, label: "Budget Amount", type: :number, step: "0.01", min: "0.01") %>
 
   <div class="grid grid-cols-2 gap-4">
-    <div>
-      <%= form.label :month, class: "block text-sm font-medium text-gray-700" %>
-      <%= form.select :month, (1..12).map { |m| [Date::MONTHNAMES[m], m] }, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-    </div>
-    <div>
-      <%= form.label :year, class: "block text-sm font-medium text-gray-700" %>
-      <%= form.select :year, (Date.current.year - 1..Date.current.year + 1).to_a, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
-    </div>
+    <%= render InputComponent.new(
+      form: form,
+      field: :month,
+      label: "Month",
+      type: :select,
+      collection: (1..12).map { |m| [Date::MONTHNAMES[m], m] }
+    ) %>
+    <%= render InputComponent.new(
+      form: form,
+      field: :year,
+      label: "Year",
+      type: :select,
+      collection: (Date.current.year - 1..Date.current.year + 1).to_a
+    ) %>
   </div>
 
-  <div>
-    <%= form.submit class: "bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 cursor-pointer" %>
-  </div>
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    <%= budget.persisted? ? "Update Budget" : "Create Budget" %>
+  <% end %>
 <% end %>

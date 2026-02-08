@@ -1,0 +1,11 @@
+<div class="<%= css_classes %>" data-controller="alert" data-alert-timeout-value="<%= @timeout %>">
+  <%= heroicon icon_name, variant: :solid, options: { class: "w-5 h-5 #{text_class} shrink-0 mt-0.5" } %>
+  <div class="flex-1 <%= text_class %>">
+    <%= content %>
+  </div>
+  <% if dismissable? %>
+    <button data-action="click->alert#dismiss" class="<%= text_class %> hover:opacity-70 shrink-0 transition-opacity">
+      <%= heroicon "x-mark", variant: :outline, options: { class: "w-5 h-5" } %>
+    </button>
+  <% end %>
+</div>

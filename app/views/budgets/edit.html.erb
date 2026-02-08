@@ -1,7 +1,3 @@
-<div class="max-w-2xl">
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">Edit Budget</h1>
+<%= render layout: "shared/form_page", locals: { title: "Edit Budget", back_text: "Back to budgets", back_path: budgets_path } do %>
   <%= render "form", budget: @budget %>
-  <div class="mt-4">
-    <%= link_to "Back to budgets", budgets_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
-  </div>
-</div>
+<% end %>

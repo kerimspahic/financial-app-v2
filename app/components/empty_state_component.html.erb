@@ -1,0 +1,16 @@
+<div class="text-center py-12 px-6">
+  <% if @icon %>
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 mb-6">
+      <%= heroicon @icon, variant: :outline, options: { class: "w-10 h-10 text-primary-600" } %>
+    </div>
+  <% end %>
+  <h3 class="text-lg font-semibold text-text-primary mb-2"><%= @title %></h3>
+  <% if @description %>
+    <p class="text-sm text-text-secondary mb-6 max-w-sm mx-auto"><%= @description %></p>
+  <% end %>
+  <% if @action_text && @action_url %>
+    <%= render ButtonComponent.new(variant: :primary, href: @action_url, icon: "plus") do %>
+      <%= @action_text %>
+    <% end %>
+  <% end %>
+</div>

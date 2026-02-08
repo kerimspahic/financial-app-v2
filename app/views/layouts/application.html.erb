@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html data-controller="theme"
+      <% if user_signed_in? %>
+        data-theme-theme-mode-value="<%= current_user.preference&.theme_mode || 'system' %>"
+        data-theme-color-mode-value="<%= current_user.preference&.color_mode || 'green' %>"
+      <% end %>>
   <head>
     <title><%= content_for(:title) || "FinanceApp" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -15,50 +19,208 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <script>
+      (function() {
+        var validThemes = ["light", "dark", "system"];
+        var validColors = ["green", "blue", "purple", "rose", "amber", "cyan"];
+        var theme = localStorage.getItem("theme");
+        if (validThemes.indexOf(theme) === -1) theme = "system";
+        var isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (isDark) document.documentElement.classList.add("dark");
+        var color = localStorage.getItem("colorMode");
+        if (validColors.indexOf(color) === -1) color = "green";
+        if (color !== "green") document.documentElement.classList.add("color-" + color);
+      })();
+    </script>
+
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 min-h-screen">
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center space-x-8">
-            <%= link_to "FinanceApp", root_path, class: "text-xl font-bold text-indigo-600" %>
-            <% if user_signed_in? %>
-              <%= link_to "Dashboard", root_path, class: "text-gray-600 hover:text-gray-900" %>
-              <%= link_to "Accounts", accounts_path, class: "text-gray-600 hover:text-gray-900" %>
-              <%= link_to "Transactions", transactions_path, class: "text-gray-600 hover:text-gray-900" %>
-              <%= link_to "Budgets", budgets_path, class: "text-gray-600 hover:text-gray-900" %>
-              <%= link_to "Categories", categories_path, class: "text-gray-600 hover:text-gray-900" %>
+  <body class="bg-surface-alt min-h-screen text-text-primary" data-controller="toast">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:glass-strong focus:rounded-xl focus:text-primary-600 focus:font-medium">Skip to content</a>
+    <% if user_signed_in? %>
+      <div data-controller="sidebar">
+        <%# Mobile overlay backdrop %>
+        <div data-sidebar-target="overlay" data-action="click->sidebar#close"
+             class="hidden fixed inset-0 bg-overlay/60 backdrop-blur-sm z-40 transition-opacity duration-300 opacity-0 lg:hidden"></div>
+
+        <%# Sidebar %>
+        <aside data-sidebar-target="sidebar"
+               class="sidebar fixed top-0 left-0 h-full z-50 glass-strong border-r border-glass-border flex flex-col -translate-x-full lg:translate-x-0"
+               style="width: 16rem;">
+          <%# Gradient accent at top %>
+          <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary-500/10 to-transparent pointer-events-none rounded-tr-2xl"></div>
+
+          <%# Logo %>
+          <div class="flex items-center h-16 px-4 relative z-10">
+            <%= link_to root_path, class: "flex items-center gap-2 group" do %>
+              <div class="w-8 h-8 rounded-lg gradient-primary text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-lg group-hover:scale-110 transition-transform">F</div>
+              <span data-sidebar-target="logo" class="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">FinanceApp</span>
             <% end %>
           </div>
-          <div class="flex items-center space-x-4">
-            <% if user_signed_in? %>
-              <span class="text-sm text-gray-500"><%= current_user.email %></span>
-              <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "text-sm text-red-600 hover:text-red-800" %>
-            <% else %>
-              <%= link_to "Sign in", new_user_session_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
-              <%= link_to "Sign up", new_user_registration_path, class: "text-sm bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" %>
-            <% end %>
+
+          <%# Navigation links %>
+          <nav class="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto relative z-10">
+            <%= sidebar_section "Overview" %>
+            <%= sidebar_link "Dashboard", root_path, icon: "home" %>
+            <%= sidebar_link "Accounts", accounts_path, icon: "building-library" %>
+
+            <%= sidebar_section "Finance" %>
+            <%= sidebar_link "Transactions", transactions_path, icon: "arrows-right-left" %>
+            <%= sidebar_link "Budgets", budgets_path, icon: "calculator" %>
+            <%= sidebar_link "Categories", categories_path, icon: "tag" %>
+
+            <%= sidebar_section "Planning" %>
+            <%= sidebar_link "Reports", root_path, icon: "chart-bar", badge: "Soon" %>
+            <%= sidebar_link "Goals", root_path, icon: "flag", badge: "Soon" %>
+            <%= sidebar_link "Recurring", root_path, icon: "arrow-path", badge: "Soon" %>
+          </nav>
+
+          <%# Bottom: theme toggle + user dropdown %>
+          <div class="border-t border-glass-border px-3 py-3 space-y-1 relative z-10">
+            <button data-action="click->theme#toggle" aria-label="Toggle dark mode"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:glass hover:text-text-primary transition-all duration-200">
+              <span class="shrink-0">
+                <%= heroicon "sun", variant: :outline, options: { class: "w-5 h-5 block dark:hidden" } %>
+                <%= heroicon "moon", variant: :outline, options: { class: "w-5 h-5 hidden dark:block" } %>
+              </span>
+              <span data-sidebar-target="label">Toggle theme</span>
+            </button>
+
+            <%# User dropdown %>
+            <div data-controller="dropdown" class="relative">
+              <button data-action="click->dropdown#toggle"
+                      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-200 cursor-pointer">
+                <%= render AvatarComponent.new(name: current_user.email, size: :sm) %>
+                <div data-sidebar-target="label" class="min-w-0 flex-1 text-left">
+                  <p class="text-sm font-medium text-text-primary truncate"><%= current_user.email %></p>
+                </div>
+                <span data-sidebar-target="label" class="shrink-0">
+                  <%= heroicon "chevron-up-down", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+                </span>
+              </button>
+
+              <%# Dropdown menu (opens upward) %>
+              <div data-dropdown-target="menu"
+                   class="hidden absolute bottom-full left-0 right-0 mb-1 glass-strong rounded-xl shadow-lg py-1 z-50">
+                <%= link_to edit_user_registration_path,
+                    class: "flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:glass hover:text-text-primary transition-all duration-200" do %>
+                  <%= heroicon "user-circle", variant: :outline, options: { class: "w-4 h-4" } %>
+                  Edit profile
+                <% end %>
+                <%= link_to settings_path,
+                    class: "flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:glass hover:text-text-primary transition-all duration-200" do %>
+                  <%= heroicon "cog-6-tooth", variant: :outline, options: { class: "w-4 h-4" } %>
+                  Settings
+                <% end %>
+                <div class="border-t border-glass-border my-1"></div>
+                <%= button_to destroy_user_session_path, method: :delete,
+                    class: "w-full flex items-center gap-2 px-3 py-2 text-sm text-danger-600 hover:bg-danger-50/50 transition-colors cursor-pointer" do %>
+                  <%= heroicon "arrow-right-on-rectangle", variant: :outline, options: { class: "w-4 h-4" } %>
+                  Sign out
+                <% end %>
+              </div>
+            </div>
           </div>
+
+          <%# Collapse toggle (desktop only) %>
+          <div class="hidden lg:block border-t border-glass-border px-3 py-3">
+            <button data-action="click->sidebar#toggle" aria-label="Collapse sidebar"
+                    class="w-full flex items-center justify-center p-2 rounded-xl text-text-secondary hover:glass transition-all duration-200">
+              <%= heroicon "chevron-double-left", variant: :outline, options: { class: "w-5 h-5" } %>
+            </button>
+          </div>
+        </aside>
+
+        <%# Main content area %>
+        <div data-sidebar-target="content" class="sidebar-content min-h-screen flex flex-col" style="margin-left: 16rem;">
+          <%# Header bar %>
+          <header class="sticky top-0 z-30 glass-strong border-b border-glass-border shadow-lg">
+            <div class="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl">
+              <%# Mobile hamburger %>
+              <button data-action="click->sidebar#open" aria-label="Open sidebar menu"
+                      class="lg:hidden p-2 -ml-2 rounded-lg text-text-secondary hover:glass transition-all duration-200">
+                <%= heroicon "bars-3", variant: :outline, options: { class: "w-5 h-5" } %>
+              </button>
+
+              <%# Search placeholder %>
+              <div class="hidden sm:flex items-center flex-1 max-w-md">
+                <div class="relative w-full">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <%= heroicon "magnifying-glass", variant: :outline, options: { class: "w-4 h-4 text-text-muted" } %>
+                  </div>
+                  <input type="text" placeholder="Search transactions, accounts..." disabled
+                         class="w-full pl-9 pr-3 py-1.5 text-sm glass border-transparent rounded-xl text-text-muted cursor-not-allowed placeholder:text-text-muted">
+                </div>
+              </div>
+
+              <%# Right side actions %>
+              <div class="flex items-center gap-2">
+                <button disabled class="p-2 rounded-lg text-text-muted cursor-not-allowed" title="Notifications (coming soon)">
+                  <%= heroicon "bell", variant: :outline, options: { class: "w-5 h-5" } %>
+                </button>
+                <button disabled class="p-2 rounded-lg text-text-muted cursor-not-allowed" title="Quick add (coming soon)">
+                  <%= heroicon "plus-circle", variant: :outline, options: { class: "w-5 h-5" } %>
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <main id="main-content" class="flex-1 px-4 sm:px-6 lg:px-8 pt-8 pb-12 max-w-7xl w-full mx-auto relative">
+            <%# Decorative gradient strip %>
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
+
+            <% if notice.present? %>
+              <div class="hidden" data-toast-target="flash" data-message="<%= notice %>" data-variant="success"></div>
+            <% end %>
+            <% if alert.present? %>
+              <div class="hidden" data-toast-target="flash" data-message="<%= alert %>" data-variant="error"></div>
+            <% end %>
+
+            <%= yield %>
+          </main>
         </div>
       </div>
-    </nav>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <% if notice.present? %>
-        <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-md">
-          <%= notice %>
+    <% else %>
+      <%# Unauthenticated layout: minimal header + centered content %>
+      <nav class="glass-strong border-b border-glass-border shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-16">
+            <div class="flex items-center">
+              <%= link_to root_path, class: "flex items-center gap-2 group" do %>
+                <div class="w-8 h-8 rounded-lg gradient-primary text-white flex items-center justify-center font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">F</div>
+                <span class="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">FinanceApp</span>
+              <% end %>
+            </div>
+            <div class="flex items-center space-x-4">
+              <button data-action="click->theme#toggle" class="p-2 rounded-lg text-text-secondary hover:glass transition-all duration-200" title="Toggle theme">
+                <%= heroicon "sun", variant: :outline, options: { class: "w-5 h-5 block dark:hidden" } %>
+                <%= heroicon "moon", variant: :outline, options: { class: "w-5 h-5 hidden dark:block" } %>
+              </button>
+              <%= link_to "Sign in", new_user_session_path, class: "text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors" %>
+              <%= render ButtonComponent.new(variant: :primary, size: :sm, href: new_user_registration_path) do %>
+                Sign up
+              <% end %>
+            </div>
+          </div>
         </div>
-      <% end %>
-      <% if alert.present? %>
-        <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
-          <%= alert %>
-        </div>
-      <% end %>
+      </nav>
 
-      <%= yield %>
-    </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-12">
+        <% if notice.present? %>
+          <div class="hidden" data-toast-target="flash" data-message="<%= notice %>" data-variant="success"></div>
+        <% end %>
+        <% if alert.present? %>
+          <div class="hidden" data-toast-target="flash" data-message="<%= alert %>" data-variant="error"></div>
+        <% end %>
+
+        <%= yield %>
+      </div>
+    <% end %>
+
+    <%# Toast notification container %>
+    <div id="toast-container" class="fixed top-4 right-4 z-[60] flex flex-col gap-3 pointer-events-none"></div>
   </body>
 </html>

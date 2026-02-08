@@ -1,0 +1,530 @@
+<% content_for(:title, "Design System — FinanceApp") %>
+
+<div class="space-y-16">
+  <%# ── Page Header ── %>
+  <%= render PageHeaderComponent.new(title: "Design System", subtitle: "A living reference of all UI components, design tokens, and patterns") %>
+
+  <%# Navigation (jump links) %>
+  <nav class="glass rounded-xl p-4 flex flex-wrap gap-2">
+    <% %w[colors themes typography glassmorphism buttons badges alerts cards stat-cards progress inputs modals dropdowns avatars page-headers empty-states tables animations toasts].each do |section| %>
+      <a href="#<%= section %>" class="px-3 py-1.5 text-xs font-medium rounded-lg glass hover:glass-strong text-text-secondary hover:text-primary-600 transition-all">
+        <%= section.titleize %>
+      </a>
+    <% end %>
+  </nav>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 1. COLOR PALETTE %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="colors" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Color Palette</h2>
+
+    <%# Primary %>
+    <h3 class="text-lg font-semibold text-text-primary">Primary</h3>
+    <div class="grid grid-cols-4 sm:grid-cols-8 gap-3">
+      <% %w[50 100 200 300 500 600 700 800].each do |shade| %>
+        <div class="space-y-1.5 text-center">
+          <div class="h-14 rounded-xl bg-primary-<%= shade %> shadow-sm border border-glass-border"></div>
+          <span class="text-xs text-text-muted font-mono"><%= shade %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Semantic %>
+    <h3 class="text-lg font-semibold text-text-primary">Semantic</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <% { "Success" => "success", "Warning" => "warning", "Danger" => "danger", "Info" => "info" }.each do |label, name| %>
+        <div class="space-y-1.5">
+          <p class="text-sm font-medium text-text-secondary"><%= label %></p>
+          <div class="grid grid-cols-4 gap-1.5">
+            <div class="h-10 rounded-lg bg-<%= name %>-50 border border-glass-border"></div>
+            <div class="h-10 rounded-lg bg-<%= name %>-500"></div>
+            <div class="h-10 rounded-lg bg-<%= name %>-600"></div>
+            <div class="h-10 rounded-lg bg-<%= name %>-700"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Surfaces %>
+    <h3 class="text-lg font-semibold text-text-primary">Surfaces & Text</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <% { "Surface" => "bg-surface", "Surface Alt" => "bg-surface-alt", "Surface Hover" => "bg-surface-hover", "Text Primary" => "bg-text-primary", "Text Secondary" => "bg-text-secondary", "Text Muted" => "bg-text-muted" }.each do |label, cls| %>
+        <div class="text-center space-y-1.5">
+          <div class="h-14 rounded-xl <%= cls %> border border-glass-border"></div>
+          <span class="text-xs text-text-muted"><%= label %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Account Type Colors %>
+    <h3 class="text-lg font-semibold text-text-primary">Account Types</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <% { "Checking" => :checking, "Savings" => :savings, "Credit Card" => :credit_card, "Cash" => :cash, "Investment" => :investment }.each do |label, type| %>
+        <% colors = account_type_color(type) %>
+        <div class="text-center space-y-1.5">
+          <div class="h-14 rounded-xl flex items-center justify-center <%= colors[:bg] %>">
+            <%= heroicon account_type_icon(type), variant: :outline, options: { class: "w-6 h-6 #{colors[:text]}" } %>
+          </div>
+          <span class="text-xs text-text-muted"><%= label %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 2. COLOR THEMES %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="themes" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Color Themes</h2>
+    <p class="text-sm text-text-secondary">Click a theme to apply it. The active theme is highlighted.</p>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-4">
+      <% %w[green blue purple rose amber cyan].each do |theme| %>
+        <button data-action="click->theme#setColor" data-color="<%= theme %>"
+                class="group flex flex-col items-center gap-2 p-4 rounded-xl glass hover:glass-strong transition-all">
+          <div class="w-10 h-10 rounded-full color-preview-<%= theme %> shadow-lg group-hover:scale-110 transition-transform"></div>
+          <span class="text-xs font-medium text-text-secondary capitalize"><%= theme %></span>
+        </button>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 3. TYPOGRAPHY %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="typography" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Typography</h2>
+    <%= render CardComponent.new do %>
+      <div class="space-y-4">
+        <h1 class="text-4xl font-bold text-text-primary">Heading 1 — The quick brown fox</h1>
+        <h2 class="text-3xl font-bold text-text-primary">Heading 2 — The quick brown fox</h2>
+        <h3 class="text-2xl font-semibold text-text-primary">Heading 3 — The quick brown fox</h3>
+        <h4 class="text-xl font-semibold text-text-primary">Heading 4 — The quick brown fox</h4>
+        <hr class="border-glass-border">
+        <p class="text-base text-text-primary">Body text (primary) — Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p class="text-base text-text-secondary">Body text (secondary) — Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        <p class="text-sm text-text-muted">Muted small text — Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        <p class="text-xs font-mono text-text-muted">Monospace text — font-mono text-xs</p>
+        <a href="#" class="text-primary-600 hover:text-primary-700 font-medium underline underline-offset-2">This is a link</a>
+      </div>
+    <% end %>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 4. GLASSMORPHISM & GRADIENTS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="glassmorphism" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Glassmorphism & Gradients</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div class="glass rounded-xl p-6 text-center border border-glass-border">
+        <p class="text-sm font-medium text-text-primary">.glass</p>
+        <p class="text-xs text-text-muted mt-1">backdrop-blur-[12px] + semi-transparent bg</p>
+      </div>
+      <div class="glass-strong rounded-xl p-6 text-center border border-glass-border">
+        <p class="text-sm font-medium text-text-primary">.glass-strong</p>
+        <p class="text-xs text-text-muted mt-1">backdrop-blur-[24px] + more opaque bg</p>
+      </div>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">Gradients</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="gradient-primary rounded-xl p-6 text-center text-white font-medium">.gradient-primary</div>
+      <div class="gradient-success rounded-xl p-6 text-center text-white font-medium">.gradient-success</div>
+      <div class="gradient-danger rounded-xl p-6 text-center text-white font-medium">.gradient-danger</div>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 5. BUTTONS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="buttons" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Buttons</h2>
+
+    <h3 class="text-lg font-semibold text-text-primary">Variants</h3>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render ButtonComponent.new(variant: :primary) { "Primary" } %>
+      <%= render ButtonComponent.new(variant: :secondary) { "Secondary" } %>
+      <%= render ButtonComponent.new(variant: :danger) { "Danger" } %>
+      <%= render ButtonComponent.new(variant: :ghost) { "Ghost" } %>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">Sizes</h3>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render ButtonComponent.new(variant: :primary, size: :sm) { "Small" } %>
+      <%= render ButtonComponent.new(variant: :primary, size: :md) { "Medium" } %>
+      <%= render ButtonComponent.new(variant: :primary, size: :lg) { "Large" } %>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">With Icons</h3>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render ButtonComponent.new(variant: :primary, icon: "plus") { "Add Item" } %>
+      <%= render ButtonComponent.new(variant: :secondary, icon: "pencil") { "Edit" } %>
+      <%= render ButtonComponent.new(variant: :danger, icon: "trash") { "Delete" } %>
+      <%= render ButtonComponent.new(variant: :ghost, icon: "arrow-down-tray") { "Download" } %>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">Disabled</h3>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render ButtonComponent.new(variant: :primary, disabled: true) { "Disabled Primary" } %>
+      <%= render ButtonComponent.new(variant: :secondary, disabled: true) { "Disabled Secondary" } %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 6. BADGES %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="badges" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Badges</h2>
+
+    <h3 class="text-lg font-semibold text-text-primary">Variants</h3>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render BadgeComponent.new(variant: :success) { "Success" } %>
+      <%= render BadgeComponent.new(variant: :warning) { "Warning" } %>
+      <%= render BadgeComponent.new(variant: :danger) { "Danger" } %>
+      <%= render BadgeComponent.new(variant: :info) { "Info" } %>
+      <%= render BadgeComponent.new(variant: :neutral) { "Neutral" } %>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">With Dot</h3>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render BadgeComponent.new(variant: :success, dot: true) { "Active" } %>
+      <%= render BadgeComponent.new(variant: :warning, dot: true) { "Pending" } %>
+      <%= render BadgeComponent.new(variant: :danger, dot: true) { "Overdue" } %>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">Sizes</h3>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render BadgeComponent.new(variant: :info, size: :sm) { "Small" } %>
+      <%= render BadgeComponent.new(variant: :info, size: :md) { "Medium" } %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 7. ALERTS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="alerts" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Alerts</h2>
+    <div class="space-y-3">
+      <%= render AlertComponent.new(variant: :success, timeout: 0) { "Success — Your changes have been saved successfully." } %>
+      <%= render AlertComponent.new(variant: :info, timeout: 0) { "Info — A new version of the app is available." } %>
+      <%= render AlertComponent.new(variant: :warning, timeout: 0) { "Warning — Your budget is at 85% capacity this month." } %>
+      <%= render AlertComponent.new(variant: :danger, timeout: 0) { "Danger — Failed to process your transaction. Please try again." } %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 8. CARDS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="cards" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Cards</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <%# Basic card %>
+      <%= render CardComponent.new do %>
+        <h4 class="font-semibold text-text-primary mb-2">Basic Card</h4>
+        <p class="text-sm text-text-secondary">A simple card with just body content and default padding.</p>
+      <% end %>
+
+      <%# Card with header %>
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h4 class="font-semibold text-text-primary">Card with Header</h4>
+        <% end %>
+        <p class="text-sm text-text-secondary">This card has a header section separated by a border.</p>
+      <% end %>
+
+      <%# Card with header + footer %>
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h4 class="font-semibold text-text-primary">Full Card</h4>
+        <% end %>
+        <p class="text-sm text-text-secondary">Card with header, body, and footer sections.</p>
+        <% card.with_footer do %>
+          <div class="flex justify-end gap-2">
+            <%= render ButtonComponent.new(variant: :ghost, size: :sm) { "Cancel" } %>
+            <%= render ButtonComponent.new(variant: :primary, size: :sm) { "Save" } %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 9. STAT CARDS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="stat-cards" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Stat Cards</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <%= render StatCardComponent.new(label: "Total Balance", value: "$24,580.00", icon: "banknotes", change: "+12.5%") %>
+      <%= render StatCardComponent.new(label: "Monthly Income", value: "$5,200.00", icon: "arrow-trending-up", color: "text-success-600", change: "+3.2%") %>
+      <%= render StatCardComponent.new(label: "Monthly Expenses", value: "$3,450.00", icon: "arrow-trending-down", color: "text-danger-600", change: "-8.1%") %>
+      <%= render StatCardComponent.new(label: "Savings Rate", value: "33.7%", icon: "chart-bar-square", change: "+2.4%") %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 10. PROGRESS BARS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="progress" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Progress Bars</h2>
+    <%= render CardComponent.new do %>
+      <div class="space-y-6">
+        <%= render ProgressBarComponent.new(value: 25, label: "Groceries Budget") %>
+        <%= render ProgressBarComponent.new(value: 65, label: "Entertainment Budget") %>
+        <%= render ProgressBarComponent.new(value: 85, label: "Dining Out Budget") %>
+        <%= render ProgressBarComponent.new(value: 95, label: "Shopping Budget") %>
+        <%= render ProgressBarComponent.new(value: 45, label: "Custom Color", color: "bg-info-500") %>
+      </div>
+    <% end %>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 11. INPUTS (using form_with) %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="inputs" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Form Inputs</h2>
+    <%= render CardComponent.new do %>
+      <%= form_with url: "#", method: :get, local: true, class: "space-y-4" do |f| %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <%= render InputComponent.new(form: f, field: :name, label: "Full Name", hint: "Enter your full name", required: true, placeholder: "John Doe") %>
+          <%= render InputComponent.new(form: f, field: :email, label: "Email", type: :email, placeholder: "john@example.com") %>
+          <%= render InputComponent.new(form: f, field: :amount, label: "Amount", type: :number, step: "0.01", placeholder: "0.00") %>
+          <%= render InputComponent.new(form: f, field: :date, label: "Date", type: :date) %>
+          <%= render InputComponent.new(form: f, field: :category, label: "Category", type: :select, collection: [ "Groceries", "Entertainment", "Dining", "Transport" ], include_blank: "Select a category") %>
+          <%= render InputComponent.new(form: f, field: :password, label: "Password", type: :password, hint: "Must be at least 8 characters") %>
+        </div>
+        <%= render InputComponent.new(form: f, field: :notes, label: "Notes", type: :textarea, placeholder: "Additional notes...", rows: 3) %>
+      <% end %>
+    <% end %>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 12. MODALS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="modals" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Modals</h2>
+    <div class="flex flex-wrap gap-3">
+      <%= render ModalComponent.new(title: "Small Modal", size: :sm) do |modal| %>
+        <% modal.with_trigger do %>
+          <%= render ButtonComponent.new(variant: :secondary) { "Open Small Modal" } %>
+        <% end %>
+        <p class="text-sm text-text-secondary">This is a small modal (max-w-md). It's great for confirmations and simple dialogs.</p>
+        <div class="mt-4 flex justify-end gap-2">
+          <%= render ButtonComponent.new(variant: :ghost, size: :sm, data: { action: "click->modal#close" }) { "Cancel" } %>
+          <%= render ButtonComponent.new(variant: :primary, size: :sm) { "Confirm" } %>
+        </div>
+      <% end %>
+
+      <%= render ModalComponent.new(title: "Medium Modal", size: :md) do |modal| %>
+        <% modal.with_trigger do %>
+          <%= render ButtonComponent.new(variant: :secondary) { "Open Medium Modal" } %>
+        <% end %>
+        <p class="text-sm text-text-secondary mb-3">This is a medium modal (max-w-lg). It works well for forms and content.</p>
+        <div class="glass rounded-lg p-4">
+          <p class="text-sm text-text-muted">You can nest glass elements inside modals for layered depth.</p>
+        </div>
+        <div class="mt-4 flex justify-end gap-2">
+          <%= render ButtonComponent.new(variant: :ghost, size: :sm, data: { action: "click->modal#close" }) { "Close" } %>
+        </div>
+      <% end %>
+
+      <%= render ModalComponent.new(title: "Large Modal", size: :lg) do |modal| %>
+        <% modal.with_trigger do %>
+          <%= render ButtonComponent.new(variant: :secondary) { "Open Large Modal" } %>
+        <% end %>
+        <p class="text-sm text-text-secondary">This is a large modal (max-w-2xl). Best for complex content like tables or detailed forms.</p>
+        <div class="mt-4 flex justify-end gap-2">
+          <%= render ButtonComponent.new(variant: :ghost, size: :sm, data: { action: "click->modal#close" }) { "Close" } %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 13. DROPDOWNS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="dropdowns" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Dropdowns</h2>
+    <div class="flex flex-wrap gap-4">
+      <%= render DropdownComponent.new(align: :left) do |dropdown| %>
+        <% dropdown.with_trigger do %>
+          <%= render ButtonComponent.new(variant: :secondary, icon: "chevron-down") { "Actions" } %>
+        <% end %>
+        <% dropdown.with_item do %>
+          <a href="#" class="block px-4 py-2 text-sm text-text-secondary hover:bg-surface-hover transition-colors">
+            <%= heroicon "pencil", variant: :mini, options: { class: "w-4 h-4 inline mr-2" } %> Edit
+          </a>
+        <% end %>
+        <% dropdown.with_item do %>
+          <a href="#" class="block px-4 py-2 text-sm text-text-secondary hover:bg-surface-hover transition-colors">
+            <%= heroicon "document-duplicate", variant: :mini, options: { class: "w-4 h-4 inline mr-2" } %> Duplicate
+          </a>
+        <% end %>
+        <% dropdown.with_item do %>
+          <a href="#" class="block px-4 py-2 text-sm text-danger-600 hover:bg-danger-50 transition-colors">
+            <%= heroicon "trash", variant: :mini, options: { class: "w-4 h-4 inline mr-2" } %> Delete
+          </a>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 14. AVATARS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="avatars" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Avatars</h2>
+    <div class="flex flex-wrap gap-4 items-end">
+      <%= render AvatarComponent.new(name: "Alice Johnson", size: :sm) %>
+      <%= render AvatarComponent.new(name: "Bob Smith", size: :md) %>
+      <%= render AvatarComponent.new(name: "Charlie Brown", size: :lg) %>
+      <%= render AvatarComponent.new(name: "Diana Prince", size: :lg) %>
+      <%= render AvatarComponent.new(name: "Edward Norton", size: :lg) %>
+    </div>
+    <p class="text-xs text-text-muted">Initials and colors are auto-generated from the name.</p>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 15. PAGE HEADERS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="page-headers" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Page Headers</h2>
+    <div class="glass rounded-xl p-6 space-y-6">
+      <%= render PageHeaderComponent.new(title: "Transactions") do |header| %>
+        <% header.with_actions do %>
+          <%= render ButtonComponent.new(variant: :primary, icon: "plus", size: :sm) { "New Transaction" } %>
+        <% end %>
+      <% end %>
+
+      <hr class="border-glass-border">
+
+      <%= render PageHeaderComponent.new(title: "Monthly Budget", subtitle: "February 2026 — Track your spending") %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 16. EMPTY STATES %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="empty-states" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Empty States</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No transactions yet",
+          description: "Start tracking your finances by adding your first transaction.",
+          icon: "arrows-right-left",
+          action_text: "Add Transaction",
+          action_url: "#"
+        ) %>
+      <% end %>
+
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No budgets found",
+          description: "Create a budget to keep your spending on track.",
+          icon: "calculator"
+        ) %>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 17. TABLE %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="tables" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Tables</h2>
+
+    <%= render TableComponent.new(striped: true) do |table| %>
+      <% table.with_header do %>
+        <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Date</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Description</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Category</th>
+        <th class="px-4 py-3 text-right text-xs font-medium text-text-muted uppercase tracking-wider">Amount</th>
+      <% end %>
+      <% table.with_body do %>
+        <tr class="hover:bg-surface-hover transition-colors">
+          <td class="px-4 py-3 text-sm text-text-secondary">Feb 8, 2026</td>
+          <td class="px-4 py-3 text-sm text-text-primary font-medium">Grocery Store</td>
+          <td class="px-4 py-3"><%= render BadgeComponent.new(variant: :success, size: :sm) { "Groceries" } %></td>
+          <td class="px-4 py-3 text-sm text-danger-600 text-right font-medium">-$85.50</td>
+        </tr>
+        <tr class="hover:bg-surface-hover transition-colors">
+          <td class="px-4 py-3 text-sm text-text-secondary">Feb 7, 2026</td>
+          <td class="px-4 py-3 text-sm text-text-primary font-medium">Salary Deposit</td>
+          <td class="px-4 py-3"><%= render BadgeComponent.new(variant: :info, size: :sm) { "Income" } %></td>
+          <td class="px-4 py-3 text-sm text-success-600 text-right font-medium">+$5,200.00</td>
+        </tr>
+        <tr class="hover:bg-surface-hover transition-colors">
+          <td class="px-4 py-3 text-sm text-text-secondary">Feb 6, 2026</td>
+          <td class="px-4 py-3 text-sm text-text-primary font-medium">Electric Bill</td>
+          <td class="px-4 py-3"><%= render BadgeComponent.new(variant: :warning, size: :sm) { "Utilities" } %></td>
+          <td class="px-4 py-3 text-sm text-danger-600 text-right font-medium">-$142.30</td>
+        </tr>
+        <tr class="hover:bg-surface-hover transition-colors">
+          <td class="px-4 py-3 text-sm text-text-secondary">Feb 5, 2026</td>
+          <td class="px-4 py-3 text-sm text-text-primary font-medium">Coffee Shop</td>
+          <td class="px-4 py-3"><%= render BadgeComponent.new(variant: :neutral, size: :sm) { "Dining" } %></td>
+          <td class="px-4 py-3 text-sm text-danger-600 text-right font-medium">-$6.75</td>
+        </tr>
+      <% end %>
+    <% end %>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 18. ANIMATIONS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="animations" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Animations</h2>
+
+    <h3 class="text-lg font-semibold text-text-primary">Card Entrance with Stagger</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <% 4.times do |i| %>
+        <div class="glass rounded-xl p-6 text-center animate-card-entrance stagger-<%= i + 1 %>">
+          <p class="text-sm font-medium text-text-primary">Card <%= i + 1 %></p>
+          <p class="text-xs text-text-muted">.stagger-<%= i + 1 %></p>
+        </div>
+      <% end %>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">Hover Lift</h3>
+    <div class="grid grid-cols-3 gap-4">
+      <% 3.times do |i| %>
+        <div class="glass rounded-xl p-6 text-center hover-lift cursor-pointer">
+          <p class="text-sm font-medium text-text-primary">Hover me</p>
+          <p class="text-xs text-text-muted">.hover-lift</p>
+        </div>
+      <% end %>
+    </div>
+
+    <h3 class="text-lg font-semibold text-text-primary">Other Animations</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="glass rounded-xl p-6 text-center animate-fade-up">
+        <p class="text-sm font-medium text-text-primary">.animate-fade-up</p>
+      </div>
+      <div class="glass rounded-xl p-6 text-center animate-slide-in-right">
+        <p class="text-sm font-medium text-text-primary">.animate-slide-in-right</p>
+      </div>
+      <div class="glass rounded-xl p-6 text-center animate-fade-in">
+        <p class="text-sm font-medium text-text-primary">.animate-fade-in</p>
+      </div>
+    </div>
+  </section>
+
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <%# 19. TOAST NOTIFICATIONS %>
+  <%# ════════════════════════════════════════════════════════════════════ %>
+  <section id="toasts" class="space-y-6">
+    <h2 class="text-2xl font-bold text-text-primary">Toast Notifications</h2>
+    <p class="text-sm text-text-secondary">Click the buttons to trigger toast popups in the top-right corner.</p>
+    <div class="flex flex-wrap gap-3">
+      <% { "Success Toast" => "success", "Error Toast" => "error", "Warning Toast" => "warning", "Info Toast" => "info" }.each do |label, variant| %>
+        <button data-action="click->toast#trigger"
+                data-toast-message="<%= label %> — This is a sample notification."
+                data-toast-variant="<%= variant %>"
+                class="px-4 py-2 text-sm font-medium rounded-xl glass hover:glass-strong text-text-primary transition-all cursor-pointer">
+          <%= label %>
+        </button>
+      <% end %>
+    </div>
+  </section>
+</div>

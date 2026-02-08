@@ -1,0 +1,14 @@
+<div class="min-h-[80vh] flex items-center justify-center">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-text-primary"><%= title %></h1>
+      <p class="mt-2 text-text-secondary"><%= subtitle %></p>
+    </div>
+
+    <%= render CardComponent.new do %>
+      <%= yield %>
+    <% end %>
+
+    <%= render "devise/shared/links" %>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<div class="<%= css_classes %> relative overflow-hidden" id="<%= @options[:id] %>">
+  <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
+  <div class="relative">
+    <% if header? %>
+      <div class="px-6 py-4 border-b border-glass-border">
+        <%= header %>
+      </div>
+    <% end %>
+
+    <div class="<%= @padding ? 'p-6' : '' %>">
+      <%= content %>
+    </div>
+
+    <% if footer? %>
+      <div class="px-6 py-4 border-t border-glass-border">
+        <%= footer %>
+      </div>
+    <% end %>
+  </div>
+</div>

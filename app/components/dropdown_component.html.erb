@@ -1,0 +1,13 @@
+<div class="relative inline-block" data-controller="dropdown">
+  <div data-action="click->dropdown#toggle">
+    <%= trigger %>
+  </div>
+
+  <div data-dropdown-target="menu" class="hidden absolute z-20 mt-2 w-48 rounded-lg bg-surface border border-border shadow-lg <%= align_class %>">
+    <div class="py-1">
+      <% items.each do |item| %>
+        <%= item %>
+      <% end %>
+    </div>
+  </div>
+</div>
