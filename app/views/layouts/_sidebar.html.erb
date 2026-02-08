@@ -1,0 +1,109 @@
+<%# Mobile overlay backdrop %>
+<div data-sidebar-target="overlay" data-action="click->sidebar#close"
+     class="hidden fixed inset-0 bg-overlay/60 backdrop-blur-sm z-40 transition-opacity duration-300 opacity-0 lg:hidden"></div>
+
+<%# Sidebar %>
+<aside data-sidebar-target="sidebar"
+       class="sidebar fixed top-0 left-0 h-full z-50 glass-strong border-r border-glass-border flex flex-col -translate-x-full lg:translate-x-0"
+       style="width: 16rem;">
+  <%# Gradient accent at top %>
+  <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary-500/10 to-transparent pointer-events-none rounded-tr-2xl"></div>
+
+  <%# Logo %>
+  <div class="flex items-center h-16 px-4 relative z-10">
+    <%= link_to root_path, class: "flex items-center gap-2 group" do %>
+      <div class="w-8 h-8 rounded-lg gradient-primary text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-lg group-hover:scale-110 transition-transform">F</div>
+      <span data-sidebar-target="logo" class="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">FinanceApp</span>
+    <% end %>
+  </div>
+
+  <%# Navigation links %>
+  <nav data-sidebar-target="nav" class="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto scrollbar-hide relative z-10">
+    <%= sidebar_section "Overview" %>
+    <%= sidebar_link "Dashboard", root_path, icon: "home" %>
+    <%= sidebar_link "Accounts", accounts_path, icon: "building-library" if current_user.has_permission?("manage_accounts") %>
+
+    <%= sidebar_section "Finance" %>
+    <%= sidebar_link "Transactions", transactions_path, icon: "arrows-right-left" if current_user.has_permission?("manage_transactions") %>
+    <%= sidebar_link "Budgets", budgets_path, icon: "calculator" if current_user.has_permission?("manage_budgets") %>
+    <%= sidebar_link "Categories", categories_path, icon: "tag" if current_user.has_permission?("manage_categories") %>
+
+    <%= sidebar_section "Planning" %>
+    <%= sidebar_link "Recurring", recurring_transactions_path, icon: "arrow-path", badge: "Soon" if current_user.has_permission?("manage_recurring_transactions") %>
+    <%= sidebar_link "Goals", savings_goals_path, icon: "flag", badge: "Soon" if current_user.has_permission?("manage_savings_goals") %>
+    <%= sidebar_link "Bills", bills_path, icon: "bell-alert", badge: "Soon" if current_user.has_permission?("manage_bills") %>
+    <%= sidebar_link "Reports", reports_path, icon: "chart-bar", badge: "Soon" if current_user.has_permission?("view_reports") %>
+
+    <%= sidebar_section "More" %>
+    <%= sidebar_link "Notifications", notifications_path, icon: "bell", badge: "Soon" if current_user.has_permission?("view_notifications") %>
+    <%= sidebar_link "Debt Tracker", debt_accounts_path, icon: "banknotes", badge: "Soon" if current_user.has_permission?("manage_debt_accounts") %>
+    <%= sidebar_link "Subscriptions", subscriptions_path, icon: "credit-card", badge: "Soon" if current_user.has_permission?("manage_subscriptions") %>
+    <%= sidebar_link "Tags", tags_path, icon: "hashtag", badge: "Soon" if current_user.has_permission?("manage_tags") %>
+    <%= sidebar_link "Wishlist", wishlist_index_path, icon: "gift", badge: "Soon" if current_user.has_permission?("manage_wishlist") %>
+
+    <%= sidebar_section "System" %>
+    <%= sidebar_link "Settings", settings_path, icon: "cog-6-tooth" if current_user.has_permission?("manage_settings") %>
+    <%= sidebar_link "Imports", import_export_path, icon: "arrow-down-tray", badge: "Soon" if current_user.has_permission?("manage_imports") %>
+    <%= sidebar_link "Integrations", integrations_path, icon: "puzzle-piece", badge: "Soon" if current_user.has_permission?("manage_integrations") %>
+    <%= sidebar_link "Insights", insights_path, icon: "light-bulb", badge: "Soon" if current_user.has_permission?("view_insights") %>
+    <%= sidebar_link "Activity Log", audit_logs_path, icon: "clipboard-document-list", badge: "Soon" if current_user.has_permission?("view_audit_logs") %>
+    <% if current_user.admin? %>
+      <%= sidebar_link "Admin", admin_root_path, icon: "shield-check" %>
+    <% end %>
+  </nav>
+
+  <%# Bottom: theme toggle + user dropdown %>
+  <div class="border-t border-glass-border px-3 py-3 space-y-1 relative z-10">
+    <button data-action="click->theme#toggle" aria-label="Toggle dark mode"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:glass hover:text-text-primary transition-all duration-200">
+      <span class="shrink-0">
+        <%= heroicon "sun", variant: :outline, options: { class: "w-5 h-5 block dark:hidden" } %>
+        <%= heroicon "moon", variant: :outline, options: { class: "w-5 h-5 hidden dark:block" } %>
+      </span>
+      <span data-sidebar-target="label">Toggle theme</span>
+    </button>
+
+    <%# User dropdown %>
+    <div data-controller="dropdown" class="relative">
+      <button data-action="click->dropdown#toggle"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:glass transition-all duration-200 cursor-pointer">
+        <%= render AvatarComponent.new(name: current_user.email, size: :sm) %>
+        <div data-sidebar-target="label" class="min-w-0 flex-1 text-left">
+          <p class="text-sm font-medium text-text-primary truncate"><%= current_user.email %></p>
+        </div>
+        <span data-sidebar-target="label" class="shrink-0">
+          <%= heroicon "chevron-up-down", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+        </span>
+      </button>
+
+      <%# Dropdown menu (opens upward) %>
+      <div data-dropdown-target="menu"
+           class="hidden absolute bottom-full left-0 right-0 mb-1 glass-strong rounded-xl shadow-lg py-1 z-50">
+        <%= link_to edit_user_registration_path,
+            class: "flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:glass hover:text-text-primary transition-all duration-200" do %>
+          <%= heroicon "user-circle", variant: :outline, options: { class: "w-4 h-4" } %>
+          Edit profile
+        <% end %>
+        <%= link_to settings_path,
+            class: "flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:glass hover:text-text-primary transition-all duration-200" do %>
+          <%= heroicon "cog-6-tooth", variant: :outline, options: { class: "w-4 h-4" } %>
+          Settings
+        <% end %>
+        <div class="border-t border-glass-border my-1"></div>
+        <%= button_to destroy_user_session_path, method: :delete,
+            class: "w-full flex items-center gap-2 px-3 py-2 text-sm text-danger-600 hover:bg-danger-50/50 transition-colors cursor-pointer" do %>
+          <%= heroicon "arrow-right-on-rectangle", variant: :outline, options: { class: "w-4 h-4" } %>
+          Sign out
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# Collapse toggle (desktop only) %>
+  <div class="hidden lg:block border-t border-glass-border px-3 py-3">
+    <button data-action="click->sidebar#toggle" aria-label="Collapse sidebar"
+            class="w-full flex items-center justify-center p-2 rounded-xl text-text-secondary hover:glass transition-all duration-200">
+      <%= heroicon "chevron-double-left", variant: :outline, options: { class: "w-5 h-5" } %>
+    </button>
+  </div>
+</aside>

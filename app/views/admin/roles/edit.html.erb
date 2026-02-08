@@ -1,0 +1,14 @@
+<div class="max-w-3xl space-y-6">
+  <%= render PageHeaderComponent.new(title: "Edit Role", subtitle: @role.name.humanize) %>
+
+  <%= render CardComponent.new do |card| %>
+    <% card.with_header do %>
+      <h3 class="text-lg font-semibold text-text-primary">Role Details</h3>
+    <% end %>
+    <%= render "form", role: @role, permissions: @permissions %>
+  <% end %>
+
+  <div class="mt-4">
+    <%= link_to "Back to roles", admin_roles_path, class: "text-sm text-text-secondary hover:text-text-primary transition-colors" %>
+  </div>
+</div>

@@ -10,8 +10,17 @@ Rails.application.routes.draw do
   resource :settings, only: [ :show, :update ]
   get "style_guide", to: "style_guide#index" if Rails.env.development?
 
-  # Phase 1B - Admin / Roles
-  get "admin", to: "admin#index", as: :admin
+  # Admin panel
+  namespace :admin do
+    root to: "users#index"
+    resources :users, only: [ :index, :edit, :update ] do
+      member do
+        patch :toggle_active
+      end
+      resource :roles, only: [ :update ], controller: "user_roles"
+    end
+    resources :roles, except: [ :show ]
+  end
 
   # Phase 2 - Core financial features
   resources :recurring_transactions, only: [ :index ]

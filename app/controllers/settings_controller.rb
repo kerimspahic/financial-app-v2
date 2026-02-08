@@ -1,4 +1,6 @@
 class SettingsController < ApplicationController
+  require_permission "manage_settings"
+
   def show
     @preference = current_user.preference
   end

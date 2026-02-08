@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include ::Pagy::Method
+  include PermissionAuthorizable
 
   allow_browser versions: :modern
   stale_when_importmap_changes

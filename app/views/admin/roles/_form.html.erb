@@ -1,0 +1,63 @@
+<%
+  permission_groups = {
+    "Core Finance" => %w[manage_accounts manage_transactions manage_categories manage_budgets],
+    "Planning" => %w[manage_recurring_transactions manage_savings_goals manage_bills],
+    "Reports & Insights" => %w[view_reports view_insights],
+    "Organization" => %w[manage_tags manage_subscriptions manage_wishlist manage_debt_accounts],
+    "System" => %w[manage_settings view_notifications view_audit_logs manage_imports manage_integrations]
+  }
+%>
+
+<%= form_with(model: role, url: role.persisted? ? admin_role_path(role) : admin_roles_path, class: "space-y-6") do |form| %>
+  <% if role.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(role.errors.count, "error") %> prevented this role from being saved:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% role.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :name, label: "Role Name", placeholder: "e.g., admin, editor") %>
+  <%= render InputComponent.new(form: form, field: :description, label: "Description", type: :textarea,
+             placeholder: "What can users with this role do?") %>
+
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h4 class="text-sm font-semibold text-text-primary">Permissions</h4>
+      <p class="text-xs text-text-muted">Select what users with this role can access</p>
+    </div>
+
+    <input type="hidden" name="permission_ids[]" value="">
+
+    <% permission_groups.each do |group_name, keys| %>
+      <% group_perms = permissions.select { |p| keys.include?(p.key) } %>
+      <% next if group_perms.empty? %>
+
+      <div class="space-y-2">
+        <p class="text-xs font-bold uppercase tracking-wider text-text-muted"><%= group_name %></p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <% group_perms.each do |permission| %>
+            <label class="flex items-start gap-3 p-3 rounded-xl glass hover:bg-surface-hover cursor-pointer transition-colors">
+              <input type="checkbox" name="permission_ids[]" value="<%= permission.id %>"
+                     <%= "checked" if role.permissions.include?(permission) %>
+                     class="mt-0.5 rounded border-input-border text-primary-600 focus:ring-primary-500">
+              <div>
+                <span class="text-sm font-medium text-text-primary"><%= permission.key.humanize %></span>
+                <% if permission.description.present? %>
+                  <p class="text-xs text-text-muted"><%= permission.description %></p>
+                <% end %>
+              </div>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= render ButtonComponent.new(variant: :primary, submit: true) do %>
+    <%= role.persisted? ? "Update Role" : "Create Role" %>
+  <% end %>
+<% end %>

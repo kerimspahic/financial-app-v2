@@ -1,0 +1,30 @@
+<header class="sticky top-0 z-30 glass-strong border-b border-glass-border shadow-lg">
+  <div class="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl">
+    <%# Mobile hamburger %>
+    <button data-action="click->sidebar#open" aria-label="Open sidebar menu"
+            class="lg:hidden p-2 -ml-2 rounded-lg text-text-secondary hover:glass transition-all duration-200">
+      <%= heroicon "bars-3", variant: :outline, options: { class: "w-5 h-5" } %>
+    </button>
+
+    <%# Search placeholder %>
+    <div class="hidden sm:flex items-center flex-1 max-w-md">
+      <div class="relative w-full">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <%= heroicon "magnifying-glass", variant: :outline, options: { class: "w-4 h-4 text-text-muted" } %>
+        </div>
+        <input type="text" placeholder="Search transactions, accounts..." disabled
+               class="w-full pl-9 pr-3 py-1.5 text-sm glass border-transparent rounded-xl text-text-muted cursor-not-allowed placeholder:text-text-muted">
+      </div>
+    </div>
+
+    <%# Right side actions %>
+    <div class="flex items-center gap-2">
+      <button disabled class="p-2 rounded-lg text-text-muted cursor-not-allowed" title="Notifications (coming soon)">
+        <%= heroicon "bell", variant: :outline, options: { class: "w-5 h-5" } %>
+      </button>
+      <button disabled class="p-2 rounded-lg text-text-muted cursor-not-allowed" title="Quick add (coming soon)">
+        <%= heroicon "plus-circle", variant: :outline, options: { class: "w-5 h-5" } %>
+      </button>
+    </div>
+  </div>
+</header>

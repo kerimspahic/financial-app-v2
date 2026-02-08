@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_08_201710) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_08_201713) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -164,8 +164,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_201710) do
     t.text "description"
     t.string "name", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
-    t.index ["user_id"], name: "index_roles_on_user_id"
+    t.index ["name"], name: "index_roles_on_name", unique: true
   end
 
   create_table "savings_contributions", force: :cascade do |t|
@@ -264,6 +263,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_201710) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -309,7 +309,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_201710) do
   add_foreign_key "recurring_transactions", "users"
   add_foreign_key "role_permissions", "permissions"
   add_foreign_key "role_permissions", "roles"
-  add_foreign_key "roles", "users"
   add_foreign_key "savings_contributions", "savings_goals"
   add_foreign_key "savings_goals", "users"
   add_foreign_key "subscriptions", "categories"

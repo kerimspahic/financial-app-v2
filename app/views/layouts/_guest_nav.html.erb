@@ -1,0 +1,22 @@
+<nav class="glass-strong border-b border-glass-border shadow-lg">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex items-center">
+        <%= link_to root_path, class: "flex items-center gap-2 group" do %>
+          <div class="w-8 h-8 rounded-lg gradient-primary text-white flex items-center justify-center font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">F</div>
+          <span class="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">FinanceApp</span>
+        <% end %>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button data-action="click->theme#toggle" class="p-2 rounded-lg text-text-secondary hover:glass transition-all duration-200" title="Toggle theme">
+          <%= heroicon "sun", variant: :outline, options: { class: "w-5 h-5 block dark:hidden" } %>
+          <%= heroicon "moon", variant: :outline, options: { class: "w-5 h-5 hidden dark:block" } %>
+        </button>
+        <%= link_to "Sign in", new_user_session_path, class: "text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors" %>
+        <%= render ButtonComponent.new(variant: :primary, size: :sm, href: new_user_registration_path) do %>
+          Sign up
+        <% end %>
+      </div>
+    </div>
+  </div>
+</nav>

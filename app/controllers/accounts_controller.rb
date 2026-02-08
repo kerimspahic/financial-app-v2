@@ -1,4 +1,5 @@
 class AccountsController < ApplicationController
+  require_permission "manage_accounts"
   before_action :set_account, only: [ :show, :edit, :update, :destroy ]
 
   def index

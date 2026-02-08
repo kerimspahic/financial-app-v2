@@ -1,5 +1,6 @@
 class TransactionsController < ApplicationController
   include BalanceUpdatable
+  require_permission "manage_transactions"
 
   before_action :set_transaction, only: [ :show, :edit, :update, :destroy ]
 

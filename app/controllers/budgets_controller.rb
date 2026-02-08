@@ -1,4 +1,5 @@
 class BudgetsController < ApplicationController
+  require_permission "manage_budgets"
   before_action :set_budget, only: [ :edit, :update, :destroy ]
 
   def index

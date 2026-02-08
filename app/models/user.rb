@@ -31,6 +31,34 @@ class User < ApplicationRecord
     user_preference || build_user_preference
   end
 
+  def admin?
+    roles.exists?(name: "admin")
+  end
+
+  def has_role?(role_name)
+    roles.exists?(name: role_name)
+  end
+
+  def has_permission?(permission_key)
+    return true if admin?
+
+    permissions.exists?(key: permission_key)
+  end
+
+  def permissions
+    Permission.joins(role_permissions: { role: :user_roles })
+              .where(user_roles: { user_id: id })
+              .distinct
+  end
+
+  def active_for_authentication?
+    super && active?
+  end
+
+  def inactive_message
+    active? ? super : :account_disabled
+  end
+
   def jwt_payload
     super
   end

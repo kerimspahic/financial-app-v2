@@ -1,4 +1,5 @@
 class CategoriesController < ApplicationController
+  require_permission "manage_categories"
   before_action :set_category, only: [ :edit, :update, :destroy ]
 
   def index

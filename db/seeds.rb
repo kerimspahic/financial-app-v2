@@ -9,6 +9,33 @@ if user.new_record?
   puts "Created demo user: demo@example.com / password123"
 end
 
+# Create default roles
+admin_role = Role.find_or_create_by!(name: "admin") do |r|
+  r.description = "Full system access. Can manage users, roles, and all settings."
+end
+
+user_role = Role.find_or_create_by!(name: "user") do |r|
+  r.description = "Standard user access. Can manage their own financial data."
+end
+
+puts "Created #{Role.count} roles"
+
+# Assign all permissions to the "user" role (standard access)
+all_permissions = Permission.all
+user_role.permissions = all_permissions
+puts "Assigned #{all_permissions.count} permissions to 'user' role"
+
+# Assign roles to demo user
+unless user.has_role?("admin")
+  user.roles << admin_role
+  puts "Assigned admin role to demo user"
+end
+
+unless user.has_role?("user")
+  user.roles << user_role
+  puts "Assigned user role to demo user"
+end
+
 # Create accounts
 checking = user.accounts.find_or_create_by!(name: "Main Checking") do |a|
   a.account_type = :checking
