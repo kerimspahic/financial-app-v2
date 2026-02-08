@@ -1,0 +1,11 @@
+<%# locals: (title:) %>
+<div class="flex items-center justify-between px-6 py-4 border-b border-glass-border">
+  <h3 class="text-lg font-semibold text-text-primary"><%= title %></h3>
+  <button type="button" data-action="click->modal#close" class="text-text-muted hover:text-text-primary transition-colors">
+    <%= heroicon "x-mark", variant: :outline, options: { class: "w-5 h-5" } %>
+  </button>
+</div>
+
+<div class="p-6">
+  <%= yield %>
+</div>

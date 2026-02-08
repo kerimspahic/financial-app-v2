@@ -1,4 +1,7 @@
 <%= form_with(model: account, class: "space-y-6") do |form| %>
+  <% if params[:return_to].present? %>
+    <%= hidden_field_tag :return_to, params[:return_to] %>
+  <% end %>
   <% if account.errors.any? %>
     <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
       <strong><%= pluralize(account.errors.count, "error") %> prevented this account from being saved:</strong>

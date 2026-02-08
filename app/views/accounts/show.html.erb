@@ -1,54 +1,109 @@
-<div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: @account.name) do |header| %>
-    <% header.with_actions do %>
-      <%= render ButtonComponent.new(variant: :secondary, href: edit_account_path(@account), icon: "pencil") do %>
-        Edit
-      <% end %>
-      <%= render ButtonComponent.new(variant: :danger, href: account_path(@account), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
-        Delete
-      <% end %>
-    <% end %>
-  <% end %>
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: @account.name } do %>
+      <div class="space-y-4">
+        <div class="flex items-center gap-2">
+          <%= render BadgeComponent.new(variant: :neutral) do %>
+            <%= @account.account_type.humanize %>
+          <% end %>
+          <span class="text-sm text-text-secondary"><%= @account.currency %></span>
+        </div>
 
-  <div class="flex items-center gap-2 -mt-4 mb-4">
-    <%= render BadgeComponent.new(variant: :neutral) do %>
-      <%= @account.account_type.humanize %>
-    <% end %>
-  </div>
+        <div class="glass rounded-xl p-4">
+          <p class="text-sm text-text-secondary">Current Balance</p>
+          <p class="text-3xl font-bold <%= @account.balance >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
+            <%= number_to_currency(@account.balance) %>
+          </p>
+        </div>
 
-  <%= render CardComponent.new do %>
-    <p class="text-sm text-text-secondary">Current Balance</p>
-    <p class="text-3xl font-bold <%= @account.balance >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
-      <%= number_to_currency(@account.balance) %>
-    </p>
-  <% end %>
-
-  <%= render CardComponent.new do |card| %>
-    <% card.with_header do %>
-      <h2 class="text-xl font-semibold text-text-primary">Recent Transactions</h2>
-    <% end %>
-    <% if @transactions.any? %>
-      <div class="divide-y divide-border">
-        <% @transactions.each do |t| %>
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <p class="font-medium text-text-primary"><%= link_to t.description, transaction_path(t), class: "hover:text-primary-600" %></p>
-              <p class="text-sm text-text-secondary"><%= t.date.strftime("%b %d, %Y") %> &middot; <%= t.category.name %></p>
+        <% if @transactions.any? %>
+          <div>
+            <h4 class="text-sm font-semibold text-text-secondary mb-2">Recent Transactions</h4>
+            <div class="divide-y divide-border">
+              <% @transactions.each do |t| %>
+                <div class="py-2.5 flex justify-between items-center">
+                  <div>
+                    <p class="font-medium text-text-primary text-sm"><%= t.description %></p>
+                    <p class="text-xs text-text-secondary"><%= t.date.strftime("%b %d, %Y") %> &middot; <%= t.category.name %></p>
+                  </div>
+                  <p class="font-semibold text-sm <%= amount_color_class(t) %>">
+                    <%= formatted_amount(t) %>
+                  </p>
+                </div>
+              <% end %>
             </div>
-            <p class="font-semibold <%= amount_color_class(t) %>">
-              <%= formatted_amount(t) %>
-            </p>
           </div>
         <% end %>
-      </div>
 
-      <%= render "shared/pagination", pagy: @pagy %>
-    <% else %>
-      <%= render EmptyStateComponent.new(
-        title: "No transactions",
-        description: "No transactions for this account yet.",
-        icon: "banknotes"
-      ) %>
+        <div class="flex items-center justify-between gap-2 pt-2 border-t border-glass-border">
+          <div class="flex items-center gap-2">
+            <%= render ButtonComponent.new(variant: :secondary, size: :sm, href: edit_account_path(@account, return_to: "show"), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+              Edit
+            <% end %>
+            <%= render ButtonComponent.new(variant: :danger, size: :sm, href: account_path(@account), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
+              Delete
+            <% end %>
+          </div>
+          <%= link_to account_path(@account), class: "text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors" do %>
+            View all transactions &rarr;
+          <% end %>
+        </div>
+      </div>
     <% end %>
   <% end %>
-</div>
+<% else %>
+  <div class="space-y-6">
+    <%= render PageHeaderComponent.new(title: @account.name) do |header| %>
+      <% header.with_actions do %>
+        <%= render ButtonComponent.new(variant: :secondary, href: edit_account_path(@account, return_to: "show"), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+          Edit
+        <% end %>
+        <%= render ButtonComponent.new(variant: :danger, href: account_path(@account), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
+          Delete
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="flex items-center gap-2 -mt-4 mb-4">
+      <%= render BadgeComponent.new(variant: :neutral) do %>
+        <%= @account.account_type.humanize %>
+      <% end %>
+    </div>
+
+    <%= render CardComponent.new do %>
+      <p class="text-sm text-text-secondary">Current Balance</p>
+      <p class="text-3xl font-bold <%= @account.balance >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
+        <%= number_to_currency(@account.balance) %>
+      </p>
+    <% end %>
+
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-xl font-semibold text-text-primary">Recent Transactions</h2>
+      <% end %>
+      <% if @transactions.any? %>
+        <div class="divide-y divide-border">
+          <% @transactions.each do |t| %>
+            <div class="py-3 flex justify-between items-center">
+              <div>
+                <p class="font-medium text-text-primary"><%= link_to t.description, transaction_path(t), class: "hover:text-primary-600" %></p>
+                <p class="text-sm text-text-secondary"><%= t.date.strftime("%b %d, %Y") %> &middot; <%= t.category.name %></p>
+              </div>
+              <p class="font-semibold <%= amount_color_class(t) %>">
+                <%= formatted_amount(t) %>
+              </p>
+            </div>
+          <% end %>
+        </div>
+
+        <%= render "shared/pagination", pagy: @pagy %>
+      <% else %>
+        <%= render EmptyStateComponent.new(
+          title: "No transactions",
+          description: "No transactions for this account yet.",
+          icon: "banknotes"
+        ) %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

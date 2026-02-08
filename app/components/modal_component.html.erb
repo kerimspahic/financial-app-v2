@@ -13,18 +13,23 @@
     <div class="relative glass-strong rounded-2xl shadow-2xl w-full <%= size_class %> mx-4 z-10 overflow-hidden">
       <div class="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent pointer-events-none"></div>
       <div class="relative">
-        <% if @title %>
-          <div class="flex items-center justify-between px-6 py-4 border-b border-glass-border">
-            <h3 class="text-lg font-semibold text-text-primary"><%= @title %></h3>
-            <button data-action="click->modal#close" class="text-text-muted hover:text-text-primary transition-colors">
-              <%= heroicon "x-mark", variant: :outline, options: { class: "w-5 h-5" } %>
-            </button>
+        <% if turbo_frame? %>
+          <%= helpers.turbo_frame_tag turbo_frame_id, target: "_top", data: { modal_target: "frame" } do %>
+          <% end %>
+        <% else %>
+          <% if @title %>
+            <div class="flex items-center justify-between px-6 py-4 border-b border-glass-border">
+              <h3 class="text-lg font-semibold text-text-primary"><%= @title %></h3>
+              <button data-action="click->modal#close" class="text-text-muted hover:text-text-primary transition-colors">
+                <%= heroicon "x-mark", variant: :outline, options: { class: "w-5 h-5" } %>
+              </button>
+            </div>
+          <% end %>
+
+          <div class="p-6">
+            <%= content %>
           </div>
         <% end %>
-
-        <div class="p-6">
-          <%= content %>
-        </div>
       </div>
     </div>
   </div>

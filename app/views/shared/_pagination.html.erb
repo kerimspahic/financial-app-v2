@@ -7,23 +7,23 @@
     </p>
     <div class="flex items-center gap-1">
       <% if pagy.previous %>
-        <%= link_to pagy.page_url(:previous), class: "px-3 py-1.5 text-sm rounded-lg glass text-text-secondary hover:text-text-primary transition-colors" do %>
+        <%= link_to url_for(page: pagy.previous), class: "px-3 py-1.5 text-sm rounded-lg glass text-text-secondary hover:text-text-primary transition-colors" do %>
           &laquo; Prev
         <% end %>
       <% end %>
 
-      <% pagy.series.each do |item| %>
-        <% if item.is_a?(Integer) %>
-          <%= link_to item, pagy.page_url(item), class: "px-3 py-1.5 text-sm rounded-lg glass text-text-secondary hover:text-text-primary transition-colors" %>
-        <% elsif item.is_a?(String) %>
-          <span class="px-3 py-1.5 text-sm rounded-lg gradient-primary text-white font-medium"><%= item %></span>
-        <% elsif item == :gap %>
+      <% (1..pagy.pages).each do |page_num| %>
+        <% if page_num == pagy.page %>
+          <span class="px-3 py-1.5 text-sm rounded-lg gradient-primary text-white font-medium"><%= page_num %></span>
+        <% elsif page_num == 1 || page_num == pagy.pages || (page_num >= pagy.page - 2 && page_num <= pagy.page + 2) %>
+          <%= link_to page_num, url_for(page: page_num), class: "px-3 py-1.5 text-sm rounded-lg glass text-text-secondary hover:text-text-primary transition-colors" %>
+        <% elsif page_num == 2 || page_num == pagy.pages - 1 %>
           <span class="px-2 py-1.5 text-sm text-text-muted">&hellip;</span>
         <% end %>
       <% end %>
 
       <% if pagy.next %>
-        <%= link_to pagy.page_url(:next), class: "px-3 py-1.5 text-sm rounded-lg glass text-text-secondary hover:text-text-primary transition-colors" do %>
+        <%= link_to url_for(page: pagy.next), class: "px-3 py-1.5 text-sm rounded-lg glass text-text-secondary hover:text-text-primary transition-colors" do %>
           Next &raquo;
         <% end %>
       <% end %>

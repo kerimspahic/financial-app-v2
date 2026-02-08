@@ -9,7 +9,7 @@
     <p class="text-sm text-text-secondary mb-6 max-w-sm mx-auto"><%= @description %></p>
   <% end %>
   <% if @action_text && @action_url %>
-    <%= render ButtonComponent.new(variant: :primary, href: @action_url, icon: "plus") do %>
+    <%= render ButtonComponent.new(variant: :primary, href: @action_url, icon: "plus", data: @action_data) do %>
       <%= @action_text %>
     <% end %>
   <% end %>

@@ -7,7 +7,11 @@ class AccountsController < ApplicationController
   end
 
   def show
-    @pagy, @transactions = pagy(@account.transactions.recent.includes(:category), limit: user_per_page)
+    if turbo_frame_modal?
+      @transactions = @account.transactions.recent.includes(:category).limit(5)
+    else
+      @pagy, @transactions = pagy(@account.transactions.recent.includes(:category), limit: user_per_page)
+    end
   end
 
   def new
@@ -17,7 +21,7 @@ class AccountsController < ApplicationController
   def create
     @account = current_user.accounts.build(account_params)
     if @account.save
-      redirect_to @account, notice: "Account was successfully created."
+      redirect_to accounts_path, notice: "Account was successfully created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -28,7 +32,8 @@ class AccountsController < ApplicationController
 
   def update
     if @account.update(account_params)
-      redirect_to @account, notice: "Account was successfully updated."
+      redirect_path = params[:return_to] == "show" ? account_path(@account) : accounts_path
+      redirect_to redirect_path, notice: "Account was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end

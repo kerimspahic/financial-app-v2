@@ -1,7 +1,7 @@
 <div class="space-y-6">
   <%= render PageHeaderComponent.new(title: "Accounts") do |header| %>
     <% header.with_actions do %>
-      <%= render ButtonComponent.new(variant: :primary, href: new_account_path, icon: "plus") do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_account_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
         New Account
       <% end %>
     <% end %>
@@ -23,7 +23,7 @@
                   <p class="text-xs <%= colors[:text] %> font-medium mt-0.5"><%= account.account_type.humanize %></p>
                 </div>
               </div>
-              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_account_path(account), icon: "pencil") do %>
+              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_account_path(account), icon: "pencil", data: { turbo_frame: "modal" }) do %>
                 Edit
               <% end %>
             </div>
@@ -32,6 +32,7 @@
             </p>
             <p class="text-sm text-text-secondary"><%= account.currency %></p>
             <%= link_to "View transactions", account_path(account),
+                data: { turbo_frame: "modal" },
                 class: "mt-3 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors" %>
           <% end %>
         </div>
@@ -44,7 +45,8 @@
         description: "Create your first account to start tracking your finances.",
         icon: "building-library",
         action_text: "Create Account",
-        action_url: new_account_path
+        action_url: new_account_path,
+        action_data: { turbo_frame: "modal" }
       ) %>
     <% end %>
   <% end %>

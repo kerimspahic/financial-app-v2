@@ -1,7 +1,26 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["dialog", "backdrop"]
+  static targets = ["dialog", "backdrop", "frame"]
+
+  connect() {
+    if (this.hasFrameTarget) {
+      this.frameTarget.addEventListener("turbo:frame-load", this.handleFrameLoad)
+    }
+  }
+
+  disconnect() {
+    if (this.hasFrameTarget) {
+      this.frameTarget.removeEventListener("turbo:frame-load", this.handleFrameLoad)
+    }
+    document.body.style.overflow = ""
+  }
+
+  handleFrameLoad = () => {
+    if (this.hasFrameTarget && this.frameTarget.innerHTML.trim() !== "") {
+      this.open()
+    }
+  }
 
   open() {
     this.dialogTarget.classList.remove("hidden")
@@ -22,6 +41,9 @@ export default class extends Controller {
 
     setTimeout(() => {
       this.dialogTarget.classList.add("hidden")
+      if (this.hasFrameTarget) {
+        this.frameTarget.innerHTML = ""
+      }
     }, 200)
   }
 
