@@ -1,0 +1,7 @@
+<div class="max-w-2xl">
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">Edit Account</h1>
+  <%= render "form", account: @account %>
+  <div class="mt-4">
+    <%= link_to "Back to account", account_path(@account), class: "text-sm text-gray-500 hover:text-gray-700" %>
+  </div>
+</div>

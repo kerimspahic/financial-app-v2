@@ -1,0 +1,13 @@
+one:
+  name: Checking Account
+  account_type: 0
+  balance: 1000.00
+  currency: USD
+  user: one
+
+two:
+  name: Savings Account
+  account_type: 1
+  balance: 5000.00
+  currency: USD
+  user: two

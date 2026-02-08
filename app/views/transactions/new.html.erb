@@ -1,0 +1,7 @@
+<div class="max-w-2xl">
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">New Transaction</h1>
+  <%= render "form", transaction: @transaction %>
+  <div class="mt-4">
+    <%= link_to "Back to transactions", transactions_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+  </div>
+</div>

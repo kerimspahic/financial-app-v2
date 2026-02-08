@@ -1,0 +1,31 @@
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-gray-900">Categories</h1>
+    <%= link_to "New Category", new_category_path, class: "bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" %>
+  </div>
+
+  <% %w[income expense].each do |type| %>
+    <% cats = @categories.select { |c| c.category_type == type } %>
+    <% if cats.any? %>
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4"><%= type.humanize %> Categories</h2>
+        <div class="divide-y divide-gray-200">
+          <% cats.each do |category| %>
+            <div class="py-3 flex justify-between items-center">
+              <div class="flex items-center space-x-3">
+                <% if category.color.present? %>
+                  <span class="w-4 h-4 rounded-full" style="background-color: <%= category.color %>"></span>
+                <% end %>
+                <span class="font-medium text-gray-900"><%= category.name %></span>
+              </div>
+              <div class="flex space-x-3">
+                <%= link_to "Edit", edit_category_path(category), class: "text-sm text-indigo-600 hover:text-indigo-900" %>
+                <%= button_to "Delete", category_path(category), method: :delete, class: "text-sm text-red-600 hover:text-red-900", data: { turbo_confirm: "Are you sure?" } %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

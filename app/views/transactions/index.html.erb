@@ -1,0 +1,59 @@
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-gray-900">Transactions</h1>
+    <%= link_to "New Transaction", new_transaction_path, class: "bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" %>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-4">
+    <%= form_with url: transactions_path, method: :get, class: "flex flex-wrap gap-4 items-end" do |f| %>
+      <div>
+        <%= f.label :transaction_type, "Type", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.select :transaction_type, [["All", ""], ["Income", "income"], ["Expense", "expense"], ["Transfer", "transfer"]], { selected: params[:transaction_type] }, class: "mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+      <div>
+        <%= f.submit "Filter", class: "bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @transactions.any? %>
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @transactions.each do |t| %>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= t.date.strftime("%b %d, %Y") %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <%= link_to t.description, transaction_path(t), class: "hover:text-indigo-600" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= t.category.name %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= t.account.name %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold <%= t.income? ? 'text-green-600' : 'text-red-600' %>">
+                <%= t.income? ? '+' : '-' %><%= number_to_currency(t.amount) %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                <%= link_to "Edit", edit_transaction_path(t), class: "text-indigo-600 hover:text-indigo-900" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg shadow p-12 text-center">
+      <p class="text-gray-500 mb-4">No transactions found.</p>
+      <%= link_to "Add your first transaction", new_transaction_path, class: "bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" %>
+    </div>
+  <% end %>
+</div>

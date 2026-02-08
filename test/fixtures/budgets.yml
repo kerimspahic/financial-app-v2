@@ -1,0 +1,13 @@
+one:
+  amount: 500.00
+  month: 2
+  year: 2026
+  category: expense_one
+  user: one
+
+two:
+  amount: 300.00
+  month: 2
+  year: 2026
+  category: two
+  user: two

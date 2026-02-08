@@ -1,0 +1,48 @@
+class BudgetsController < ApplicationController
+  before_action :set_budget, only: [ :edit, :update, :destroy ]
+
+  def index
+    @month = (params[:month] || Date.current.month).to_i
+    @year = (params[:year] || Date.current.year).to_i
+    @budgets = current_user.budgets.where(month: @month, year: @year).includes(:category)
+  end
+
+  def new
+    @budget = current_user.budgets.build(month: Date.current.month, year: Date.current.year)
+  end
+
+  def create
+    @budget = current_user.budgets.build(budget_params)
+    if @budget.save
+      redirect_to budgets_path, notice: "Budget was successfully created."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @budget.update(budget_params)
+      redirect_to budgets_path, notice: "Budget was successfully updated."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @budget.destroy
+    redirect_to budgets_path, notice: "Budget was successfully deleted."
+  end
+
+  private
+
+  def set_budget
+    @budget = current_user.budgets.find(params[:id])
+  end
+
+  def budget_params
+    params.expect(budget: [ :amount, :month, :year, :category_id ])
+  end
+end

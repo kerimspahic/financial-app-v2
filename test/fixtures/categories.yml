@@ -1,0 +1,17 @@
+one:
+  name: Salary
+  category_type: 0
+  color: "#22c55e"
+  user: one
+
+two:
+  name: Food
+  category_type: 1
+  color: "#ef4444"
+  user: two
+
+expense_one:
+  name: Housing
+  category_type: 1
+  color: "#f97316"
+  user: one
