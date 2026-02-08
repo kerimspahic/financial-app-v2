@@ -45,7 +45,7 @@ if user.transactions.empty?
     { description: "Movie Tickets", amount: 32.00, transaction_type: :expense, date: Date.current - 3, account: credit_card, category: entertainment_cat },
     { description: "Restaurant", amount: 78.50, transaction_type: :expense, date: Date.current - 2, account: credit_card, category: dining_cat },
     { description: "Electric Bill", amount: 120.00, transaction_type: :expense, date: Date.current - 1, account: checking, category: utilities_cat },
-    { description: "Grocery Store", amount: 89.25, transaction_type: :expense, date: Date.current, account: credit_card, category: food_cat },
+    { description: "Grocery Store", amount: 89.25, transaction_type: :expense, date: Date.current, account: credit_card, category: food_cat }
   ]
 
   transactions.each do |t|
@@ -64,7 +64,7 @@ if user.budgets.empty?
     "Entertainment" => 150,
     "Dining Out" => 200,
     "Utilities" => 250,
-    "Shopping" => 300,
+    "Shopping" => 300
   }
 
   budget_categories.each do |cat_name, amount|

@@ -38,7 +38,7 @@ class User < ApplicationRecord
       { name: "Shopping", category_type: :expense, color: "#a855f7" },
       { name: "Dining Out", category_type: :expense, color: "#f43f5e" },
       { name: "Subscriptions", category_type: :expense, color: "#6366f1" },
-      { name: "Education", category_type: :expense, color: "#0ea5e9" },
+      { name: "Education", category_type: :expense, color: "#0ea5e9" }
     ]
 
     default_categories.each do |cat|
