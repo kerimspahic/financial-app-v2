@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Reports & Exports", subtitle: "Analyze your finances") %>
+
+  <%= render CardComponent.new do %>
+    <%= render EmptyStateComponent.new(
+      title: "Coming Soon",
+      description: "Generate monthly and yearly reports, view spending trends, and export your data.",
+      icon: "chart-bar"
+    ) %>
+  <% end %>
+</div>

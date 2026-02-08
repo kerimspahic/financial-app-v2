@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Activity Log", subtitle: "Track all changes") %>
+
+  <%= render CardComponent.new do %>
+    <%= render EmptyStateComponent.new(
+      title: "Coming Soon",
+      description: "View a complete history of all actions taken in your account for transparency and security.",
+      icon: "clipboard-document-list"
+    ) %>
+  <% end %>
+</div>

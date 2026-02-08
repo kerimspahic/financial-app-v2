@@ -1,16 +1,33 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["sidebar", "overlay", "content", "label", "logo", "logoIcon"]
+  static targets = ["sidebar", "overlay", "content", "label", "logo", "logoIcon", "nav"]
 
   connect() {
     this.applyState()
+    this.restoreScrollPosition()
     this.handleResize = this.handleResize.bind(this)
+    this.saveBeforeVisit = this.saveScrollPosition.bind(this)
     window.addEventListener("resize", this.handleResize)
+    document.addEventListener("turbo:before-visit", this.saveBeforeVisit)
   }
 
   disconnect() {
     window.removeEventListener("resize", this.handleResize)
+    document.removeEventListener("turbo:before-visit", this.saveBeforeVisit)
+  }
+
+  saveScrollPosition() {
+    if (this.hasNavTarget) {
+      sessionStorage.setItem("sidebarScrollTop", this.navTarget.scrollTop)
+    }
+  }
+
+  restoreScrollPosition() {
+    if (this.hasNavTarget) {
+      const saved = sessionStorage.getItem("sidebarScrollTop")
+      if (saved) this.navTarget.scrollTop = parseInt(saved, 10)
+    }
   }
 
   toggle() {

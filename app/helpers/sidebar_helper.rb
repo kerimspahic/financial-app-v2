@@ -7,7 +7,18 @@ module SidebarHelper
     "tag" => "text-pink-500",
     "chart-bar" => "text-indigo-500",
     "flag" => "text-red-500",
-    "arrow-path" => "text-cyan-500"
+    "arrow-path" => "text-cyan-500",
+    "bell-alert" => "text-amber-500",
+    "bell" => "text-yellow-500",
+    "shield-check" => "text-slate-500",
+    "banknotes" => "text-green-500",
+    "credit-card" => "text-violet-500",
+    "hashtag" => "text-teal-500",
+    "gift" => "text-rose-500",
+    "clipboard-document-list" => "text-gray-500",
+    "arrow-down-tray" => "text-teal-500",
+    "puzzle-piece" => "text-sky-500",
+    "light-bulb" => "text-amber-400"
   }.freeze
 
   def sidebar_link(label, path, icon:, badge: nil)

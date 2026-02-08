@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Recurring Transactions", subtitle: "Automate your finances") %>
+
+  <%= render CardComponent.new do %>
+    <%= render EmptyStateComponent.new(
+      title: "Coming Soon",
+      description: "Set up recurring income and expenses that automatically create transactions on schedule.",
+      icon: "arrow-path"
+    ) %>
+  <% end %>
+</div>

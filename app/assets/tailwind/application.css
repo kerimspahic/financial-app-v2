@@ -472,6 +472,17 @@ body::after {
 .stagger-8 { animation-delay: 0.4s; }
 
 /* ════════════════════════════════════════════════════════
+   Scrollbar hiding
+   ════════════════════════════════════════════════════════ */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ════════════════════════════════════════════════════════
    Hover interaction utilities
    ════════════════════════════════════════════════════════ */
 .hover-lift {

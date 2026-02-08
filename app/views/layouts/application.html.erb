@@ -61,7 +61,7 @@
           </div>
 
           <%# Navigation links %>
-          <nav class="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto relative z-10">
+          <nav data-sidebar-target="nav" class="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto scrollbar-hide relative z-10">
             <%= sidebar_section "Overview" %>
             <%= sidebar_link "Dashboard", root_path, icon: "home" %>
             <%= sidebar_link "Accounts", accounts_path, icon: "building-library" %>
@@ -72,9 +72,24 @@
             <%= sidebar_link "Categories", categories_path, icon: "tag" %>
 
             <%= sidebar_section "Planning" %>
-            <%= sidebar_link "Reports", root_path, icon: "chart-bar", badge: "Soon" %>
-            <%= sidebar_link "Goals", root_path, icon: "flag", badge: "Soon" %>
-            <%= sidebar_link "Recurring", root_path, icon: "arrow-path", badge: "Soon" %>
+            <%= sidebar_link "Recurring", recurring_transactions_path, icon: "arrow-path", badge: "Soon" %>
+            <%= sidebar_link "Goals", savings_goals_path, icon: "flag", badge: "Soon" %>
+            <%= sidebar_link "Bills", bills_path, icon: "bell-alert", badge: "Soon" %>
+            <%= sidebar_link "Reports", reports_path, icon: "chart-bar", badge: "Soon" %>
+
+            <%= sidebar_section "More" %>
+            <%= sidebar_link "Notifications", notifications_path, icon: "bell", badge: "Soon" %>
+            <%= sidebar_link "Debt Tracker", debt_accounts_path, icon: "banknotes", badge: "Soon" %>
+            <%= sidebar_link "Subscriptions", subscriptions_path, icon: "credit-card", badge: "Soon" %>
+            <%= sidebar_link "Tags", tags_path, icon: "hashtag", badge: "Soon" %>
+            <%= sidebar_link "Wishlist", wishlist_index_path, icon: "gift", badge: "Soon" %>
+
+            <%= sidebar_section "System" %>
+            <%= sidebar_link "Imports", import_export_path, icon: "arrow-down-tray", badge: "Soon" %>
+            <%= sidebar_link "Integrations", integrations_path, icon: "puzzle-piece", badge: "Soon" %>
+            <%= sidebar_link "Insights", insights_path, icon: "light-bulb", badge: "Soon" %>
+            <%= sidebar_link "Activity Log", audit_logs_path, icon: "clipboard-document-list", badge: "Soon" %>
+            <%= sidebar_link "Admin", admin_path, icon: "shield-check", badge: "Soon" %>
           </nav>
 
           <%# Bottom: theme toggle + user dropdown %>

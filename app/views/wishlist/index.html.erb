@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Wishlist", subtitle: "Plan future purchases") %>
+
+  <%= render CardComponent.new do %>
+    <%= render EmptyStateComponent.new(
+      title: "Coming Soon",
+      description: "Keep a wishlist of planned purchases with estimated costs and priorities.",
+      icon: "gift"
+    ) %>
+  <% end %>
+</div>

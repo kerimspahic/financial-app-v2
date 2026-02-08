@@ -10,6 +10,30 @@ Rails.application.routes.draw do
   resource :settings, only: [ :show, :update ]
   get "style_guide", to: "style_guide#index" if Rails.env.development?
 
+  # Phase 1B - Admin / Roles
+  get "admin", to: "admin#index", as: :admin
+
+  # Phase 2 - Core financial features
+  resources :recurring_transactions, only: [ :index ]
+  resources :savings_goals, only: [ :index ]
+  resources :bills, only: [ :index ]
+
+  # Phase 3 - Notifications
+  resources :notifications, only: [ :index ]
+
+  # Phase 4 - Reports
+  resources :reports, only: [ :index ]
+
+  # Future features
+  resources :debt_accounts, only: [ :index ]
+  resources :tags, only: [ :index ]
+  resources :subscriptions, only: [ :index ]
+  resources :wishlist, only: [ :index ]
+  resources :audit_logs, only: [ :index ]
+  get "import_export", to: "import_export#index", as: :import_export
+  get "integrations", to: "integrations#index", as: :integrations
+  get "insights", to: "insights#index", as: :insights
+
   # API routes
   namespace :api do
     namespace :v1 do
@@ -25,6 +49,18 @@ Rails.application.routes.draw do
       resources :budgets, only: [ :index, :create, :update, :destroy ]
       get "dashboard", to: "dashboard#index"
       resource :settings, only: [ :show, :update ]
+
+      # Placeholder API endpoints
+      resources :recurring_transactions, only: [ :index ]
+      resources :savings_goals, only: [ :index ]
+      resources :bills, only: [ :index ]
+      resources :notifications, only: [ :index ]
+      resources :reports, only: [ :index ]
+      resources :debt_accounts, only: [ :index ]
+      resources :tags, only: [ :index ]
+      resources :subscriptions, only: [ :index ]
+      resources :wishlist, only: [ :index ]
+      resources :audit_logs, only: [ :index ]
     end
   end
 

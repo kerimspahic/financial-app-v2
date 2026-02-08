@@ -42,9 +42,8 @@ class DashboardController < ApplicationController
   end
 
   def monthly_amount_for(date, type)
-    truncated = date.beginning_of_month.to_datetime
-    type_key = Transaction.transaction_types[type.to_s]
-    (@monthly_totals[[ type_key, truncated ]] || 0).to_f
+    truncated = date.beginning_of_month.in_time_zone.utc
+    (@monthly_totals[[ type.to_s, truncated ]] || 0).to_f
   end
 
   def months_range

@@ -10,6 +10,18 @@ class User < ApplicationRecord
   has_many :transactions, dependent: :destroy
   has_many :budgets, dependent: :destroy
   has_one :user_preference, dependent: :destroy
+  has_many :user_roles, dependent: :destroy
+  has_many :roles, through: :user_roles
+  has_many :recurring_transactions, dependent: :destroy
+  has_many :savings_goals, dependent: :destroy
+  has_many :bills, dependent: :destroy
+  has_many :notifications, dependent: :destroy
+  has_many :notification_preferences, dependent: :destroy
+  has_many :debt_accounts, dependent: :destroy
+  has_many :tags, dependent: :destroy
+  has_many :subscriptions, dependent: :destroy
+  has_many :wishlist_items, dependent: :destroy
+  has_many :audit_logs, dependent: :destroy
 
   before_create :set_jti
   after_create :create_default_categories

@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Savings Goals", subtitle: "Track your progress") %>
+
+  <%= render CardComponent.new do %>
+    <%= render EmptyStateComponent.new(
+      title: "Coming Soon",
+      description: "Create savings goals, track contributions, and watch your progress toward financial milestones.",
+      icon: "flag"
+    ) %>
+  <% end %>
+</div>

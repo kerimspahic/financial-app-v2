@@ -138,37 +138,34 @@ export default class extends Controller {
       }
     }
 
+    // Read data once to apply enhancements
+    const data = this.dataValue
+
     // Line chart enhancements
-    if (this.typeValue === "line") {
-      const data = this.dataValue
-      if (data.datasets) {
-        data.datasets = data.datasets.map(ds => ({
-          ...ds,
-          tension: 0.4,
-          fill: true,
-          pointRadius: 3,
-          pointHoverRadius: 6
-        }))
-      }
+    if (this.typeValue === "line" && data.datasets) {
+      data.datasets = data.datasets.map(ds => ({
+        ...ds,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 3,
+        pointHoverRadius: 6
+      }))
     }
 
     // Bar chart enhancements
-    if (this.typeValue === "bar") {
-      const data = this.dataValue
-      if (data.datasets) {
-        data.datasets = data.datasets.map(ds => ({
-          ...ds,
-          borderRadius: 6,
-          borderSkipped: false
-        }))
-      }
+    if (this.typeValue === "bar" && data.datasets) {
+      data.datasets = data.datasets.map(ds => ({
+        ...ds,
+        borderRadius: 6,
+        borderSkipped: false
+      }))
     }
 
     const mergedOptions = this.deepMerge(defaultOptions, this.optionsValue)
 
     this.chart = new Chart(this.element, {
       type: this.typeValue,
-      data: this.dataValue,
+      data: data,
       options: mergedOptions
     })
   }

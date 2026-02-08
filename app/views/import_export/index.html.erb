@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Import & Export", subtitle: "Move your data") %>
+
+  <%= render CardComponent.new do %>
+    <%= render EmptyStateComponent.new(
+      title: "Coming Soon",
+      description: "Import transactions from CSV, OFX, and QIF files, or export your complete financial data.",
+      icon: "arrow-down-tray"
+    ) %>
+  <% end %>
+</div>

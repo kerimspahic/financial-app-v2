@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Bill Reminders", subtitle: "Never miss a payment") %>
+
+  <%= render CardComponent.new do %>
+    <%= render EmptyStateComponent.new(
+      title: "Coming Soon",
+      description: "Track upcoming bills, set reminders, and mark payments as they are completed.",
+      icon: "bell-alert"
+    ) %>
+  <% end %>
+</div>

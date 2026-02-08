@@ -2,6 +2,8 @@ class Transaction < ApplicationRecord
   belongs_to :user
   belongs_to :account
   belongs_to :category
+  has_many :transaction_tags, dependent: :destroy
+  has_many :tags, through: :transaction_tags
 
   enum :transaction_type, { income: 0, expense: 1, transfer: 2 }
 
