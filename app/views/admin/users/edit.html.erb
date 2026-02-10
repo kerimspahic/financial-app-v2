@@ -1,68 +1,65 @@
-<div class="max-w-2xl space-y-6">
-  <%= render PageHeaderComponent.new(title: "Edit User", subtitle: @user.email) %>
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">Edit User</h2>
+      <p class="text-sm text-text-secondary mt-1"><%= @user.email %></p>
+    </div>
 
-  <%# User Details %>
-  <%= render CardComponent.new do |card| %>
-    <% card.with_header do %>
-      <h3 class="text-lg font-semibold text-text-primary">User Details</h3>
-    <% end %>
-
-    <%= form_with(model: @user, url: admin_user_path(@user), class: "space-y-6") do |form| %>
-      <% if @user.errors.any? %>
-        <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
-          <strong><%= pluralize(@user.errors.count, "error") %> prevented saving:</strong>
-          <ul class="mt-2 list-disc list-inside">
-            <% @user.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h3 class="text-lg font-semibold text-text-primary">User Details</h3>
+        <% end %>
+        <%= form_with(model: @user, url: admin_user_path(@user), class: "space-y-6") do |form| %>
+          <% if @user.errors.any? %>
+            <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+              <strong><%= pluralize(@user.errors.count, "error") %> prevented saving:</strong>
+              <ul class="mt-2 list-disc list-inside">
+                <% @user.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
             <% end %>
-          </ul>
+          <% end %>
+          <div class="grid grid-cols-2 gap-4">
+            <%= render InputComponent.new(form: form, field: :first_name, label: "First Name") %>
+            <%= render InputComponent.new(form: form, field: :last_name, label: "Last Name") %>
+          </div>
+          <%= render InputComponent.new(form: form, field: :email, label: "Email", type: :email) %>
+          <%= render ButtonComponent.new(variant: :primary, submit: true) do %>
+            Update User
+          <% end %>
         <% end %>
       <% end %>
+    </div>
 
-      <div class="grid grid-cols-2 gap-4">
-        <%= render InputComponent.new(form: form, field: :first_name, label: "First Name") %>
-        <%= render InputComponent.new(form: form, field: :last_name, label: "Last Name") %>
-      </div>
-      <%= render InputComponent.new(form: form, field: :email, label: "Email", type: :email) %>
-
-      <%= render ButtonComponent.new(variant: :primary, submit: true) do %>
-        Update User
-      <% end %>
-    <% end %>
-  <% end %>
-
-  <%# Role Assignment %>
-  <%= render CardComponent.new do |card| %>
-    <% card.with_header do %>
-      <h3 class="text-lg font-semibold text-text-primary">Role Assignment</h3>
-    <% end %>
-
-    <%= form_with(url: admin_user_roles_path(@user), method: :patch, class: "space-y-4") do %>
-      <input type="hidden" name="role_ids[]" value="">
-
-      <div class="space-y-2">
-        <% @roles.each do |role| %>
-          <label class="flex items-center gap-3 p-3 rounded-xl glass hover:bg-surface-hover cursor-pointer transition-colors">
-            <input type="checkbox" name="role_ids[]" value="<%= role.id %>"
-                   <%= "checked" if @user.roles.include?(role) %>
-                   class="rounded border-input-border text-primary-600 focus:ring-primary-500">
-            <div>
-              <span class="text-sm font-medium text-text-primary"><%= role.name.humanize %></span>
-              <% if role.description.present? %>
-                <p class="text-xs text-text-muted"><%= role.description %></p>
-              <% end %>
-            </div>
-          </label>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h3 class="text-lg font-semibold text-text-primary">Role Assignment</h3>
         <% end %>
-      </div>
-
-      <%= render ButtonComponent.new(variant: :secondary, submit: true, icon: "shield-check") do %>
-        Update Roles
+        <%= form_with(url: admin_user_roles_path(@user), method: :patch, class: "space-y-4") do %>
+          <input type="hidden" name="role_ids[]" value="">
+          <div class="space-y-2">
+            <% @roles.each do |role| %>
+              <label class="flex items-center gap-3 p-3 rounded-xl glass hover:bg-surface-hover cursor-pointer transition-colors">
+                <input type="checkbox" name="role_ids[]" value="<%= role.id %>"
+                       <%= "checked" if @user.roles.include?(role) %>
+                       class="rounded border-input-border text-primary-600 focus:ring-primary-500">
+                <div>
+                  <span class="text-sm font-medium text-text-primary"><%= role.name.humanize %></span>
+                  <% if role.description.present? %>
+                    <p class="text-xs text-text-muted"><%= role.description %></p>
+                  <% end %>
+                </div>
+              </label>
+            <% end %>
+          </div>
+          <%= render ButtonComponent.new(variant: :secondary, submit: true, icon: "shield-check") do %>
+            Update Roles
+          <% end %>
+        <% end %>
       <% end %>
-    <% end %>
-  <% end %>
-
-  <div class="mt-4">
-    <%= link_to "Back to users", admin_users_path, class: "text-sm text-text-secondary hover:text-text-primary transition-colors" %>
+    </div>
   </div>
-</div>
+<% end %>

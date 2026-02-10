@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_08_201713) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_08_231510) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_201713) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_accounts_on_user_id"
+  end
+
+  create_table "app_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.string "value"
+    t.index ["key"], name: "index_app_settings_on_key", unique: true
   end
 
   create_table "audit_logs", force: :cascade do |t|
@@ -98,6 +106,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_201713) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_debt_accounts_on_user_id"
+  end
+
+  create_table "exchange_conversions", force: :cascade do |t|
+    t.datetime "converted_at", null: false
+    t.datetime "created_at", null: false
+    t.decimal "exchange_rate", precision: 18, scale: 8, null: false
+    t.decimal "from_amount", precision: 15, scale: 4, null: false
+    t.string "from_currency", limit: 3, null: false
+    t.decimal "to_amount", precision: 15, scale: 4, null: false
+    t.string "to_currency", limit: 3, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "converted_at"], name: "idx_exchange_conversions_user_date"
+    t.index ["user_id"], name: "index_exchange_conversions_on_user_id"
   end
 
   create_table "notification_preferences", force: :cascade do |t|
@@ -302,6 +324,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_201713) do
   add_foreign_key "budgets", "users"
   add_foreign_key "categories", "users"
   add_foreign_key "debt_accounts", "users"
+  add_foreign_key "exchange_conversions", "users"
   add_foreign_key "notification_preferences", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "recurring_transactions", "accounts"

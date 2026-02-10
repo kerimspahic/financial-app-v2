@@ -1,0 +1,89 @@
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">System Health</h2>
+      <p class="text-sm text-text-secondary mt-1">Monitor application status and performance</p>
+    </div>
+
+    <%# Environment info (real data) %>
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h3 class="text-lg font-semibold text-text-primary">Environment</h3>
+        <% end %>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs text-text-muted">Rails</p>
+            <p class="text-sm font-semibold text-text-primary"><%= Rails.version %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs text-text-muted">Ruby</p>
+            <p class="text-sm font-semibold text-text-primary"><%= RUBY_VERSION %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs text-text-muted">Environment</p>
+            <p class="text-sm font-semibold text-text-primary"><%= Rails.env %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs text-text-muted">Database</p>
+            <p class="text-sm font-semibold text-text-primary">PostgreSQL</p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Database Stats placeholder %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-emerald-500/10">
+                <%= heroicon "circle-stack", variant: :outline, options: { class: "w-5 h-5 text-emerald-500" } %>
+              </div>
+              <h3 class="text-lg font-semibold text-text-primary">Database Statistics</h3>
+            </div>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Database size, table row counts, index usage, and query performance metrics.</p>
+      <% end %>
+    </div>
+
+    <%# Cache Status placeholder %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-blue-500/10">
+                <%= heroicon "bolt", variant: :outline, options: { class: "w-5 h-5 text-blue-500" } %>
+              </div>
+              <h3 class="text-lg font-semibold text-text-primary">Cache Status</h3>
+            </div>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Cache hit rate, memory usage, and key statistics for the application cache store.</p>
+      <% end %>
+    </div>
+
+    <%# Background Jobs placeholder %>
+    <div class="animate-card-entrance stagger-4">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-purple-500/10">
+                <%= heroicon "queue-list", variant: :outline, options: { class: "w-5 h-5 text-purple-500" } %>
+              </div>
+              <h3 class="text-lg font-semibold text-text-primary">Background Jobs</h3>
+            </div>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Monitor queued, running, and failed background jobs. Retry or discard failed jobs.</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,107 +1,84 @@
-<div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: "Roles", subtitle: "Manage application roles") do |header| %>
-    <% header.with_actions do %>
-      <%= render ButtonComponent.new(variant: :secondary, href: admin_users_path, icon: "users") do %>
-        Back to Users
-      <% end %>
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-semibold text-text-primary">Roles</h2>
+        <p class="text-sm text-text-secondary mt-1">Manage application roles and permissions</p>
+      </div>
       <%= render ButtonComponent.new(variant: :primary, href: new_admin_role_path, icon: "plus") do %>
         New Role
       <% end %>
-    <% end %>
-  <% end %>
-
-  <% if @roles.any? %>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <% @roles.each_with_index do |role, i| %>
-        <div class="animate-card-entrance stagger-<%= i + 1 %>">
-          <%= render CardComponent.new do |card| %>
-            <% card.with_header do %>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="p-2 rounded-xl gradient-primary">
-                    <%= heroicon "shield-check", variant: :outline, options: { class: "w-5 h-5 text-white" } %>
-                  </div>
-                  <div>
-                    <h3 class="text-lg font-semibold text-text-primary"><%= role.name.humanize %></h3>
-                    <p class="text-xs text-text-muted"><%= pluralize(role.users.count, "user") %></p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_admin_role_path(role), icon: "pencil-square") do %>
-                    Edit
-                  <% end %>
-                  <% if role.users.empty? %>
-                    <%= render ButtonComponent.new(
-                      variant: :ghost,
-                      size: :sm,
-                      href: admin_role_path(role),
-                      method: :delete,
-                      icon: "trash",
-                      confirm: "Delete the '#{role.name}' role?"
-                    ) do %>
-                      Delete
-                    <% end %>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-
-            <% if role.description.present? %>
-              <p class="text-sm text-text-secondary"><%= role.description %></p>
-            <% else %>
-              <p class="text-sm text-text-muted italic">No description</p>
-            <% end %>
-
-            <% if role.permissions.any? %>
-              <div class="mt-3">
-                <p class="text-xs font-medium text-text-muted uppercase mb-2">Permissions</p>
-                <div class="flex flex-wrap gap-1">
-                  <% role.permissions.limit(6).each do |perm| %>
-                    <%= render BadgeComponent.new(variant: :info, size: :sm) do %>
-                      <%= perm.key.humanize %>
-                    <% end %>
-                  <% end %>
-                  <% if role.permissions.count > 6 %>
-                    <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %>
-                      +<%= role.permissions.count - 6 %> more
-                    <% end %>
-                  <% end %>
-                </div>
-              </div>
-            <% else %>
-              <div class="mt-3">
-                <p class="text-xs text-text-muted italic">No permissions assigned</p>
-              </div>
-            <% end %>
-
-            <% if role.users.any? %>
-              <div class="mt-4">
-                <p class="text-xs font-medium text-text-muted uppercase mb-2">Assigned Users</p>
-                <div class="flex -space-x-2">
-                  <% role.users.limit(5).each do |user| %>
-                    <%= render AvatarComponent.new(name: user.email, size: :sm) %>
-                  <% end %>
-                  <% if role.users.count > 5 %>
-                    <div class="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center text-xs text-text-muted border-2 border-surface">
-                      +<%= role.users.count - 5 %>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          <% end %>
-        </div>
-      <% end %>
     </div>
-  <% else %>
-    <%= render CardComponent.new do %>
-      <%= render EmptyStateComponent.new(
-        title: "No roles yet",
-        description: "Create your first role to start managing access.",
-        icon: "shield-check",
-        action_text: "Create Role",
-        action_url: new_admin_role_path
-      ) %>
+
+    <% if @roles.any? %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <% @roles.each_with_index do |role, i| %>
+          <div class="animate-card-entrance stagger-<%= i + 1 %>">
+            <%= render CardComponent.new do |card| %>
+              <% card.with_header do %>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl gradient-primary">
+                      <%= heroicon "shield-check", variant: :outline, options: { class: "w-5 h-5 text-white" } %>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold text-text-primary"><%= role.name.humanize %></h3>
+                      <p class="text-xs text-text-muted"><%= pluralize(role.users.count, "user") %></p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_admin_role_path(role), icon: "pencil-square") do %>
+                      Edit
+                    <% end %>
+                    <% if role.users.empty? %>
+                      <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: admin_role_path(role), method: :delete, icon: "trash", confirm: "Delete the '#{role.name}' role?") do %>
+                        Delete
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+              <% if role.description.present? %>
+                <p class="text-sm text-text-secondary"><%= role.description %></p>
+              <% else %>
+                <p class="text-sm text-text-muted italic">No description</p>
+              <% end %>
+              <% if role.permissions.any? %>
+                <div class="mt-3">
+                  <p class="text-xs font-medium text-text-muted uppercase mb-2">Permissions</p>
+                  <div class="flex flex-wrap gap-1">
+                    <% role.permissions.limit(6).each do |perm| %>
+                      <%= render BadgeComponent.new(variant: :info, size: :sm) do %><%= perm.key.humanize %><% end %>
+                    <% end %>
+                    <% if role.permissions.count > 6 %>
+                      <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %>+<%= role.permissions.count - 6 %> more<% end %>
+                    <% end %>
+                  </div>
+                </div>
+              <% else %>
+                <div class="mt-3"><p class="text-xs text-text-muted italic">No permissions assigned</p></div>
+              <% end %>
+              <% if role.users.any? %>
+                <div class="mt-4">
+                  <p class="text-xs font-medium text-text-muted uppercase mb-2">Assigned Users</p>
+                  <div class="flex -space-x-2">
+                    <% role.users.limit(5).each do |user| %>
+                      <%= render AvatarComponent.new(name: user.email, size: :sm) %>
+                    <% end %>
+                    <% if role.users.count > 5 %>
+                      <div class="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center text-xs text-text-muted border-2 border-surface">+<%= role.users.count - 5 %></div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(title: "No roles yet", description: "Create your first role to start managing access.", icon: "shield-check", action_text: "Create Role", action_url: new_admin_role_path) %>
+      <% end %>
     <% end %>
-  <% end %>
-</div>
+  </div>
+<% end %>

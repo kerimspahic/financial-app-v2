@@ -26,6 +26,7 @@
     <%= sidebar_link "Transactions", transactions_path, icon: "arrows-right-left" if current_user.has_permission?("manage_transactions") %>
     <%= sidebar_link "Budgets", budgets_path, icon: "calculator" if current_user.has_permission?("manage_budgets") %>
     <%= sidebar_link "Categories", categories_path, icon: "tag" if current_user.has_permission?("manage_categories") %>
+    <%= sidebar_link "Exchange", exchanges_path, icon: "currency-dollar" if current_user.has_permission?("manage_exchanges") %>
 
     <%= sidebar_section "Planning" %>
     <%= sidebar_link "Recurring", recurring_transactions_path, icon: "arrow-path", badge: "Soon" if current_user.has_permission?("manage_recurring_transactions") %>
@@ -41,13 +42,13 @@
     <%= sidebar_link "Wishlist", wishlist_index_path, icon: "gift", badge: "Soon" if current_user.has_permission?("manage_wishlist") %>
 
     <%= sidebar_section "System" %>
-    <%= sidebar_link "Settings", settings_path, icon: "cog-6-tooth" if current_user.has_permission?("manage_settings") %>
+    <%= sidebar_link "Settings", settings_profile_path, icon: "cog-6-tooth", active_path_prefix: "/settings" %>
     <%= sidebar_link "Imports", import_export_path, icon: "arrow-down-tray", badge: "Soon" if current_user.has_permission?("manage_imports") %>
     <%= sidebar_link "Integrations", integrations_path, icon: "puzzle-piece", badge: "Soon" if current_user.has_permission?("manage_integrations") %>
     <%= sidebar_link "Insights", insights_path, icon: "light-bulb", badge: "Soon" if current_user.has_permission?("view_insights") %>
     <%= sidebar_link "Activity Log", audit_logs_path, icon: "clipboard-document-list", badge: "Soon" if current_user.has_permission?("view_audit_logs") %>
     <% if current_user.admin? %>
-      <%= sidebar_link "Admin", admin_root_path, icon: "shield-check" %>
+      <%= sidebar_link "Admin", admin_root_path, icon: "shield-check", active_path_prefix: "/admin" %>
     <% end %>
   </nav>
 
@@ -71,7 +72,7 @@
       <%# Dropdown menu (opens upward) %>
       <div data-dropdown-target="menu"
            class="hidden absolute bottom-full left-0 right-0 mb-2 bg-surface/95 backdrop-blur-lg rounded-xl shadow-xl border border-glass-border py-1.5 z-50">
-        <%= link_to edit_user_registration_path,
+        <%= link_to settings_profile_path,
             class: "flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-all duration-150" do %>
           <%= heroicon "user-circle", variant: :outline, options: { class: "w-4 h-4" } %>
           Edit profile

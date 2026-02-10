@@ -1,5 +1,6 @@
 module Admin
   class RolesController < BaseController
+    before_action -> { set_section(:roles) }
     before_action :set_role, only: [ :edit, :update, :destroy ]
 
     def index

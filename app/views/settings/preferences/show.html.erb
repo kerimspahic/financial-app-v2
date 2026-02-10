@@ -1,0 +1,107 @@
+<%= render "settings/shared/settings_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">Preferences</h2>
+      <p class="text-sm text-text-secondary mt-1">Configure display and regional preferences</p>
+    </div>
+
+    <%= form_with(model: @preference, url: settings_preferences_path, method: :patch, class: "space-y-6") do |form| %>
+      <% if @preference.errors.any? %>
+        <%= render AlertComponent.new(variant: :danger, dismissable: false) do %>
+          <div>
+            <p class="font-medium"><%= pluralize(@preference.errors.count, "error") %> prevented saving:</p>
+            <ul class="mt-1 list-disc list-inside text-sm">
+              <% @preference.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      <% end %>
+
+      <div class="animate-card-entrance stagger-1">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <h2 class="text-lg font-semibold text-text-primary">Pagination</h2>
+          <% end %>
+          <p class="text-sm text-text-secondary mb-4">Number of items shown per page in lists</p>
+          <div class="grid grid-cols-4 gap-4">
+            <% UserPreference::PER_PAGE_OPTIONS.each do |option| %>
+              <label class="cursor-pointer">
+                <%= form.radio_button :per_page, option, class: "peer sr-only" %>
+                <div class="peer-checked:ring-2 peer-checked:ring-primary-500 peer-checked:ring-offset-2
+                            glass rounded-xl p-4 text-center transition-all hover-lift
+                            hover:shadow-md">
+                  <span class="text-lg font-bold text-text-primary"><%= option %></span>
+                  <span class="block text-xs text-text-muted mt-1">items</span>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="flex justify-end">
+        <%= render ButtonComponent.new(variant: :primary, submit: true) do %>
+          Save Preferences
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Currency placeholder %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-text-primary">Currency</h2>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary mb-4">Set your default display currency</p>
+        <select disabled class="w-full glass rounded-xl px-4 py-2.5 text-sm text-text-muted border border-glass-border opacity-60 cursor-not-allowed">
+          <option>USD - US Dollar</option>
+        </select>
+      <% end %>
+    </div>
+
+    <%# Date Format placeholder %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-text-primary">Date Format</h2>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary mb-4">Choose how dates are displayed throughout the app</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <% [ "MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD" ].each_with_index do |fmt, i| %>
+            <div class="glass rounded-xl p-3 text-center opacity-60 cursor-not-allowed">
+              <span class="text-sm font-medium text-text-muted"><%= fmt %></span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Default Dashboard View placeholder %>
+    <div class="animate-card-entrance stagger-4">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-text-primary">Default Dashboard View</h2>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary mb-4">Choose the default time range for your dashboard charts</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <% [ "This Month", "Last 30 Days", "This Quarter", "This Year" ].each do |view| %>
+            <div class="glass rounded-xl p-3 text-center opacity-60 cursor-not-allowed">
+              <span class="text-sm font-medium text-text-muted"><%= view %></span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

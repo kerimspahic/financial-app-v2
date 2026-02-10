@@ -1,11 +1,9 @@
-module Admin
+module Settings
   class BaseController < ApplicationController
-    include AdminAuthorizable
-
     private
 
     def set_section(section)
-      @admin_section = section
+      @settings_section = section
     end
   end
 end

@@ -1,0 +1,36 @@
+<%= render "settings/shared/settings_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">Categories</h2>
+      <p class="text-sm text-text-secondary mt-1">Manage your income and expense categories</p>
+    </div>
+
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do |card| %>
+        <div class="text-center py-8">
+          <%= heroicon "tag", variant: :outline, options: { class: "w-12 h-12 mx-auto text-text-muted mb-4" } %>
+          <h3 class="text-lg font-semibold text-text-primary mb-2">Category Management</h3>
+          <p class="text-sm text-text-secondary mb-6 max-w-md mx-auto">
+            Create and organize your income and expense categories to keep your transactions well-structured.
+          </p>
+          <%= render ButtonComponent.new(variant: :primary, href: categories_path) do %>
+            Manage Categories
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Auto-categorization rules placeholder %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-text-primary">Auto-Categorization Rules</h3>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Automatically categorize transactions based on rules you define. Set up patterns to match merchant names, amounts, or descriptions.</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>

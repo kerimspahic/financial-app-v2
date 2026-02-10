@@ -1,0 +1,78 @@
+<%= render "settings/shared/settings_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">Notifications</h2>
+      <p class="text-sm text-text-secondary mt-1">Control how and when you receive alerts</p>
+    </div>
+
+    <%# Email Notifications placeholder %>
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-text-primary">Email Notifications</h3>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <div class="space-y-4">
+          <% [ "Transaction alerts", "Weekly spending summary", "Monthly budget report" ].each do |label| %>
+            <div class="flex items-center justify-between py-2">
+              <div>
+                <p class="text-sm font-medium text-text-primary"><%= label %></p>
+              </div>
+              <div class="relative">
+                <div class="w-11 h-6 bg-surface-alt rounded-full opacity-60 cursor-not-allowed">
+                  <div class="w-5 h-5 bg-white rounded-full shadow absolute top-0.5 left-0.5"></div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Budget Alerts placeholder %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-text-primary">Budget Alerts</h3>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <div class="space-y-4">
+          <% [
+            [ "Budget threshold warning", "Get notified when spending reaches 80% of budget" ],
+            [ "Budget exceeded", "Get notified when a budget is exceeded" ],
+            [ "Low balance alert", "Get notified when an account balance drops below a threshold" ]
+          ].each do |label, desc| %>
+            <div class="flex items-center justify-between py-2">
+              <div>
+                <p class="text-sm font-medium text-text-primary"><%= label %></p>
+                <p class="text-xs text-text-muted"><%= desc %></p>
+              </div>
+              <div class="relative">
+                <div class="w-11 h-6 bg-surface-alt rounded-full opacity-60 cursor-not-allowed">
+                  <div class="w-5 h-5 bg-white rounded-full shadow absolute top-0.5 left-0.5"></div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Weekly Digest placeholder %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-text-primary">Weekly Digest</h3>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Receive a weekly email summarizing your spending, income, and progress toward financial goals.</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>

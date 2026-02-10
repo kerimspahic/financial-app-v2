@@ -1,0 +1,113 @@
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">Dashboard</h2>
+      <p class="text-sm text-text-secondary mt-1">Overview of your application</p>
+    </div>
+
+    <%# Stat cards %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="animate-card-entrance stagger-1">
+        <%= render StatCardComponent.new(
+          label: "Total Users",
+          value: @total_users,
+          icon: "users"
+        ) %>
+      </div>
+      <div class="animate-card-entrance stagger-2">
+        <%= render StatCardComponent.new(
+          label: "Active Users",
+          value: @active_users,
+          icon: "check-circle",
+          color: "text-success-600"
+        ) %>
+      </div>
+      <div class="animate-card-entrance stagger-3">
+        <%= render StatCardComponent.new(
+          label: "Transactions",
+          value: number_with_delimiter(@total_transactions),
+          icon: "arrows-right-left",
+          color: "text-purple-500"
+        ) %>
+      </div>
+      <div class="animate-card-entrance stagger-4">
+        <%= render StatCardComponent.new(
+          label: "Accounts",
+          value: @total_accounts,
+          icon: "building-library",
+          color: "text-emerald-500"
+        ) %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <%# Recent users %>
+      <div class="animate-card-entrance stagger-5">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-text-primary">Recent Signups</h3>
+              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: admin_users_path) do %>
+                View all
+              <% end %>
+            </div>
+          <% end %>
+          <div class="divide-y divide-border">
+            <% @recent_users.each do |user| %>
+              <div class="flex items-center gap-3 py-3">
+                <%= render AvatarComponent.new(name: user.email, size: :sm) %>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-text-primary truncate">
+                    <%= [ user.first_name, user.last_name ].compact.join(" ").presence || "No name" %>
+                  </p>
+                  <p class="text-xs text-text-muted truncate"><%= user.email %></p>
+                </div>
+                <span class="text-xs text-text-muted shrink-0"><%= time_ago_in_words(user.created_at) %> ago</span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Quick actions %>
+      <div class="animate-card-entrance stagger-6">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <h3 class="text-lg font-semibold text-text-primary">Quick Actions</h3>
+          <% end %>
+          <div class="space-y-3">
+            <%= link_to admin_users_path, class: "flex items-center gap-3 p-3 rounded-xl glass hover-lift transition-all" do %>
+              <div class="p-2 rounded-lg bg-blue-500/10">
+                <%= heroicon "users", variant: :outline, options: { class: "w-5 h-5 text-blue-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-text-primary">Manage Users</p>
+                <p class="text-xs text-text-muted"><%= @total_users %> users, <%= @disabled_users %> disabled</p>
+              </div>
+            <% end %>
+
+            <%= link_to admin_roles_path, class: "flex items-center gap-3 p-3 rounded-xl glass hover-lift transition-all" do %>
+              <div class="p-2 rounded-lg bg-amber-500/10">
+                <%= heroicon "shield-check", variant: :outline, options: { class: "w-5 h-5 text-amber-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-text-primary">Manage Roles</p>
+                <p class="text-xs text-text-muted"><%= @total_roles %> roles configured</p>
+              </div>
+            <% end %>
+
+            <%= link_to admin_settings_path, class: "flex items-center gap-3 p-3 rounded-xl glass hover-lift transition-all" do %>
+              <div class="p-2 rounded-lg bg-slate-500/10">
+                <%= heroicon "cog-6-tooth", variant: :outline, options: { class: "w-5 h-5 text-slate-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-text-primary">System Settings</p>
+                <p class="text-xs text-text-muted">Exchange rates, configuration</p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

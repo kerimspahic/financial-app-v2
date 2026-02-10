@@ -18,11 +18,13 @@ module SidebarHelper
     "clipboard-document-list" => "text-gray-500",
     "arrow-down-tray" => "text-teal-500",
     "puzzle-piece" => "text-sky-500",
-    "light-bulb" => "text-amber-400"
+    "light-bulb" => "text-amber-400",
+    "currency-dollar" => "text-lime-500",
+    "cog-6-tooth" => "text-slate-400"
   }.freeze
 
-  def sidebar_link(label, path, icon:, badge: nil)
-    active = current_page?(path)
+  def sidebar_link(label, path, icon:, badge: nil, active_path_prefix: nil)
+    active = active_path_prefix ? request.path.start_with?(active_path_prefix) : current_page?(path)
     base = "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative group"
     active_class = "glass text-primary-700 dark:text-primary-300 shadow-md"
     inactive_class = "text-text-secondary hover:glass hover:text-text-primary hover:shadow-sm"

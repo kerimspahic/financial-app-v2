@@ -1,5 +1,6 @@
 module Admin
   class UsersController < BaseController
+    before_action -> { set_section(:users) }
     before_action :set_user, only: [ :edit, :update, :toggle_active ]
 
     def index

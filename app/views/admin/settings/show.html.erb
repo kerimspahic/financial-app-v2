@@ -1,0 +1,111 @@
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">System Settings</h2>
+      <p class="text-sm text-text-secondary mt-1">Application-wide configuration</p>
+    </div>
+
+    <%= form_with url: admin_settings_path, method: :patch, class: "space-y-6" do |form| %>
+      <div class="animate-card-entrance stagger-1">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl gradient-primary">
+                <%= heroicon "currency-dollar", variant: :outline, options: { class: "w-5 h-5 text-white" } %>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-text-primary">Exchange Rate Provider</h3>
+                <p class="text-xs text-text-muted">Choose the primary API — the other is used as fallback</p>
+              </div>
+            </div>
+          <% end %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <% ExchangeRateService::PROVIDERS.each do |key, info| %>
+              <% updated_at = @provider_timestamps[key] %>
+              <label class="cursor-pointer">
+                <%= form.radio_button :exchange_rate_provider, key, checked: @exchange_rate_provider == key, class: "peer sr-only" %>
+                <div class="peer-checked:ring-2 peer-checked:ring-primary-500 peer-checked:ring-offset-2 glass rounded-xl p-4 transition-all hover-lift hover:shadow-md">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-semibold text-text-primary"><%= info[:name] %></span>
+                    <% if @exchange_rate_provider == key %>
+                      <%= render BadgeComponent.new(variant: :success, size: :sm) do %>Active<% end %>
+                    <% end %>
+                  </div>
+                  <span class="block text-xs text-text-muted mb-2"><%= info[:description] %></span>
+                  <div class="pt-2 border-t border-glass-border">
+                    <% if updated_at %>
+                      <p class="text-xs text-text-secondary">Last fetched: <span class="font-medium text-text-primary"><%= updated_at.strftime("%b %d, %Y %H:%M") %></span></p>
+                      <p class="text-xs text-text-muted"><%= time_ago_in_words(updated_at) %> ago</p>
+                    <% else %>
+                      <p class="text-xs text-text-muted">Not fetched yet</p>
+                    <% end %>
+                  </div>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="flex justify-end">
+        <%= render ButtonComponent.new(variant: :primary, submit: true, icon: "check") do %>
+          Save System Settings
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Registration Settings placeholder %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-blue-500/10">
+                <%= heroicon "user-plus", variant: :outline, options: { class: "w-5 h-5 text-blue-500" } %>
+              </div>
+              <h3 class="text-lg font-semibold text-text-primary">Registration</h3>
+            </div>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Control whether new users can register for accounts. Useful for private or invite-only deployments.</p>
+      <% end %>
+    </div>
+
+    <%# Maintenance Mode placeholder %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-amber-500/10">
+                <%= heroicon "wrench-screwdriver", variant: :outline, options: { class: "w-5 h-5 text-amber-500" } %>
+              </div>
+              <h3 class="text-lg font-semibold text-text-primary">Maintenance Mode</h3>
+            </div>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Temporarily disable access for non-admin users during maintenance windows. Admins retain full access.</p>
+      <% end %>
+    </div>
+
+    <%# Session Settings placeholder %>
+    <div class="animate-card-entrance stagger-4">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-purple-500/10">
+                <%= heroicon "clock", variant: :outline, options: { class: "w-5 h-5 text-purple-500" } %>
+              </div>
+              <h3 class="text-lg font-semibold text-text-primary">Session Timeout</h3>
+            </div>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <p class="text-sm text-text-secondary">Configure how long user sessions remain active before requiring re-authentication.</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,5 +1,14 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, skip: [ :registrations ]
+  devise_scope :user do
+    get "users/sign_up", to: "devise/registrations#new", as: :new_user_registration
+    post "users", to: "devise/registrations#create", as: :user_registration
+    get "users/edit", to: redirect("/settings/profile")
+    get "users/cancel", to: "devise/registrations#cancel", as: :cancel_user_registration
+    put "users", to: "devise/registrations#update"
+    delete "users", to: "devise/registrations#destroy"
+    patch "users", to: "devise/registrations#update"
+  end
 
   # Web routes
   root "dashboard#index"
@@ -7,13 +16,29 @@ Rails.application.routes.draw do
   resources :transactions
   resources :categories, except: :show
   resources :budgets, except: :show
-  resource :settings, only: [ :show, :update ]
-  patch "settings/theme", to: "settings#update_theme", as: :settings_theme
+  resources :exchanges, only: [ :index, :create, :destroy ] do
+    collection do
+      get :rate
+    end
+  end
+  namespace :settings do
+    get "/", to: redirect("/settings/profile")
+    resource :profile, only: [ :show, :update ]
+    resource :security, only: [ :show, :update ] do
+      delete :destroy_account, on: :collection
+    end
+    resource :appearance, only: [ :show, :update ]
+    resource :preferences, only: [ :show, :update ]
+    resource :categories, only: [ :show ]
+    resource :notifications, only: [ :show ]
+  end
+  patch "settings/theme", to: "settings/appearances#update_theme", as: :settings_theme
   get "style_guide", to: "style_guide#index" if Rails.env.development?
 
   # Admin panel
   namespace :admin do
-    root to: "users#index"
+    root to: "dashboard#index"
+    get "dashboard", to: "dashboard#index"
     resources :users, only: [ :index, :edit, :update ] do
       member do
         patch :toggle_active
@@ -21,6 +46,11 @@ Rails.application.routes.draw do
       resource :roles, only: [ :update ], controller: "user_roles"
     end
     resources :roles, except: [ :show ]
+    resource :settings, only: [ :show, :update ]
+    resources :audit_logs, only: [ :index ]
+    resources :announcements, only: [ :index ]
+    get "system_health", to: "system_health#show"
+    resources :exports, only: [ :index ]
   end
 
   # Phase 2 - Core financial features

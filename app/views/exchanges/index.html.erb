@@ -1,0 +1,173 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Currency Exchange", subtitle: "Convert currencies and track your exchange history") %>
+
+  <%# Live Converter Card %>
+  <div class="animate-card-entrance stagger-1">
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg">
+            <%= heroicon "currency-dollar", variant: :outline, options: { class: "w-5 h-5 text-white" } %>
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold text-text-primary">Currency Converter</h2>
+            <p class="text-xs text-text-muted">Rates via <%= @provider_name %></p>
+          </div>
+        </div>
+      <% end %>
+
+      <div data-controller="exchange" data-exchange-url-value="<%= rate_exchanges_path %>">
+        <% if @rate_error %>
+          <div class="mb-4">
+            <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+              <%= @rate_error %>
+            <% end %>
+          </div>
+        <% end %>
+        <p data-exchange-target="error" class="hidden mb-4 text-sm text-danger-600 glass rounded-lg p-3"></p>
+
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
+          <%# From currency %>
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-text-primary">Amount</label>
+              <input type="number" step="0.01" min="0.01" value="<%= @amount %>"
+                     data-exchange-target="amount"
+                     data-action="input->exchange#convert"
+                     class="block w-full rounded-xl border px-4 py-2.5 text-sm glass text-text-primary border-input-border focus:ring-2 focus:ring-input-focus focus:border-transparent focus:outline-none transition-all duration-200">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-text-primary">From</label>
+              <select data-exchange-target="fromCurrency"
+                      data-action="change->exchange#convert"
+                      class="block w-full rounded-xl border px-4 py-2.5 text-sm glass text-text-primary border-input-border focus:ring-2 focus:ring-input-focus focus:border-transparent focus:outline-none transition-all duration-200">
+                <% ExchangeConversion.currency_options.each do |label, code| %>
+                  <option value="<%= code %>" <%= "selected" if code == @from_currency %>><%= label %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+
+          <%# Swap button %>
+          <div class="flex justify-center py-2">
+            <button type="button"
+                    data-action="click->exchange#swap"
+                    class="p-3 rounded-xl glass hover:shadow-md transition-all duration-200 hover:scale-110 cursor-pointer group">
+              <%= heroicon "arrows-right-left", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+            </button>
+          </div>
+
+          <%# To currency %>
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-text-primary">Converted Amount</label>
+              <div data-exchange-target="result" class="transition-opacity duration-200">
+                <p data-exchange-target="resultAmount"
+                   class="text-3xl font-bold text-text-primary py-1.5">
+                  <%= @converted_amount ? number_with_precision(@converted_amount, precision: 4, strip_insignificant_zeros: true) : "---" %>
+                </p>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-text-primary">To</label>
+              <select data-exchange-target="toCurrency"
+                      data-action="change->exchange#convert"
+                      class="block w-full rounded-xl border px-4 py-2.5 text-sm glass text-text-primary border-input-border focus:ring-2 focus:ring-input-focus focus:border-transparent focus:outline-none transition-all duration-200">
+                <% ExchangeConversion.currency_options.each do |label, code| %>
+                  <option value="<%= code %>" <%= "selected" if code == @to_currency %>><%= label %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <%# Rate display and save button %>
+        <div class="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-glass-border">
+          <div>
+            <p data-exchange-target="rate" class="text-sm text-text-secondary">
+              <% if @exchange_rate %>
+                1 <%= @from_currency %> = <%= number_with_precision(@exchange_rate, precision: 4, strip_insignificant_zeros: true) %> <%= @to_currency %>
+              <% else %>
+                Rate unavailable
+              <% end %>
+            </p>
+            <p data-exchange-target="providerInfo" class="text-xs text-text-muted mt-1 <%= 'hidden' unless @last_updated_at %>">
+              <% if @last_updated_at %>
+                Updated <%= time_ago_in_words(@last_updated_at) %> ago
+                via <span class="font-medium"><%= @last_provider_name %></span>
+              <% end %>
+            </p>
+          </div>
+
+          <%= form_with url: exchanges_path, method: :post, class: "flex-shrink-0" do |f| %>
+            <input type="hidden" name="exchange_conversion[from_currency]" data-exchange-target="saveFromCurrency" value="<%= @from_currency %>">
+            <input type="hidden" name="exchange_conversion[to_currency]" data-exchange-target="saveToCurrency" value="<%= @to_currency %>">
+            <input type="hidden" name="exchange_conversion[from_amount]" data-exchange-target="saveAmount" value="<%= @amount %>">
+            <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true, icon: "bookmark") do %>
+              Save to History
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Conversion History %>
+  <div class="animate-card-entrance stagger-2">
+    <% if @conversions.any? %>
+      <%= render CardComponent.new(padding: false) do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">Conversion History</h2>
+        <% end %>
+        <%= render TableComponent.new(hoverable: true) do |table| %>
+          <% table.with_header do %>
+            <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">From</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-text-secondary uppercase tracking-wider"></th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">To</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Rate</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider"></th>
+          <% end %>
+          <% table.with_body do %>
+            <% @conversions.each do |c| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                  <%= c.converted_at.strftime("%b %d, %Y %H:%M") %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-text-primary">
+                  <%= number_with_precision(c.from_amount, precision: 2) %> <span class="text-text-muted"><%= c.from_currency %></span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-text-muted">
+                  <%= heroicon "arrow-right", variant: :mini, options: { class: "w-4 h-4 inline" } %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-success-600">
+                  <%= number_with_precision(c.to_amount, precision: 4, strip_insignificant_zeros: true) %> <span class="text-success-500"><%= c.to_currency %></span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary text-right">
+                  <%= number_with_precision(c.exchange_rate, precision: 6, strip_insignificant_zeros: true) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <%= button_to exchange_path(c), method: :delete,
+                      class: "text-text-muted hover:text-danger-600 transition-colors cursor-pointer",
+                      data: { turbo_confirm: "Remove this conversion from history?" } do %>
+                    <%= heroicon "trash", variant: :outline, options: { class: "w-4 h-4" } %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= render "shared/pagination", pagy: @pagy %>
+    <% else %>
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No conversion history",
+          description: "Convert a currency above and save it to build your exchange history.",
+          icon: "currency-dollar"
+        ) %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

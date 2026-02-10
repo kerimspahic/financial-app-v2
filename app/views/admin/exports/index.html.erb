@@ -1,0 +1,47 @@
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">Data Export</h2>
+      <p class="text-sm text-text-secondary mt-1">Export application data for backup or analysis</p>
+    </div>
+
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-text-primary">Export Data</h3>
+            <%= render BadgeComponent.new(variant: :info) do %>Coming Soon<% end %>
+          </div>
+        <% end %>
+        <div class="text-center py-8">
+          <%= heroicon "arrow-down-tray", variant: :outline, options: { class: "w-12 h-12 mx-auto text-text-muted mb-4" } %>
+          <p class="text-sm text-text-secondary max-w-md mx-auto">
+            Export system data in CSV or JSON format. Large exports run as background jobs with download links when complete.
+          </p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <% [
+        [ "users", "Users Export", "Export all user accounts, roles, and profile data", "text-blue-500", "bg-blue-500/10" ],
+        [ "arrows-right-left", "Transactions Export", "Export all transactions across all users", "text-purple-500", "bg-purple-500/10" ],
+        [ "archive-box", "Full Backup", "Complete data export including all models and relationships", "text-emerald-500", "bg-emerald-500/10" ]
+      ].each_with_index do |(icon, title, desc, color, bg), i| %>
+        <div class="animate-card-entrance stagger-<%= i + 2 %>">
+          <%= render CardComponent.new do %>
+            <div class="flex items-start gap-3">
+              <div class="p-2 rounded-lg <%= bg %> shrink-0">
+                <%= heroicon icon, variant: :outline, options: { class: "w-5 h-5 #{color}" } %>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-text-primary"><%= title %></p>
+                <p class="text-xs text-text-muted mt-1"><%= desc %></p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

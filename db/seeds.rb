@@ -483,9 +483,27 @@ end
 
 puts "Budgets: #{user.budgets.count} (9 months)"
 
+# ─── Exchange Conversions (sample history) ───────────────────────────────────
+
+user.exchange_conversions.destroy_all
+
+[
+  { from_currency: "USD", to_currency: "EUR", from_amount: 1000, to_amount: 847.89, exchange_rate: 0.84789, converted_at: 1.day.ago },
+  { from_currency: "USD", to_currency: "GBP", from_amount: 500, to_amount: 367.94, exchange_rate: 0.73588, converted_at: 3.days.ago },
+  { from_currency: "EUR", to_currency: "JPY", from_amount: 200, to_amount: 37012.40, exchange_rate: 185.062, converted_at: 1.week.ago },
+  { from_currency: "GBP", to_currency: "USD", from_amount: 750, to_amount: 1019.12, exchange_rate: 1.35883, converted_at: 2.weeks.ago },
+  { from_currency: "USD", to_currency: "CAD", from_amount: 2000, to_amount: 2760.40, exchange_rate: 1.38020, converted_at: 3.weeks.ago },
+  { from_currency: "EUR", to_currency: "CHF", from_amount: 1500, to_amount: 1410.75, exchange_rate: 0.94050, converted_at: 1.month.ago },
+  { from_currency: "USD", to_currency: "JPY", from_amount: 3000, to_amount: 471270.00, exchange_rate: 157.09, converted_at: 5.weeks.ago },
+  { from_currency: "AUD", to_currency: "USD", from_amount: 1200, to_amount: 792.36, exchange_rate: 0.66030, converted_at: 6.weeks.ago }
+].each { |c| user.exchange_conversions.create!(c) }
+
+puts "Exchange conversions: #{user.exchange_conversions.count}"
+
 puts "\nSeed complete!"
 puts "  Login: demo@example.com / password123"
 puts "  Accounts: #{user.accounts.count}"
 puts "  Categories: #{user.categories.count}"
 puts "  Transactions: #{user.transactions.count}"
 puts "  Budgets: #{user.budgets.count}"
+puts "  Exchange conversions: #{user.exchange_conversions.count}"
