@@ -34,7 +34,7 @@ class TransactionsController < ApplicationController
   def create
     @transaction = current_user.transactions.build(transaction_params)
     if save_transaction_with_balance(@transaction)
-      redirect_to @transaction, notice: "Transaction was successfully created."
+      redirect_to transactions_path, notice: "Transaction was successfully created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -46,7 +46,7 @@ class TransactionsController < ApplicationController
   def update
     old_transaction = @transaction.dup
     if update_transaction_with_balance(@transaction, old_transaction, transaction_params)
-      redirect_to @transaction, notice: "Transaction was successfully updated."
+      redirect_to transactions_path, notice: "Transaction was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end

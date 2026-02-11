@@ -6,7 +6,7 @@
 <div class="space-y-5">
   <%= render PageHeaderComponent.new(title: "Transactions") do |header| %>
     <% header.with_actions do %>
-      <%= render ButtonComponent.new(variant: :primary, href: new_transaction_path, icon: "plus") do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_transaction_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
         New Transaction
       <% end %>
     <% end %>
@@ -289,7 +289,8 @@
                             </div>
                             <div class="min-w-0 flex-1" data-controller="tooltip" data-tooltip-text-value="<%= t.description %><%= t.notes.present? ? "\n#{t.notes}" : '' %>">
                               <%= link_to t.description, transaction_path(t),
-                                class: "text-sm font-medium text-text-primary hover:text-primary-600 transition-colors truncate block" %>
+                                class: "text-sm font-medium text-text-primary hover:text-primary-600 transition-colors truncate block",
+                                data: { turbo_frame: "modal" } %>
                               <% if t.notes.present? %>
                                 <p class="text-[10px] text-text-muted truncate"><%= t.notes %></p>
                               <% end %>
@@ -347,10 +348,10 @@
                     <% end %>
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
                       <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                        <%= link_to transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-all" do %>
+                        <%= link_to transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-all", data: { turbo_frame: "modal" } do %>
                           <%= heroicon "eye", variant: :mini, options: { class: "w-4 h-4" } %>
                         <% end %>
-                        <%= link_to edit_transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all" do %>
+                        <%= link_to edit_transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all", data: { turbo_frame: "modal" } do %>
                           <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
                         <% end %>
                       </div>
@@ -419,7 +420,8 @@
             description: params[:search].present? || has_active_filters ? "Try adjusting your search or filters." : "Add your first transaction to start tracking your finances.",
             icon: "banknotes",
             action_text: "Add Transaction",
-            action_url: new_transaction_path
+            action_url: new_transaction_path,
+            action_data: { turbo_frame: "modal" }
           ) %>
         <% end %>
       </div>
