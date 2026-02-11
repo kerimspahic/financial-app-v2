@@ -1,0 +1,77 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "#{@account.name} — Performance") do |header| %>
+    <% header.with_actions do %>
+      <div class="flex items-center gap-2">
+        <%= render ButtonComponent.new(variant: :ghost, href: account_holdings_path(@account), icon: "table-cells") do %>
+          Holdings
+        <% end %>
+        <%= render ButtonComponent.new(variant: :ghost, href: account_path(@account), icon: "arrow-left") do %>
+          Back
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= render CardComponent.new do |card| %>
+    <% card.with_header do %>
+      <h2 class="text-lg font-semibold text-text-primary">Portfolio vs Benchmark (12 months)</h2>
+    <% end %>
+    <% if @portfolio_series.any? %>
+      <div class="h-80"
+        data-controller="chart"
+        data-chart-type-value="line"
+        data-chart-data-value="<%= {
+          labels: @date_labels,
+          datasets: [
+            {
+              label: "Portfolio",
+              data: @portfolio_series,
+              borderColor: "rgb(var(--color-primary-500))",
+              backgroundColor: "rgba(var(--color-primary-500), 0.1)",
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2
+            },
+            @benchmark_series.present? ? {
+              label: "S&P 500",
+              data: @benchmark_series,
+              borderColor: "rgba(107, 114, 128, 0.6)",
+              borderDash: [ 5, 5 ],
+              fill: false,
+              tension: 0.3,
+              borderWidth: 2
+            } : nil
+          ].compact
+        }.to_json %>">
+      </div>
+      <div class="mt-4 flex items-center gap-6 text-sm">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-0.5 bg-primary-500 rounded"></div>
+          <span class="text-text-secondary">Portfolio</span>
+          <% if @portfolio_series.last %>
+            <span class="font-semibold <%= @portfolio_series.last >= 0 ? 'text-success-600' : 'text-danger-600' %>">
+              <%= @portfolio_series.last >= 0 ? '+' : '' %><%= @portfolio_series.last %>%
+            </span>
+          <% end %>
+        </div>
+        <% if @benchmark_series.present? %>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-0.5 bg-gray-400 rounded" style="border-top: 2px dashed rgba(107, 114, 128, 0.6);"></div>
+            <span class="text-text-secondary">S&P 500</span>
+            <% if @benchmark_series.last %>
+              <span class="font-semibold <%= @benchmark_series.last >= 0 ? 'text-success-600' : 'text-danger-600' %>">
+                <%= @benchmark_series.last >= 0 ? '+' : '' %><%= @benchmark_series.last %>%
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render EmptyStateComponent.new(
+        title: "Not enough data",
+        description: "Performance tracking requires at least 2 balance snapshots over time.",
+        icon: "chart-bar"
+      ) %>
+    <% end %>
+  <% end %>
+</div>

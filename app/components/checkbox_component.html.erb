@@ -1,0 +1,58 @@
+<label class="<%= wrapper_classes %>">
+  <% if toggle? %>
+    <%# Toggle switch mode %>
+    <span class="<%= toggle_track_classes %> <%= toggle_size[:track] %> <%= checked? ? 'bg-primary-500' : 'bg-surface-hover border border-glass-border' %>">
+      <% if form_mode? %>
+        <%= @form.check_box @field, {
+          class: "sr-only peer",
+          disabled: @disabled,
+          data: @data.merge(action: "change->checkbox#toggle #{@data[:action]}".strip)
+        }.compact_blank %>
+      <% else %>
+        <input type="checkbox"
+          <% if @name %>name="<%= @name %>"<% end %>
+          <% if @value %>value="<%= @value %>"<% end %>
+          <% if @options[:id] %>id="<%= @options[:id] %>"<% end %>
+          <%= "checked" if checked? %>
+          <%= "disabled" if @disabled %>
+          class="sr-only peer"
+          <% @data.each do |k, v| %>data-<%= k.to_s.dasherize %>="<%= v %>"<% end %>>
+      <% end %>
+      <span class="toggle-thumb pointer-events-none inline-block rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out <%= toggle_size[:thumb] %> <%= checked? ? toggle_size[:translate] : 'translate-x-0.5' %>"></span>
+    </span>
+  <% else %>
+    <%# Standard checkbox mode %>
+    <div class="flex items-center shrink-0 mt-0.5">
+      <% if form_mode? %>
+        <%= @form.check_box @field, {
+          class: checkbox_classes,
+          disabled: @disabled,
+          data: @data
+        }.compact_blank %>
+      <% else %>
+        <input type="checkbox"
+          <% if @name %>name="<%= @name %>"<% end %>
+          <% if @value %>value="<%= @value %>"<% end %>
+          <% if @options[:id] %>id="<%= @options[:id] %>"<% end %>
+          <%= "checked" if checked? %>
+          <%= "disabled" if @disabled %>
+          class="<%= checkbox_classes %>"
+          <% @data.each do |k, v| %>data-<%= k.to_s.dasherize %>="<%= v %>"<% end %>>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @label || @description || content? %>
+    <div class="select-none">
+      <% if @label %>
+        <span class="<%= label_classes %>"><%= @label %></span>
+      <% end %>
+      <% if content? %>
+        <span class="<%= label_classes %>"><%= content %></span>
+      <% end %>
+      <% if @description %>
+        <p class="<%= description_classes %> mt-0.5"><%= @description %></p>
+      <% end %>
+    </div>
+  <% end %>
+</label>

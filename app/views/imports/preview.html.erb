@@ -1,0 +1,339 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Map Columns", subtitle: "Review the detected mapping and adjust as needed") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :ghost, href: new_import_path, icon: "arrow-left") do %>
+        Upload Different File
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= form_with url: imports_path, method: :post do |f| %>
+    <div class="space-y-6">
+
+      <%# File info banner %>
+      <div class="animate-card-entrance stagger-1">
+        <div class="glass rounded-2xl p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center shrink-0">
+              <%= heroicon "document-text", variant: :outline, options: { class: "w-5 h-5 text-primary-500" } %>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-text-primary"><%= @filename %></p>
+              <p class="text-xs text-text-muted"><%= @total_rows %> rows detected &middot; <%= @headers.compact.size %> columns</p>
+            </div>
+          </div>
+          <div>
+            <%= render BadgeComponent.new(variant: :info) do %>
+              Ready to Map
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# Account Selection %>
+      <div class="animate-card-entrance stagger-2">
+        <%= render CardComponent.new do %>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "building-library", variant: :outline, options: { class: "w-5 h-5 text-primary-500" } %>
+              </div>
+              <div>
+                <h2 class="text-base font-semibold text-text-primary">Destination Account</h2>
+                <p class="text-xs text-text-muted">Select which account to import transactions into</p>
+              </div>
+            </div>
+
+            <div>
+              <label for="account_id" class="block text-sm font-medium text-text-primary mb-1.5">Account *</label>
+              <select name="account_id" id="account_id" required
+                class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                <option value="">Select an account...</option>
+                <% @accounts.each do |account| %>
+                  <option value="<%= account.id %>">
+                    <%= account.name %> (<%= account.account_type.humanize %>) -- <%= number_to_currency(account.balance) %>
+                  </option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Column Mapping %>
+      <div class="animate-card-entrance stagger-3">
+        <%= render CardComponent.new do %>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-warning-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "arrows-right-left", variant: :outline, options: { class: "w-5 h-5 text-warning-500" } %>
+              </div>
+              <div>
+                <h2 class="text-base font-semibold text-text-primary">Column Mapping</h2>
+                <p class="text-xs text-text-muted">Match your CSV columns to transaction fields. Auto-detected mappings are pre-selected.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <%# Date mapping %>
+              <div>
+                <label for="mapping_date" class="block text-sm font-medium text-text-primary mb-1.5">
+                  <span class="flex items-center gap-1.5">
+                    <%= heroicon "calendar-days", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+                    Date *
+                  </span>
+                </label>
+                <select name="mapping[date]" id="mapping_date" required
+                  class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                  <option value="">-- Do not import --</option>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <option value="<%= index %>" <%= "selected" if @column_mapping[:date] == index %>>
+                      <%= header %>
+                    </option>
+                  <% end %>
+                </select>
+              </div>
+
+              <%# Description mapping %>
+              <div>
+                <label for="mapping_description" class="block text-sm font-medium text-text-primary mb-1.5">
+                  <span class="flex items-center gap-1.5">
+                    <%= heroicon "document-text", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+                    Description *
+                  </span>
+                </label>
+                <select name="mapping[description]" id="mapping_description" required
+                  class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                  <option value="">-- Do not import --</option>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <option value="<%= index %>" <%= "selected" if @column_mapping[:description] == index %>>
+                      <%= header %>
+                    </option>
+                  <% end %>
+                </select>
+              </div>
+
+              <%# Amount mapping %>
+              <div>
+                <label for="mapping_amount" class="block text-sm font-medium text-text-primary mb-1.5">
+                  <span class="flex items-center gap-1.5">
+                    <%= heroicon "currency-dollar", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+                    Amount
+                  </span>
+                </label>
+                <select name="mapping[amount]" id="mapping_amount"
+                  class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                  <option value="">-- Do not import --</option>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <option value="<%= index %>" <%= "selected" if @column_mapping[:amount] == index %>>
+                      <%= header %>
+                    </option>
+                  <% end %>
+                </select>
+                <p class="text-xs text-text-muted mt-1">Single column: positive = income, negative = expense</p>
+              </div>
+
+              <%# Credit mapping %>
+              <div>
+                <label for="mapping_credit" class="block text-sm font-medium text-text-primary mb-1.5">
+                  <span class="flex items-center gap-1.5">
+                    <%= heroicon "arrow-down-circle", variant: :mini, options: { class: "w-4 h-4 text-success-500" } %>
+                    Credit (Money In)
+                  </span>
+                </label>
+                <select name="mapping[credit]" id="mapping_credit"
+                  class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                  <option value="">-- Do not import --</option>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <option value="<%= index %>" <%= "selected" if @column_mapping[:credit] == index %>>
+                      <%= header %>
+                    </option>
+                  <% end %>
+                </select>
+              </div>
+
+              <%# Debit mapping %>
+              <div>
+                <label for="mapping_debit" class="block text-sm font-medium text-text-primary mb-1.5">
+                  <span class="flex items-center gap-1.5">
+                    <%= heroicon "arrow-up-circle", variant: :mini, options: { class: "w-4 h-4 text-danger-500" } %>
+                    Debit (Money Out)
+                  </span>
+                </label>
+                <select name="mapping[debit]" id="mapping_debit"
+                  class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                  <option value="">-- Do not import --</option>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <option value="<%= index %>" <%= "selected" if @column_mapping[:debit] == index %>>
+                      <%= header %>
+                    </option>
+                  <% end %>
+                </select>
+              </div>
+
+              <%# Category mapping %>
+              <div>
+                <label for="mapping_category" class="block text-sm font-medium text-text-primary mb-1.5">
+                  <span class="flex items-center gap-1.5">
+                    <%= heroicon "tag", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+                    Category
+                  </span>
+                </label>
+                <select name="mapping[category]" id="mapping_category"
+                  class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                  <option value="">-- Do not import --</option>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <option value="<%= index %>" <%= "selected" if @column_mapping[:category] == index %>>
+                      <%= header %>
+                    </option>
+                  <% end %>
+                </select>
+                <p class="text-xs text-text-muted mt-1">If empty, categorization rules will be applied</p>
+              </div>
+
+              <%# Notes mapping %>
+              <div>
+                <label for="mapping_notes" class="block text-sm font-medium text-text-primary mb-1.5">
+                  <span class="flex items-center gap-1.5">
+                    <%= heroicon "chat-bubble-bottom-center-text", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+                    Notes
+                  </span>
+                </label>
+                <select name="mapping[notes]" id="mapping_notes"
+                  class="block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+                  <option value="">-- Do not import --</option>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <option value="<%= index %>" <%= "selected" if @column_mapping[:notes] == index %>>
+                      <%= header %>
+                    </option>
+                  <% end %>
+                </select>
+              </div>
+            </div>
+
+            <%# Mapping hint %>
+            <div class="flex items-start gap-2 p-3 rounded-xl bg-info-500/5 border border-info-500/10">
+              <%= heroicon "information-circle", variant: :mini, options: { class: "w-4 h-4 text-info-500 shrink-0 mt-0.5" } %>
+              <p class="text-xs text-text-secondary">
+                Use either <strong>Amount</strong> (single column with positive/negative values) or
+                <strong>Credit/Debit</strong> (separate columns). If both are mapped, the Amount column takes priority.
+              </p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Data Preview %>
+      <div class="animate-card-entrance stagger-4">
+        <%= render CardComponent.new(padding: false) do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-hover flex items-center justify-center shrink-0">
+                  <%= heroicon "table-cells", variant: :outline, options: { class: "w-4 h-4 text-text-muted" } %>
+                </div>
+                <div>
+                  <h2 class="text-base font-semibold text-text-primary">Data Preview</h2>
+                  <p class="text-xs text-text-muted">
+                    Showing first <%= @preview_rows.size %> of <%= @total_rows %> rows
+                  </p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-glass-border bg-surface-hover/30">
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider w-10">#</th>
+                  <% @headers.each_with_index do |header, index| %>
+                    <% next if header.nil? %>
+                    <%
+                      mapped_field = @column_mapping.key(index)
+                      is_mapped = mapped_field.present?
+                    %>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap
+                               <%= is_mapped ? 'text-primary-600 dark:text-primary-400' : 'text-text-secondary' %>">
+                      <span class="flex items-center gap-1.5">
+                        <%= header %>
+                        <% if is_mapped %>
+                          <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-primary-500/10 text-primary-600 dark:text-primary-400 uppercase">
+                            <%= mapped_field %>
+                          </span>
+                        <% end %>
+                      </span>
+                    </th>
+                  <% end %>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-glass-border">
+                <% @preview_rows.each_with_index do |row, row_index| %>
+                  <tr class="hover:bg-surface-hover/30 transition-colors">
+                    <td class="px-4 py-2.5 text-xs text-text-muted font-mono"><%= row_index + 1 %></td>
+                    <% @headers.each_with_index do |header, col_index| %>
+                      <% next if header.nil? %>
+                      <%
+                        mapped_field = @column_mapping.key(col_index)
+                        is_mapped = mapped_field.present?
+                        cell_value = row[col_index]
+                      %>
+                      <td class="px-4 py-2.5 whitespace-nowrap text-sm
+                                 <%= is_mapped ? 'text-text-primary font-medium' : 'text-text-muted' %>">
+                        <% if cell_value.present? %>
+                          <% if mapped_field == :amount || mapped_field == :credit || mapped_field == :debit %>
+                            <span class="font-mono text-xs"><%= cell_value %></span>
+                          <% elsif mapped_field == :date %>
+                            <span class="text-xs"><%= cell_value %></span>
+                          <% else %>
+                            <span class="max-w-[200px] truncate inline-block"><%= cell_value %></span>
+                          <% end %>
+                        <% else %>
+                          <span class="text-text-muted/50">--</span>
+                        <% end %>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <% if @total_rows > @preview_rows.size %>
+            <div class="px-4 py-3 border-t border-glass-border bg-surface-hover/20 text-center">
+              <p class="text-xs text-text-muted">
+                ... and <%= @total_rows - @preview_rows.size %> more rows will be imported
+              </p>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Action buttons %>
+      <div class="animate-card-entrance stagger-5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs text-text-muted">
+            <%= heroicon "shield-check", variant: :mini, options: { class: "w-4 h-4" } %>
+            <span>Transactions can be deleted individually after import</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <%= render ButtonComponent.new(variant: :ghost, href: new_import_path, icon: "x-mark") do %>
+              Cancel
+            <% end %>
+            <%= render ButtonComponent.new(variant: :primary, submit: true, icon: "arrow-down-tray") do %>
+              Import <%= @total_rows %> Transactions
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  <% end %>
+</div>

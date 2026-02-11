@@ -10,19 +10,69 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
 
-  create_table "accounts", force: :cascade do |t|
-    t.integer "account_type", null: false
-    t.decimal "balance", precision: 12, scale: 2, default: "0.0"
+  create_table "account_balance_snapshots", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.decimal "balance", precision: 12, scale: 2, null: false
     t.datetime "created_at", null: false
-    t.string "currency", default: "USD"
+    t.date "date", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "date"], name: "index_account_balance_snapshots_on_account_id_and_date", unique: true
+    t.index ["account_id"], name: "index_account_balance_snapshots_on_account_id"
+  end
+
+  create_table "account_groups", force: :cascade do |t|
+    t.datetime "created_at", null: false
     t.string "name", null: false
+    t.integer "position", default: 0
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["user_id", "name"], name: "index_account_groups_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_account_groups_on_user_id"
+  end
+
+  create_table "account_shares", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.string "invitation_email"
+    t.string "invitation_token"
+    t.integer "permission_level", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["account_id", "user_id"], name: "index_account_shares_on_account_id_and_user_id", unique: true
+    t.index ["account_id"], name: "index_account_shares_on_account_id"
+    t.index ["invitation_token"], name: "index_account_shares_on_invitation_token", unique: true
+    t.index ["user_id"], name: "index_account_shares_on_user_id"
+  end
+
+  create_table "accounts", force: :cascade do |t|
+    t.bigint "account_group_id"
+    t.string "account_number_masked"
+    t.integer "account_type", null: false
+    t.datetime "archived_at"
+    t.decimal "balance", precision: 12, scale: 2, default: "0.0"
+    t.decimal "balance_goal", precision: 12, scale: 2
+    t.string "bank_name"
+    t.datetime "created_at", null: false
+    t.decimal "credit_limit", precision: 12, scale: 2
+    t.string "currency", default: "USD"
+    t.text "description"
+    t.boolean "exclude_from_net_worth", default: false, null: false
+    t.string "iban"
+    t.string "icon_emoji"
+    t.decimal "interest_rate", precision: 5, scale: 2
+    t.integer "loan_term_months"
+    t.string "name", null: false
+    t.decimal "original_loan_amount", precision: 12, scale: 2
+    t.integer "position", default: 0
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["account_group_id"], name: "index_accounts_on_account_group_id"
     t.index ["user_id"], name: "index_accounts_on_user_id"
   end
 
@@ -32,6 +82,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.datetime "updated_at", null: false
     t.string "value"
     t.index ["key"], name: "index_app_settings_on_key", unique: true
+  end
+
+  create_table "asset_valuations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.text "notes"
+    t.string "source"
+    t.datetime "updated_at", null: false
+    t.decimal "value", precision: 12, scale: 2, null: false
+    t.index ["account_id", "date"], name: "index_asset_valuations_on_account_id_and_date", unique: true
+    t.index ["account_id"], name: "index_asset_valuations_on_account_id"
   end
 
   create_table "audit_logs", force: :cascade do |t|
@@ -46,6 +108,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.index ["user_id"], name: "index_audit_logs_on_user_id"
   end
 
+  create_table "benchmarks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "monthly_returns", default: {}
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "bill_payments", force: :cascade do |t|
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.bigint "bill_id", null: false
@@ -58,16 +127,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
   end
 
   create_table "bills", force: :cascade do |t|
+    t.bigint "account_id"
     t.boolean "active", default: true, null: false
     t.decimal "amount", precision: 10, scale: 2, null: false
+    t.boolean "auto_pay", default: false, null: false
     t.bigint "category_id"
     t.datetime "created_at", null: false
     t.date "due_date", null: false
     t.integer "frequency", null: false
     t.string "name", null: false
+    t.text "notes"
     t.integer "reminder_days_before", default: 3
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.string "website_url"
+    t.index ["account_id"], name: "index_bills_on_account_id"
     t.index ["category_id"], name: "index_bills_on_category_id"
     t.index ["user_id"], name: "index_bills_on_user_id"
   end
@@ -97,6 +171,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.index ["user_id"], name: "index_categories_on_user_id"
   end
 
+  create_table "categorization_rules", force: :cascade do |t|
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "match_type", default: 0, null: false
+    t.string "pattern", null: false
+    t.integer "priority", default: 0
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["category_id"], name: "index_categorization_rules_on_category_id"
+    t.index ["user_id", "priority"], name: "index_categorization_rules_on_user_id_and_priority"
+    t.index ["user_id"], name: "index_categorization_rules_on_user_id"
+  end
+
   create_table "debt_accounts", force: :cascade do |t|
     t.decimal "balance", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -121,6 +208,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.bigint "user_id", null: false
     t.index ["user_id", "converted_at"], name: "idx_exchange_conversions_user_date"
     t.index ["user_id"], name: "index_exchange_conversions_on_user_id"
+  end
+
+  create_table "holdings", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.decimal "cost_basis_per_share", precision: 12, scale: 4, null: false
+    t.datetime "created_at", null: false
+    t.decimal "current_price", precision: 12, scale: 4
+    t.string "holding_type", default: "stock"
+    t.date "last_price_update"
+    t.string "name"
+    t.decimal "shares", precision: 15, scale: 6, null: false
+    t.string "symbol", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "symbol"], name: "index_holdings_on_account_id_and_symbol", unique: true
+    t.index ["account_id"], name: "index_holdings_on_account_id"
   end
 
   create_table "notification_preferences", force: :cascade do |t|
@@ -214,6 +316,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
   end
 
   create_table "savings_goals", force: :cascade do |t|
+    t.bigint "account_id"
     t.string "color"
     t.datetime "created_at", null: false
     t.decimal "current_amount", precision: 10, scale: 2, default: "0.0", null: false
@@ -223,6 +326,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.decimal "target_amount", precision: 10, scale: 2, null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["account_id"], name: "index_savings_goals_on_account_id"
     t.index ["user_id"], name: "index_savings_goals_on_user_id"
   end
 
@@ -260,6 +364,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.index ["user_id"], name: "index_tags_on_user_id"
   end
 
+  create_table "transaction_splits", force: :cascade do |t|
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.string "memo"
+    t.bigint "transaction_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_transaction_splits_on_category_id"
+    t.index ["transaction_id"], name: "index_transaction_splits_on_transaction_id"
+  end
+
   create_table "transaction_tags", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "tag_id", null: false
@@ -274,16 +389,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.bigint "account_id", null: false
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.bigint "category_id", null: false
+    t.integer "clearing_status", default: 0, null: false
     t.datetime "created_at", null: false
     t.date "date", null: false
     t.string "description", null: false
+    t.bigint "destination_account_id"
     t.text "notes"
+    t.boolean "reconciled", default: false
     t.integer "transaction_type", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["account_id", "clearing_status"], name: "index_transactions_on_account_id_and_clearing_status"
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
     t.index ["description"], name: "idx_transactions_description_trgm", opclass: :gin_trgm_ops, using: :gin
+    t.index ["destination_account_id"], name: "index_transactions_on_destination_account_id"
     t.index ["notes"], name: "idx_transactions_notes_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["user_id", "date"], name: "idx_transactions_user_date"
     t.index ["user_id", "transaction_type", "date"], name: "idx_transactions_user_type_date"
@@ -342,17 +462,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
     t.index ["user_id"], name: "index_wishlist_items_on_user_id"
   end
 
+  add_foreign_key "account_balance_snapshots", "accounts"
+  add_foreign_key "account_groups", "users"
+  add_foreign_key "account_shares", "accounts"
+  add_foreign_key "account_shares", "users"
+  add_foreign_key "accounts", "account_groups"
   add_foreign_key "accounts", "users"
+  add_foreign_key "asset_valuations", "accounts"
   add_foreign_key "audit_logs", "users"
   add_foreign_key "bill_payments", "bills"
   add_foreign_key "bill_payments", "transactions"
+  add_foreign_key "bills", "accounts"
   add_foreign_key "bills", "categories"
   add_foreign_key "bills", "users"
   add_foreign_key "budgets", "categories"
   add_foreign_key "budgets", "users"
   add_foreign_key "categories", "users"
+  add_foreign_key "categorization_rules", "categories"
+  add_foreign_key "categorization_rules", "users"
   add_foreign_key "debt_accounts", "users"
   add_foreign_key "exchange_conversions", "users"
+  add_foreign_key "holdings", "accounts"
   add_foreign_key "notification_preferences", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "recurring_transactions", "accounts"
@@ -362,13 +492,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
   add_foreign_key "role_permissions", "roles"
   add_foreign_key "saved_filters", "users"
   add_foreign_key "savings_contributions", "savings_goals"
+  add_foreign_key "savings_goals", "accounts"
   add_foreign_key "savings_goals", "users"
   add_foreign_key "subscriptions", "categories"
   add_foreign_key "subscriptions", "users"
   add_foreign_key "tags", "users"
+  add_foreign_key "transaction_splits", "categories"
+  add_foreign_key "transaction_splits", "transactions"
   add_foreign_key "transaction_tags", "tags"
   add_foreign_key "transaction_tags", "transactions"
   add_foreign_key "transactions", "accounts"
+  add_foreign_key "transactions", "accounts", column: "destination_account_id"
   add_foreign_key "transactions", "categories"
   add_foreign_key "transactions", "users"
   add_foreign_key "user_preferences", "users"

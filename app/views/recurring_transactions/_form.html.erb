@@ -1,0 +1,61 @@
+<%= form_with(model: recurring_transaction, class: "space-y-6") do |form| %>
+  <% if recurring_transaction.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(recurring_transaction.errors.count, "error") %> prevented saving:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% recurring_transaction.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :description, label: "Description", placeholder: "e.g., Monthly Rent") %>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(form: form, field: :amount, label: "Amount", type: :number, step: "0.01", min: "0.01") %>
+    <%= render InputComponent.new(
+      form: form,
+      field: :transaction_type,
+      label: "Type",
+      type: :select,
+      collection: RecurringTransaction.transaction_types.keys.map { |t| [t.humanize, t] },
+      include_blank: "Select type"
+    ) %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(
+      form: form,
+      field: :frequency,
+      label: "Frequency",
+      type: :select,
+      collection: RecurringTransaction.frequencies.keys.map { |f| [f.humanize, f] },
+      include_blank: "Select frequency"
+    ) %>
+    <%= render InputComponent.new(form: form, field: :next_occurrence, label: "Next Occurrence", type: :date) %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(
+      form: form,
+      field: :account_id,
+      label: "Account",
+      type: :select,
+      collection: current_user.accounts.active.ordered.map { |a| [a.name, a.id] },
+      include_blank: "Select account"
+    ) %>
+    <%= render InputComponent.new(
+      form: form,
+      field: :category_id,
+      label: "Category",
+      type: :select,
+      collection: current_user.categories.map { |c| [c.name, c.id] },
+      include_blank: "Select category"
+    ) %>
+  </div>
+
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    <%= recurring_transaction.persisted? ? "Update" : "Create" %> Recurring Transaction
+  <% end %>
+<% end %>

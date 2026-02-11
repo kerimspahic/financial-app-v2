@@ -36,17 +36,12 @@
           <% end %>
         </div>
 
-        <div class="flex items-center justify-between gap-2 pt-2 border-t border-glass-border">
-          <div class="flex items-center gap-2">
-            <%= render ButtonComponent.new(variant: :secondary, size: :sm, href: edit_transaction_path(@transaction), icon: "pencil", data: { turbo_frame: "modal" }) do %>
-              Edit
-            <% end %>
-            <%= render ButtonComponent.new(variant: :danger, size: :sm, href: transaction_path(@transaction), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
-              Delete
-            <% end %>
-          </div>
-          <%= link_to transaction_path(@transaction), class: "text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors" do %>
-            View details &rarr;
+        <div class="flex items-center gap-2 pt-2 border-t border-glass-border">
+          <%= render ButtonComponent.new(variant: :secondary, size: :sm, href: edit_transaction_path(@transaction), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+            Edit
+          <% end %>
+          <%= render ButtonComponent.new(variant: :danger, size: :sm, href: transaction_path(@transaction), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
+            Delete
           <% end %>
         </div>
       </div>

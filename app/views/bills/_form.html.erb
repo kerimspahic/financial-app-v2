@@ -1,0 +1,73 @@
+<%# locals: (bill:) %>
+<%= form_with(model: bill, class: "space-y-6") do |form| %>
+  <% if bill.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(bill.errors.count, "error") %> prevented this bill from being saved:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% bill.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :name, label: "Bill Name", required: true, placeholder: "e.g., Electric Bill") %>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(form: form, field: :amount, label: "Amount", type: :number, required: true, step: "0.01", min: "0.01", placeholder: "0.00") %>
+    <%= render InputComponent.new(
+      form: form,
+      field: :frequency,
+      label: "Frequency",
+      type: :select,
+      collection: Bill.frequencies.keys.map { |f| [ f.humanize, f ] },
+      required: true
+    ) %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(form: form, field: :due_date, label: "Due Date", type: :date, required: true) %>
+    <%= render InputComponent.new(form: form, field: :reminder_days_before, label: "Remind Days Before", type: :number, min: "0", max: "30", hint: "Days before due date to send reminder") %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(
+      form: form,
+      field: :category_id,
+      label: "Category",
+      type: :select,
+      collection: current_user.categories.where(category_type: :expense).order(:name).map { |c| [ c.name, c.id ] },
+      include_blank: "No category (optional)"
+    ) %>
+    <%= render InputComponent.new(
+      form: form,
+      field: :account_id,
+      label: "Payment Account",
+      type: :select,
+      collection: current_user.accounts.active.ordered.map { |a| [ a.name, a.id ] },
+      include_blank: "No account (optional)"
+    ) %>
+  </div>
+
+  <%= render CheckboxComponent.new(
+    form: form,
+    field: :auto_pay,
+    toggle: true,
+    label: "Auto-pay enabled",
+    description: "This bill is automatically paid by your bank or provider"
+  ) %>
+
+  <%= render InputComponent.new(form: form, field: :website_url, label: "Website URL", placeholder: "https://...", hint: "Link to the provider's payment page") %>
+
+  <div class="space-y-1">
+    <%= form.label :notes, class: "block text-sm font-medium text-text-primary" do %>
+      Notes
+    <% end %>
+    <%= form.text_area :notes, rows: 3, placeholder: "Optional notes about this bill...",
+        class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
+  </div>
+
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    <%= bill.persisted? ? "Update Bill" : "Create Bill" %>
+  <% end %>
+<% end %>

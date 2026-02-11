@@ -40,17 +40,14 @@
         <p class="text-xs font-bold uppercase tracking-wider text-text-muted"><%= group_name %></p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <% group_perms.each do |permission| %>
-            <label class="flex items-start gap-3 p-3 rounded-xl glass hover:bg-surface-hover cursor-pointer transition-colors">
-              <input type="checkbox" name="permission_ids[]" value="<%= permission.id %>"
-                     <%= "checked" if role.permissions.include?(permission) %>
-                     class="mt-0.5 rounded border-input-border text-primary-600 focus:ring-primary-500">
-              <div>
-                <span class="text-sm font-medium text-text-primary"><%= permission.key.humanize %></span>
-                <% if permission.description.present? %>
-                  <p class="text-xs text-text-muted"><%= permission.description %></p>
-                <% end %>
-              </div>
-            </label>
+            <%= render CheckboxComponent.new(
+              name: "permission_ids[]",
+              value: permission.id.to_s,
+              checked: role.permissions.include?(permission),
+              label: permission.key.humanize,
+              description: permission.description.presence,
+              wrapper_class: "p-3 rounded-xl glass hover:bg-surface-hover transition-colors"
+            ) %>
           <% end %>
         </div>
       </div>

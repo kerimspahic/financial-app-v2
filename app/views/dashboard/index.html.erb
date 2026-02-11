@@ -5,9 +5,10 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
     <div class="animate-card-entrance stagger-1" data-controller="counter">
       <%= render StatCardComponent.new(
-        label: "Total Balance",
-        value: number_to_currency(@total_balance),
-        icon: "banknotes"
+        label: "Net Worth",
+        value: number_to_currency(@net_worth),
+        icon: "scale",
+        change: "Assets: #{number_to_currency(@total_assets)} | Liabilities: #{number_to_currency(@total_liabilities)}"
       ) %>
     </div>
     <div class="animate-card-entrance stagger-2" data-controller="counter">
@@ -110,6 +111,41 @@
     </div>
   <% end %>
 
+  <%# Upcoming Bills %>
+  <% if @upcoming_bills.present? && @upcoming_bills.any? %>
+    <div class="animate-card-entrance stagger-5">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-text-primary">Upcoming Bills</h2>
+            <%= link_to "View all", bills_path, class: "text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors" %>
+          </div>
+        <% end %>
+        <div class="divide-y divide-glass-border">
+          <% @upcoming_bills.each do |bill| %>
+            <div class="py-3 flex justify-between items-center group hover:bg-surface-hover/30 -mx-6 px-6 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-warning-50 flex items-center justify-center flex-shrink-0">
+                  <%= heroicon "bell-alert", variant: :solid, options: { class: "w-5 h-5 text-warning-600" } %>
+                </div>
+                <div>
+                  <p class="font-medium text-text-primary"><%= bill.name %></p>
+                  <p class="text-sm text-text-secondary">
+                    Due <%= bill.due_date.strftime("%b %d, %Y") %>
+                    <% if bill.category.present? %>
+                      &middot; <%= bill.category.name %>
+                    <% end %>
+                  </p>
+                </div>
+              </div>
+              <p class="font-semibold text-text-primary"><%= number_to_currency(bill.amount) %></p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
   <%# Accounts Overview with semantic colors %>
   <div class="animate-card-entrance stagger-6">
     <%= render CardComponent.new do |card| %>
@@ -121,13 +157,17 @@
       <% end %>
       <% if @accounts.any? %>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <% @accounts.each do |account| %>
+          <% @accounts.ordered.each do |account| %>
             <% colors = account_type_color(account.account_type) %>
             <%= link_to account_path(account),
                 class: "glass rounded-xl p-4 hover-lift transition-all group block" do %>
               <div class="flex items-start gap-4">
                 <div class="flex-shrink-0 w-12 h-12 rounded-xl <%= colors[:icon_bg] %> flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <%= heroicon account_type_icon(account.account_type), variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+                  <% if account.icon_emoji.present? %>
+                    <span class="text-2xl leading-none"><%= account.icon_emoji %></span>
+                  <% else %>
+                    <%= heroicon account_type_icon(account.account_type), variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+                  <% end %>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-text-primary truncate group-hover:text-primary-600 transition-colors">

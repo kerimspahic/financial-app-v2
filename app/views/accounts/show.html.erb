@@ -1,6 +1,6 @@
 <% if turbo_frame_modal? %>
   <%= turbo_frame_tag "modal" do %>
-    <%= render layout: "shared/modal_form", locals: { title: @account.name } do %>
+    <%= render layout: "shared/modal_form", locals: { title: "#{@account.icon_emoji} #{@account.name}".strip } do %>
       <div class="space-y-4">
         <div class="flex items-center gap-2">
           <%= render BadgeComponent.new(variant: :neutral) do %>
@@ -15,6 +15,22 @@
             <%= number_to_currency(@account.balance) %>
           </p>
         </div>
+
+        <% if @account.description.present? %>
+          <p class="text-sm text-text-secondary"><%= @account.description %></p>
+        <% end %>
+
+        <% if @account.balance_goal.present? && @account.balance_goal.positive? %>
+          <div>
+            <%= render ProgressBarComponent.new(
+              value: @account.goal_progress,
+              label: "Goal: #{number_to_currency(@account.balance_goal)}",
+              color: :primary,
+              warning_threshold: 101,
+              danger_threshold: 101
+            ) %>
+          </div>
+        <% end %>
 
         <% if @transactions.any? %>
           <div>
@@ -55,12 +71,41 @@
   <div class="space-y-6">
     <%= render PageHeaderComponent.new(title: @account.name) do |header| %>
       <% header.with_actions do %>
-        <%= render ButtonComponent.new(variant: :secondary, href: edit_account_path(@account, return_to: "show"), icon: "pencil", data: { turbo_frame: "modal" }) do %>
-          Edit
-        <% end %>
-        <%= render ButtonComponent.new(variant: :danger, href: account_path(@account), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
-          Delete
-        <% end %>
+        <div class="flex items-center gap-2 flex-wrap">
+          <% unless @account.archived? %>
+            <% if @account.investment? %>
+              <%= render ButtonComponent.new(variant: :ghost, href: account_holdings_path(@account), icon: "table-cells") do %>
+                Holdings
+              <% end %>
+              <%= render ButtonComponent.new(variant: :ghost, href: performance_account_path(@account), icon: "chart-bar") do %>
+                Performance
+              <% end %>
+            <% end %>
+            <% if @account.property? || @account.vehicle? %>
+              <%= render ButtonComponent.new(variant: :ghost, href: account_asset_valuations_path(@account), icon: "chart-bar") do %>
+                Valuations
+              <% end %>
+            <% end %>
+            <%= render ButtonComponent.new(variant: :ghost, href: account_shares_path(@account), icon: "user-group", data: { turbo_frame: "modal" }) do %>
+              Share
+            <% end %>
+            <%= render ButtonComponent.new(variant: :ghost, href: reconcile_account_path(@account), icon: "check-badge") do %>
+              Reconcile
+            <% end %>
+            <%= render ButtonComponent.new(variant: :ghost, href: merge_account_path(@account), icon: "arrow-path") do %>
+              Merge
+            <% end %>
+            <%= render ButtonComponent.new(variant: :ghost, href: archive_account_path(@account), method: :patch, icon: "archive-box", data: { turbo_confirm: "Archive '#{@account.name}'?" }) do %>
+              Archive
+            <% end %>
+          <% end %>
+          <%= render ButtonComponent.new(variant: :secondary, href: edit_account_path(@account, return_to: "show"), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+            Edit
+          <% end %>
+          <%= render ButtonComponent.new(variant: :danger, href: account_path(@account), method: :delete, confirm: "Are you sure?", icon: "trash") do %>
+            Delete
+          <% end %>
+        </div>
       <% end %>
     <% end %>
 
@@ -68,26 +113,225 @@
       <%= render BadgeComponent.new(variant: :neutral) do %>
         <%= @account.account_type.humanize %>
       <% end %>
+      <span class="text-sm text-text-muted"><%= @account.currency %></span>
+      <% if @account.account_group.present? %>
+        <%= render BadgeComponent.new(variant: :info) do %>
+          <%= @account.account_group.name %>
+        <% end %>
+      <% end %>
+      <% if @account.exclude_from_net_worth? %>
+        <%= render BadgeComponent.new(variant: :warning) do %>
+          Excluded from Net Worth
+        <% end %>
+      <% end %>
+      <% if @account.archived? %>
+        <%= render BadgeComponent.new(variant: :warning) do %>
+          Archived
+        <% end %>
+      <% end %>
     </div>
 
-    <%= render CardComponent.new do %>
-      <p class="text-sm text-text-secondary">Current Balance</p>
-      <p class="text-3xl font-bold <%= @account.balance >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
-        <%= number_to_currency(@account.balance) %>
-      </p>
+    <%# Account Metadata (Feature 9) %>
+    <% if @account.bank_name.present? || @account.account_number_masked.present? || @account.iban.present? %>
+      <%= render CardComponent.new do %>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <% if @account.bank_name.present? %>
+            <div>
+              <p class="text-xs text-text-muted font-medium">Institution</p>
+              <p class="text-sm text-text-primary font-semibold"><%= @account.bank_name %></p>
+            </div>
+          <% end %>
+          <% if @account.account_number_masked.present? %>
+            <div>
+              <p class="text-xs text-text-muted font-medium">Account Number</p>
+              <p class="text-sm text-text-primary font-semibold"><%= @account.account_number_masked %></p>
+            </div>
+          <% end %>
+          <% if @account.iban.present? %>
+            <div>
+              <p class="text-xs text-text-muted font-medium">IBAN</p>
+              <p class="text-sm text-text-primary font-semibold"><%= @account.iban %></p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
 
+    <%# Loan Info (Feature 8) %>
+    <% if @account.loan_account? %>
+      <%= render CardComponent.new do %>
+        <div class="space-y-3">
+          <h3 class="text-sm font-semibold text-text-secondary">Loan Details</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p class="text-xs text-text-muted font-medium">Original Amount</p>
+              <p class="text-sm text-text-primary font-semibold"><%= number_to_currency(@account.original_loan_amount) %></p>
+            </div>
+            <div>
+              <p class="text-xs text-text-muted font-medium">Remaining</p>
+              <p class="text-sm text-text-primary font-semibold"><%= number_to_currency(@account.balance) %></p>
+            </div>
+            <% if @account.loan_term_months.present? %>
+              <div>
+                <p class="text-xs text-text-muted font-medium">Term</p>
+                <p class="text-sm text-text-primary font-semibold"><%= @account.loan_term_months %> months</p>
+              </div>
+            <% end %>
+            <% if (est = @account.monthly_payment_estimate) %>
+              <div>
+                <p class="text-xs text-text-muted font-medium">Est. Monthly Payment</p>
+                <p class="text-sm text-text-primary font-semibold"><%= number_to_currency(est) %></p>
+              </div>
+            <% end %>
+          </div>
+          <% if @account.loan_progress %>
+            <%= render ProgressBarComponent.new(
+              value: @account.loan_progress,
+              label: "Paid off: #{number_to_currency(@account.original_loan_amount - @account.balance)} / #{number_to_currency(@account.original_loan_amount)}",
+              color: :success,
+              warning_threshold: 101,
+              danger_threshold: 101
+            ) %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# Balance + Description %>
+    <%= render CardComponent.new do %>
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm text-text-secondary">Current Balance</p>
+          <p class="text-3xl font-bold <%= @account.balance >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
+            <%= number_to_currency(@account.balance) %>
+          </p>
+        </div>
+        <% if @account.balance_goal.present? && @account.balance_goal.positive? %>
+          <div class="text-right">
+            <p class="text-sm text-text-secondary">Goal</p>
+            <p class="text-lg font-semibold text-text-primary"><%= number_to_currency(@account.balance_goal) %></p>
+          </div>
+        <% end %>
+      </div>
+      <% if @account.balance_goal.present? && @account.balance_goal.positive? %>
+        <div class="mt-3">
+          <%= render ProgressBarComponent.new(
+            value: @account.goal_progress,
+            color: :primary,
+            warning_threshold: 101,
+            danger_threshold: 101
+          ) %>
+        </div>
+      <% end %>
+      <% if @account.description.present? %>
+        <p class="mt-3 text-sm text-text-secondary"><%= @account.description %></p>
+      <% end %>
+    <% end %>
+
+    <%# Stats Row %>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <%= render StatCardComponent.new(
+        label: "Monthly Income",
+        value: number_to_currency(@account_monthly_income),
+        icon: "arrow-down-tray",
+        color: :success
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Monthly Expenses",
+        value: number_to_currency(@account_monthly_expenses),
+        icon: "arrow-up-tray",
+        color: :danger
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Total Transactions",
+        value: number_with_delimiter(@total_transactions),
+        icon: "document-text"
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Avg Transaction",
+        value: number_to_currency(@avg_transaction),
+        icon: "calculator"
+      ) %>
+    </div>
+
+    <%# Charts Row %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <%# Balance History Chart %>
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">Balance History</h2>
+        <% end %>
+        <% if @balance_snapshots.any? %>
+          <div class="h-64"
+            data-controller="chart"
+            data-chart-type-value="line"
+            data-chart-data-value="<%= {
+              labels: @balance_snapshots.map { |s| s.date.strftime("%b %d") },
+              datasets: [{
+                label: "Balance",
+                data: @balance_snapshots.map(&:balance),
+                borderColor: "rgb(var(--color-primary-500))",
+                backgroundColor: "rgba(var(--color-primary-500), 0.1)",
+                fill: true,
+                tension: 0.3
+              }]
+            }.to_json %>">
+          </div>
+        <% else %>
+          <%= render EmptyStateComponent.new(
+            title: "No balance history",
+            description: "Balance snapshots will appear here as your balance changes.",
+            icon: "chart-bar"
+          ) %>
+        <% end %>
+      <% end %>
+
+      <%# Category Breakdown %>
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">Spending by Category</h2>
+        <% end %>
+        <% if @account_category_breakdown.any? %>
+          <div class="h-64"
+            data-controller="chart"
+            data-chart-type-value="doughnut"
+            data-chart-data-value="<%= {
+              labels: @account_category_breakdown.map { |c| c[:name] },
+              datasets: [{
+                data: @account_category_breakdown.map { |c| c[:amount] },
+                backgroundColor: @account_category_breakdown.map { |c| c[:color] || "#6366f1" }
+              }]
+            }.to_json %>">
+          </div>
+        <% else %>
+          <%= render EmptyStateComponent.new(
+            title: "No expenses this month",
+            description: "Expense breakdown will appear here.",
+            icon: "chart-pie"
+          ) %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Transactions Table %>
     <%= render CardComponent.new do |card| %>
       <% card.with_header do %>
-        <h2 class="text-xl font-semibold text-text-primary">Recent Transactions</h2>
+        <h2 class="text-xl font-semibold text-text-primary">Transactions</h2>
       <% end %>
       <% if @transactions.any? %>
         <div class="divide-y divide-border">
           <% @transactions.each do |t| %>
             <div class="py-3 flex justify-between items-center">
               <div>
-                <p class="font-medium text-text-primary"><%= link_to t.description, transaction_path(t), class: "hover:text-primary-600" %></p>
-                <p class="text-sm text-text-secondary"><%= t.date.strftime("%b %d, %Y") %> &middot; <%= t.category.name %></p>
+                <p class="font-medium text-text-primary"><%= link_to t.description, transaction_path(t), data: { turbo_frame: "modal" }, class: "hover:text-primary-600" %></p>
+                <p class="text-sm text-text-secondary">
+                  <%= t.date.strftime("%b %d, %Y") %> &middot; <%= t.category.name %>
+                  <% if t.reconciled? %>
+                    <span class="inline-flex items-center ml-1">
+                      <%= heroicon "check-circle", variant: :mini, options: { class: "w-3.5 h-3.5 text-success-500 inline" } %>
+                    </span>
+                  <% end %>
+                </p>
               </div>
               <p class="font-semibold <%= amount_color_class(t) %>">
                 <%= formatted_amount(t) %>

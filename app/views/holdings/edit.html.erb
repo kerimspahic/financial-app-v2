@@ -1,0 +1,5 @@
+<%= turbo_frame_tag "modal" do %>
+  <%= render layout: "shared/modal_form", locals: { title: "Edit #{@holding.symbol}" } do %>
+    <%= render "form", holding: @holding, account: @account %>
+  <% end %>
+<% end %>

@@ -6,10 +6,7 @@
 
       <% if devise_mapping.rememberable? %>
         <div class="flex items-center justify-between">
-          <label class="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-            <%= f.check_box :remember_me, class: "rounded border-input-border text-primary-600 focus:ring-primary-500" %>
-            Remember me
-          </label>
+          <%= render CheckboxComponent.new(form: f, field: :remember_me, label: "Remember me", size: :sm) %>
           <% if devise_mapping.recoverable? %>
             <%= link_to "Forgot password?", new_password_path(resource_name),
                 class: "text-sm text-primary-600 hover:text-primary-700 font-medium" %>

@@ -1,44 +1,125 @@
 <div class="space-y-6">
   <%= render PageHeaderComponent.new(title: "Accounts") do |header| %>
     <% header.with_actions do %>
-      <%= render ButtonComponent.new(variant: :primary, href: new_account_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
-        New Account
-      <% end %>
+      <div class="flex items-center gap-2">
+        <%= render ButtonComponent.new(variant: :ghost, href: new_account_group_path, icon: "folder-plus", data: { turbo_frame: "modal" }) do %>
+          New Group
+        <% end %>
+        <%= render ButtonComponent.new(variant: :primary, href: new_account_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+          New Account
+        <% end %>
+      </div>
     <% end %>
   <% end %>
 
+  <%# Net Worth Overview %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <%= render StatCardComponent.new(
+      label: "Net Worth",
+      value: number_to_currency(@net_worth),
+      icon: "scale",
+      color: @net_worth >= 0 ? :success : :danger,
+      change: @net_worth_change
+    ) %>
+    <%= render StatCardComponent.new(
+      label: "Total Assets",
+      value: number_to_currency(@total_assets),
+      icon: "arrow-trending-up",
+      color: :success,
+      change: @assets_change
+    ) %>
+    <%= render StatCardComponent.new(
+      label: "Total Liabilities",
+      value: number_to_currency(@total_liabilities),
+      icon: "arrow-trending-down",
+      color: :danger,
+      change: @liabilities_change
+    ) %>
+  </div>
+
+  <%# Group By Toggle %>
+  <div class="flex items-center gap-1 glass rounded-xl p-1 w-fit">
+    <%= link_to accounts_path(group_by: "group"),
+        class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-all #{@group_mode == 'group' ? 'bg-primary-500 text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}" do %>
+      <%= heroicon "folder", variant: :mini, options: { class: "w-4 h-4 inline -mt-0.5 mr-1" } %>Group
+    <% end %>
+    <%= link_to accounts_path(group_by: "institution"),
+        class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-all #{@group_mode == 'institution' ? 'bg-primary-500 text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}" do %>
+      <%= heroicon "building-library", variant: :mini, options: { class: "w-4 h-4 inline -mt-0.5 mr-1" } %>Institution
+    <% end %>
+  </div>
+
   <% if @accounts.any? %>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <% @accounts.each_with_index do |account, i| %>
-        <% colors = account_type_color(account.account_type) %>
-        <div class="animate-card-entrance stagger-<%= i + 1 %>">
-          <%= render CardComponent.new(class: "cursor-pointer") do %>
-            <div class="flex justify-between items-start">
-              <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl <%= colors[:icon_bg] %> flex items-center justify-center shadow-lg">
-                  <%= heroicon account_type_icon(account.account_type), variant: :outline, options: { class: "w-5 h-5 text-white" } %>
-                </div>
-                <div>
-                  <%= link_to account.name, account_path(account),
-                      data: { turbo_frame: "modal" },
-                      class: "text-lg font-semibold text-text-primary after:absolute after:inset-0" %>
-                  <p class="text-xs <%= colors[:text] %> font-medium mt-0.5"><%= account.account_type.humanize %></p>
-                </div>
-              </div>
-              <div class="relative z-10">
-                <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_account_path(account), icon: "pencil", data: { turbo_frame: "modal" }) do %>
-                  Edit
-                <% end %>
-              </div>
-            </div>
-            <p class="mt-4 text-2xl font-bold <%= account.balance >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
-              <%= number_to_currency(account.balance) %>
-            </p>
-            <p class="text-sm text-text-secondary"><%= account.currency %></p>
-          <% end %>
+    <% if @group_mode == "institution" %>
+      <%# Institution grouping %>
+      <% @institution_groups.each do |institution, inst_accounts| %>
+        <div class="space-y-3" data-controller="collapsible" data-collapsible-open-value="true">
+          <button type="button" data-action="click->collapsible#toggle" class="flex items-center gap-2 group">
+            <%= heroicon "chevron-down", variant: :mini, options: { class: "w-4 h-4 text-text-muted transition-transform", data: { collapsible_target: "icon" } } %>
+            <%= heroicon "building-library", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+            <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors"><%= institution %></h3>
+            <span class="text-sm text-text-muted">(<%= inst_accounts.size %> accounts &middot; <%= number_to_currency(inst_accounts.sum(&:balance)) %>)</span>
+          </button>
+          <div data-collapsible-target="content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% inst_accounts.each_with_index do |account, i| %>
+              <%= render partial: "accounts/account_card", locals: { account: account, i: i } %>
+            <% end %>
+          </div>
         </div>
       <% end %>
-    </div>
+    <% else %>
+      <%# Default: Group by account_group %>
+      <% grouped = @accounts.group_by(&:account_group) %>
+      <% ungrouped = grouped.delete(nil) || [] %>
+
+      <%# Grouped accounts %>
+      <% @account_groups.each do |group| %>
+        <% group_accounts = grouped[group] || [] %>
+        <% next if group_accounts.empty? %>
+        <div class="space-y-3" data-controller="collapsible" data-collapsible-open-value="true">
+          <div class="flex items-center justify-between">
+            <button type="button" data-action="click->collapsible#toggle" class="flex items-center gap-2 group">
+              <%= heroicon "chevron-down", variant: :mini, options: { class: "w-4 h-4 text-text-muted transition-transform", data: { collapsible_target: "icon" } } %>
+              <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors"><%= group.name %></h3>
+              <span class="text-sm text-text-muted">(<%= number_to_currency(group.total_balance) %>)</span>
+            </button>
+            <div class="flex items-center gap-1">
+              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_account_group_path(group), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+                Edit
+              <% end %>
+              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: account_group_path(group), icon: "trash", method: :delete, data: { turbo_confirm: "Delete group '#{group.name}'? Accounts will be ungrouped." }) do %>
+                Delete
+              <% end %>
+            </div>
+          </div>
+          <div data-collapsible-target="content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-controller="sortable" data-sortable-url-value="<%= reorder_accounts_path %>">
+            <% group_accounts.each_with_index do |account, i| %>
+              <%= render partial: "accounts/account_card", locals: { account: account, i: i } %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Ungrouped accounts %>
+      <% if ungrouped.any? %>
+        <% if @account_groups.any? %>
+          <div class="space-y-3">
+            <h3 class="text-lg font-semibold text-text-primary">Ungrouped</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-controller="sortable" data-sortable-url-value="<%= reorder_accounts_path %>">
+              <% ungrouped.each_with_index do |account, i| %>
+                <%= render partial: "accounts/account_card", locals: { account: account, i: i } %>
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-controller="sortable" data-sortable-url-value="<%= reorder_accounts_path %>">
+            <% ungrouped.each_with_index do |account, i| %>
+              <%= render partial: "accounts/account_card", locals: { account: account, i: i } %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
   <% else %>
     <%= render CardComponent.new do %>
       <%= render EmptyStateComponent.new(
@@ -50,5 +131,42 @@
         action_data: { turbo_frame: "modal" }
       ) %>
     <% end %>
+  <% end %>
+
+  <%# Archived accounts %>
+  <% if @archived_accounts.any? %>
+    <div class="space-y-3" data-controller="collapsible" data-collapsible-open-value="false">
+      <button type="button" data-action="click->collapsible#toggle" class="flex items-center gap-2 group">
+        <%= heroicon "chevron-down", variant: :mini, options: { class: "w-4 h-4 text-text-muted transition-transform -rotate-90", data: { collapsible_target: "icon" } } %>
+        <h3 class="text-base font-medium text-text-muted group-hover:text-text-primary transition-colors">
+          Archived (<%= @archived_accounts.size %>)
+        </h3>
+      </button>
+      <div data-collapsible-target="content" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @archived_accounts.each_with_index do |account, i| %>
+          <div class="animate-card-entrance stagger-<%= i + 1 %>">
+            <%= render CardComponent.new(class: "opacity-60") do %>
+              <div class="flex justify-between items-start">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gray-400 flex items-center justify-center">
+                    <%= heroicon account_type_icon(account.account_type), variant: :outline, options: { class: "w-5 h-5 text-white" } %>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold text-text-primary"><%= account.name %></p>
+                    <p class="text-xs text-text-muted font-medium mt-0.5"><%= account.account_type.humanize %> &middot; Archived</p>
+                  </div>
+                </div>
+                <div class="relative z-10">
+                  <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: unarchive_account_path(account), method: :patch, icon: "arrow-uturn-left") do %>
+                    Restore
+                  <% end %>
+                </div>
+              </div>
+              <p class="mt-4 text-2xl font-bold text-text-muted"><%= number_to_currency(account.balance) %></p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
   <% end %>
 </div>

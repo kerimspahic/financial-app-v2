@@ -1,0 +1,11 @@
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: "New Savings Goal" } do %>
+      <%= render "form", savings_goal: @savings_goal %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render layout: "shared/form_page", locals: { title: "New Savings Goal", back_text: "Back to goals", back_path: savings_goals_path } do %>
+    <%= render "form", savings_goal: @savings_goal %>
+  <% end %>
+<% end %>

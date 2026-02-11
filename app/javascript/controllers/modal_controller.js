@@ -18,6 +18,13 @@ export default class extends Controller {
 
   handleFrameLoad = () => {
     if (this.hasFrameTarget && this.frameTarget.innerHTML.trim() !== "") {
+      // Ensure forms submit within the modal frame so validation errors (422)
+      // stay in the modal. Successful redirects (303) still do full-page nav.
+      this.frameTarget.querySelectorAll("form").forEach(form => {
+        if (!form.hasAttribute("data-turbo-frame")) {
+          form.setAttribute("data-turbo-frame", "modal")
+        }
+      })
       this.open()
     }
   }

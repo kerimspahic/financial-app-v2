@@ -1,0 +1,18 @@
+<%= form_with(model: account_group, class: "space-y-6") do |form| %>
+  <% if account_group.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(account_group.errors.count, "error") %> prevented this group from being saved:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% account_group.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :name, label: "Group Name", placeholder: "e.g., Personal, Business") %>
+
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    <%= account_group.persisted? ? "Update Group" : "Create Group" %>
+  <% end %>
+<% end %>

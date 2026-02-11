@@ -39,6 +39,9 @@ module BalanceUpdatable
       account.increment!(:balance, transaction.amount)
     elsif transaction.expense?
       account.decrement!(:balance, transaction.amount)
+    elsif transaction.transfer?
+      account.decrement!(:balance, transaction.amount)
+      transaction.destination_account&.increment!(:balance, transaction.amount)
     end
   end
 
@@ -48,6 +51,9 @@ module BalanceUpdatable
       account.decrement!(:balance, transaction.amount)
     elsif transaction.expense?
       account.increment!(:balance, transaction.amount)
+    elsif transaction.transfer?
+      account.increment!(:balance, transaction.amount)
+      transaction.destination_account&.decrement!(:balance, transaction.amount)
     end
   end
 end

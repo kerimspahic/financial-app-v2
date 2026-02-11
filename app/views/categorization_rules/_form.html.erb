@@ -1,0 +1,38 @@
+<%= form_with(model: categorization_rule, class: "space-y-6") do |form| %>
+  <% if categorization_rule.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(categorization_rule.errors.count, "error") %> prevented this rule from being saved:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% categorization_rule.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :pattern, label: "Pattern", placeholder: "e.g., Starbucks", hint: "The text to match against transaction descriptions") %>
+
+  <%= render InputComponent.new(
+    form: form,
+    field: :match_type,
+    label: "Match Type",
+    type: :select,
+    collection: CategorizationRule.match_types.keys.map { |t| [ t.humanize, t ] },
+    include_blank: "Select match type"
+  ) %>
+
+  <%= render InputComponent.new(
+    form: form,
+    field: :category_id,
+    label: "Category",
+    type: :select,
+    collection: current_user.categories.order(:name).map { |c| [ c.name, c.id ] },
+    include_blank: "Select category"
+  ) %>
+
+  <%= render InputComponent.new(form: form, field: :priority, label: "Priority", type: :number, step: 1, placeholder: "0", hint: "Higher priority rules are checked first") %>
+
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    <%= categorization_rule.persisted? ? "Update Rule" : "Create Rule" %>
+  <% end %>
+<% end %>

@@ -1,0 +1,59 @@
+<%= turbo_frame_tag "modal" do %>
+  <%= render layout: "shared/modal_form", locals: { title: "Share #{@account.name}" } do %>
+    <div class="space-y-4">
+      <% if @shares.any? %>
+        <div class="divide-y divide-glass-border">
+          <% @shares.each do |share| %>
+            <div class="py-3 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-text-primary"><%= share.user.email %></p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <%= render BadgeComponent.new(variant: :info, size: :sm) do %>
+                    <%= share.permission_level.humanize %>
+                  <% end %>
+                  <% unless share.accepted? %>
+                    <%= render BadgeComponent.new(variant: :warning, size: :sm) do %>
+                      Pending
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+              <%= render ButtonComponent.new(
+                variant: :ghost,
+                size: :sm,
+                href: account_share_path(@account, share),
+                method: :delete,
+                icon: "x-mark",
+                data: { turbo_confirm: "Remove access for #{share.user.email}?" }
+              ) %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm text-text-muted">Not shared with anyone yet.</p>
+      <% end %>
+
+      <div class="border-t border-glass-border pt-4">
+        <h4 class="text-sm font-semibold text-text-primary mb-3">Invite Someone</h4>
+        <%= form_with url: account_shares_path(@account), method: :post, class: "space-y-3" do %>
+          <div>
+            <label class="block text-sm font-medium text-text-primary mb-1.5">Email</label>
+            <input type="email" name="email" placeholder="user@example.com" required
+              class="block w-full rounded-xl border border-input-border px-4 py-2.5 text-sm glass focus:outline-none focus:ring-2 focus:ring-input-focus">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-primary mb-1.5">Permission</label>
+            <select name="permission_level"
+              class="block w-full rounded-xl border border-input-border px-4 py-2.5 text-sm glass focus:outline-none focus:ring-2 focus:ring-input-focus">
+              <option value="viewer">Viewer (read-only)</option>
+              <option value="editor">Editor (can add transactions)</option>
+            </select>
+          </div>
+          <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true, icon: "paper-airplane") do %>
+            Send Invitation
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

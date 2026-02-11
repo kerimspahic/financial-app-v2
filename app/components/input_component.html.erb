@@ -11,7 +11,48 @@
   <% when :number %>
     <%= @form.number_field @field, class: input_classes, step: @options.delete(:step) || "any", **@options %>
   <% when :date %>
-    <%= @form.date_field @field, class: input_classes, **@options %>
+    <div class="relative" data-controller="datepicker" data-datepicker-date-value="<%= @form.object&.send(@field)&.to_s %>">
+      <%= @form.hidden_field @field, data: { datepicker_target: "input" } %>
+      <button type="button" data-action="click->datepicker#toggle"
+        class="<%= input_classes %> flex items-center justify-between gap-2 text-left w-full cursor-pointer">
+        <span data-datepicker-target="display" class="<%= @form.object&.send(@field).present? ? 'text-text-primary' : 'text-text-muted' %>">
+          <%= @form.object&.send(@field).present? ? @form.object.send(@field).strftime("%b %d, %Y") : "Select date" %>
+        </span>
+        <%= heroicon "calendar-days", variant: :outline, options: { class: "w-4 h-4 text-text-muted shrink-0" } %>
+      </button>
+      <div data-datepicker-el="calendar"
+        class="hidden opacity-0 scale-95 z-[9999] bg-surface rounded-2xl shadow-2xl border border-border p-4 transition-all duration-150 origin-top-left w-[296px]">
+        <div class="space-y-3">
+          <%# Month/Year navigation %>
+          <div class="flex items-center justify-between">
+            <button type="button" data-action-name="prev"
+              class="p-1.5 rounded-lg hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-all">
+              <%= heroicon "chevron-left", variant: :mini, options: { class: "w-4 h-4" } %>
+            </button>
+            <span data-datepicker-el="monthLabel" class="text-sm font-semibold text-text-primary"></span>
+            <button type="button" data-action-name="next"
+              class="p-1.5 rounded-lg hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-all">
+              <%= heroicon "chevron-right", variant: :mini, options: { class: "w-4 h-4" } %>
+            </button>
+          </div>
+          <%# Day headers (hidden in month/year mode) %>
+          <div data-datepicker-el="dayHeaders" class="grid grid-cols-7 gap-0.5">
+            <% %w[Su Mo Tu We Th Fr Sa].each do |day| %>
+              <div class="w-9 h-8 flex items-center justify-center text-[10px] font-semibold text-text-muted uppercase tracking-wider"><%= day %></div>
+            <% end %>
+          </div>
+          <%# Grid (days / months / years — rendered by JS) %>
+          <div data-datepicker-el="grid" class="grid grid-cols-7 gap-0.5"></div>
+          <%# Footer (hidden in month/year mode) %>
+          <div data-datepicker-el="footer" class="pt-2 border-t border-border flex justify-center">
+            <button type="button" data-action-name="selectToday"
+              class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors px-3 py-1 rounded-lg hover:bg-surface-hover">
+              Today
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   <% when :color %>
     <%= @form.color_field @field, class: "h-10 w-20 rounded-lg border border-input-border cursor-pointer", **@options %>
   <% when :email %>

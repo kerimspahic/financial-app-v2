@@ -42,17 +42,14 @@
           <input type="hidden" name="role_ids[]" value="">
           <div class="space-y-2">
             <% @roles.each do |role| %>
-              <label class="flex items-center gap-3 p-3 rounded-xl glass hover:bg-surface-hover cursor-pointer transition-colors">
-                <input type="checkbox" name="role_ids[]" value="<%= role.id %>"
-                       <%= "checked" if @user.roles.include?(role) %>
-                       class="rounded border-input-border text-primary-600 focus:ring-primary-500">
-                <div>
-                  <span class="text-sm font-medium text-text-primary"><%= role.name.humanize %></span>
-                  <% if role.description.present? %>
-                    <p class="text-xs text-text-muted"><%= role.description %></p>
-                  <% end %>
-                </div>
-              </label>
+              <%= render CheckboxComponent.new(
+                name: "role_ids[]",
+                value: role.id.to_s,
+                checked: @user.roles.include?(role),
+                label: role.name.humanize,
+                description: role.description.presence,
+                wrapper_class: "p-3 rounded-xl glass hover:bg-surface-hover transition-colors"
+              ) %>
             <% end %>
           </div>
           <%= render ButtonComponent.new(variant: :secondary, submit: true, icon: "shield-check") do %>

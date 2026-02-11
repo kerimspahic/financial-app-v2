@@ -1,11 +1,98 @@
 <div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: "Recurring Transactions", subtitle: "Automate your finances") %>
+  <%= render PageHeaderComponent.new(title: "Recurring Transactions") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_recurring_transaction_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+        New Recurring
+      <% end %>
+    <% end %>
+  <% end %>
 
-  <%= render CardComponent.new do %>
-    <%= render EmptyStateComponent.new(
-      title: "Coming Soon",
-      description: "Set up recurring income and expenses that automatically create transactions on schedule.",
-      icon: "arrow-path"
-    ) %>
+  <% if @active_recurring.any? %>
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-lg font-semibold text-text-primary">Active</h2>
+      <% end %>
+      <div class="divide-y divide-border">
+        <% @active_recurring.each do |rt| %>
+          <div class="py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm
+                <% if rt.income? %>bg-success-500<% elsif rt.expense? %>bg-danger-500<% else %>bg-blue-500<% end %>">
+                <%= heroicon rt.income? ? "arrow-down" : "arrow-up", variant: :mini, options: { class: "w-4 h-4 text-white" } %>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-medium text-text-primary truncate"><%= rt.description %></p>
+                <p class="text-xs text-text-muted">
+                  <%= rt.frequency.humanize %> &middot; <%= rt.account.name %> &middot; <%= rt.category.name %>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <p class="font-semibold text-sm <%= rt.income? ? 'text-success-600' : 'text-danger-600' %>">
+                  <%= rt.income? ? "+" : "-" %><%= number_to_currency(rt.amount) %>
+                </p>
+                <p class="text-xs text-text-muted">Next: <%= rt.next_occurrence.strftime("%b %d, %Y") %></p>
+              </div>
+              <div class="flex items-center gap-1">
+                <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_recurring_transaction_path(rt), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+                <% end %>
+                <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: toggle_recurring_transaction_path(rt), method: :patch, icon: "pause") do %>
+                <% end %>
+                <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: recurring_transaction_path(rt), method: :delete, icon: "trash", data: { turbo_confirm: "Delete '#{rt.description}'?" }) do %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No recurring transactions",
+        description: "Set up recurring income and expenses to automate your finances.",
+        icon: "arrow-path",
+        action_text: "Create Recurring Transaction",
+        action_url: new_recurring_transaction_path,
+        action_data: { turbo_frame: "modal" }
+      ) %>
+    <% end %>
+  <% end %>
+
+  <% if @inactive_recurring.any? %>
+    <div class="space-y-3" data-controller="collapsible" data-collapsible-open-value="false">
+      <button type="button" data-action="click->collapsible#toggle" class="flex items-center gap-2 group">
+        <%= heroicon "chevron-down", variant: :mini, options: { class: "w-4 h-4 text-text-muted transition-transform -rotate-90", data: { collapsible_target: "icon" } } %>
+        <h3 class="text-base font-medium text-text-muted group-hover:text-text-primary transition-colors">
+          Paused (<%= @inactive_recurring.size %>)
+        </h3>
+      </button>
+      <div data-collapsible-target="content" class="hidden">
+        <%= render CardComponent.new do %>
+          <div class="divide-y divide-border">
+            <% @inactive_recurring.each do |rt| %>
+              <div class="py-3 flex items-center justify-between opacity-60">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <div class="w-9 h-9 rounded-xl bg-gray-400 flex items-center justify-center">
+                    <%= heroicon rt.income? ? "arrow-down" : "arrow-up", variant: :mini, options: { class: "w-4 h-4 text-white" } %>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-medium text-text-primary truncate"><%= rt.description %></p>
+                    <p class="text-xs text-text-muted"><%= rt.frequency.humanize %> &middot; Paused</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <p class="font-semibold text-sm text-text-muted"><%= number_to_currency(rt.amount) %></p>
+                  <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: toggle_recurring_transaction_path(rt), method: :patch, icon: "play") do %>
+                    Resume
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
   <% end %>
 </div>

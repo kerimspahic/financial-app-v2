@@ -1,0 +1,95 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "#{@account.name} — Valuations") do |header| %>
+    <% header.with_actions do %>
+      <div class="flex items-center gap-2">
+        <%= render ButtonComponent.new(variant: :ghost, href: account_path(@account), icon: "arrow-left") do %>
+          Back
+        <% end %>
+        <%= render ButtonComponent.new(variant: :primary, href: new_account_asset_valuation_path(@account), icon: "plus", data: { turbo_frame: "modal" }) do %>
+          Add Valuation
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @valuations.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <%= render StatCardComponent.new(
+        label: "Current Value",
+        value: number_to_currency(@valuations.first.value),
+        icon: "home-modern",
+        color: :primary
+      ) %>
+      <% if @valuations.size >= 2 %>
+        <% change_val = @valuations.first.value - @valuations.last.value %>
+        <%= render StatCardComponent.new(
+          label: "Total Change",
+          value: number_to_currency(change_val.abs),
+          icon: change_val >= 0 ? "arrow-trending-up" : "arrow-trending-down",
+          color: change_val >= 0 ? :success : :danger
+        ) %>
+        <% if @account.appreciation_rate %>
+          <%= render StatCardComponent.new(
+            label: "Annualized Rate",
+            value: "#{@account.appreciation_rate}%",
+            icon: "chart-bar",
+            color: @account.appreciation_rate >= 0 ? :success : :danger
+          ) %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <h3 class="text-lg font-semibold text-text-primary">Value History</h3>
+      <% end %>
+      <div class="h-64"
+        data-controller="chart"
+        data-chart-type-value="line"
+        data-chart-data-value="<%= @chart_data.to_json %>">
+      </div>
+    <% end %>
+
+    <%= render CardComponent.new(padding: false) do %>
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-glass-border">
+            <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Date</th>
+            <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider">Value</th>
+            <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Source</th>
+            <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Notes</th>
+            <th class="px-5 py-3 w-16"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-glass-border/50">
+          <% @valuations.each do |v| %>
+            <tr class="group hover:bg-surface-hover/50 transition-colors">
+              <td class="px-5 py-3.5 text-sm text-text-primary"><%= v.date.strftime("%b %d, %Y") %></td>
+              <td class="px-5 py-3.5 text-right text-sm font-semibold tabular-nums text-text-primary"><%= number_to_currency(v.value) %></td>
+              <td class="px-5 py-3.5 text-sm text-text-muted"><%= v.source&.humanize || "—" %></td>
+              <td class="px-5 py-3.5 text-sm text-text-muted truncate max-w-48"><%= v.notes || "—" %></td>
+              <td class="px-5 py-3.5 text-right">
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <%= link_to account_asset_valuation_path(@account, v), method: :delete, class: "p-1 rounded-lg hover:bg-surface-hover transition-colors", data: { turbo_confirm: "Remove this valuation?" } do %>
+                    <%= heroicon "trash", variant: :mini, options: { class: "w-4 h-4 text-text-muted hover:text-danger-500" } %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No valuations yet",
+        description: "Record periodic valuations to track your asset's value over time.",
+        icon: "chart-bar",
+        action_text: "Add Valuation",
+        action_url: new_account_asset_valuation_path(@account),
+        action_data: { turbo_frame: "modal" }
+      ) %>
+    <% end %>
+  <% end %>
+</div>

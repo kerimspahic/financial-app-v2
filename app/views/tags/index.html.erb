@@ -1,11 +1,46 @@
 <div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: "Tags", subtitle: "Organize transactions") %>
+  <%= render PageHeaderComponent.new(title: "Tags") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_tag_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+        New Tag
+      <% end %>
+    <% end %>
+  <% end %>
 
-  <%= render CardComponent.new do %>
-    <%= render EmptyStateComponent.new(
-      title: "Coming Soon",
-      description: "Add custom tags to transactions for flexible categorization beyond standard categories.",
-      icon: "hashtag"
-    ) %>
+  <% if @tags.any? %>
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do %>
+        <div class="divide-y divide-glass-border/50">
+          <% @tags.each do |tag| %>
+            <div class="py-3 flex justify-between items-center group">
+              <div class="flex items-center gap-3">
+                <span class="w-4 h-4 rounded-full shrink-0 shadow-sm" style="background-color: <%= tag.color || '#94a3b8' %>"></span>
+                <span class="font-medium text-text-primary"><%= tag.name %></span>
+                <span class="text-xs text-text-muted">(<%= tag.transactions.count %> transactions)</span>
+              </div>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_tag_path(tag), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+                <% end %>
+                <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: tag_path(tag), method: :delete, icon: "trash", data: { turbo_confirm: "Delete tag '#{tag.name}'?" }) do %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No tags yet",
+          description: "Create tags to organize and label your transactions.",
+          icon: "hashtag",
+          action_text: "Create Tag",
+          action_url: new_tag_path,
+          action_data: { turbo_frame: "modal" }
+        ) %>
+      <% end %>
+    </div>
   <% end %>
 </div>

@@ -12,8 +12,30 @@ Rails.application.routes.draw do
 
   # Web routes
   root "dashboard#index"
-  resources :accounts
-  resources :transactions
+  resources :accounts do
+    resources :holdings, only: [ :index, :new, :create, :edit, :update, :destroy ]
+    resources :asset_valuations, only: [ :index, :new, :create, :destroy ], path: "valuations"
+    resources :shares, only: [ :index, :create, :destroy ], controller: "account_shares"
+    member do
+      patch :archive
+      patch :unarchive
+      get :reconcile
+      patch :confirm_reconcile
+      get :performance
+      get :merge
+      patch :perform_merge
+    end
+    collection do
+      patch :reorder
+    end
+  end
+  resources :account_groups, except: [ :show ]
+  resources :transactions do
+    collection do
+      patch :bulk_update
+      delete :bulk_destroy
+    end
+  end
   resources :saved_filters, only: [ :create, :destroy ]
   patch "table_preferences", to: "table_preferences#update"
   resources :categories, except: :show
@@ -57,9 +79,22 @@ Rails.application.routes.draw do
   end
 
   # Phase 2 - Core financial features
-  resources :recurring_transactions, only: [ :index ]
-  resources :savings_goals, only: [ :index ]
-  resources :bills, only: [ :index ]
+  resources :recurring_transactions, except: [ :show ] do
+    member do
+      patch :toggle
+    end
+  end
+  resources :savings_goals do
+    member do
+      post :contribute
+      delete :remove_contribution
+    end
+  end
+  resources :bills do
+    member do
+      post :pay
+    end
+  end
 
   # Phase 3 - Notifications
   resources :notifications, only: [ :index ]
@@ -67,13 +102,19 @@ Rails.application.routes.draw do
   # Phase 4 - Reports
   resources :reports, only: [ :index ]
 
-  # Future features
+  # Features
   resources :debt_accounts, only: [ :index ]
-  resources :tags, only: [ :index ]
+  resources :tags
+  resources :categorization_rules, except: [ :show ]
   resources :subscriptions, only: [ :index ]
   resources :wishlist, only: [ :index ]
   resources :audit_logs, only: [ :index ]
-  get "import_export", to: "import_export#index", as: :import_export
+  resources :imports, only: [ :new, :create ] do
+    collection do
+      post :preview
+    end
+  end
+  get "invitations/:token", to: "account_shares#accept", as: :accept_invitation
   get "integrations", to: "integrations#index", as: :integrations
   get "insights", to: "insights#index", as: :insights
 

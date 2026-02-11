@@ -1,0 +1,11 @@
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: "Edit Bill" } do %>
+      <%= render "form", bill: @bill %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render layout: "shared/form_page", locals: { title: "Edit Bill", back_text: "Back to bills", back_path: bills_path } do %>
+    <%= render "form", bill: @bill %>
+  <% end %>
+<% end %>

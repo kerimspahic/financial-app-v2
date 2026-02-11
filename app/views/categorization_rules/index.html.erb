@@ -1,0 +1,113 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Auto-Categorization Rules") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_categorization_rule_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+        New Rule
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Description %>
+  <div class="animate-card-entrance stagger-1">
+    <div class="glass rounded-2xl shadow-lg p-5 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none rounded-2xl"></div>
+      <div class="relative flex items-start gap-3">
+        <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center">
+          <%= heroicon "sparkles", variant: :outline, options: { class: "w-5 h-5 text-primary-600 dark:text-primary-400" } %>
+        </div>
+        <div>
+          <p class="text-sm text-text-secondary leading-relaxed">
+            Rules automatically assign categories to new transactions based on their description.
+            Rules are checked in order of priority (highest first). When a transaction is created without
+            a category, the first matching rule will be applied.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Rules Table %>
+  <% if @categorization_rules.any? %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new(padding: false) do %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-glass-border">
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[90px]">Priority</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Pattern</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[130px]">Match Type</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[180px]">Category</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[80px]"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-glass-border/50">
+              <% @categorization_rules.each_with_index do |rule, index| %>
+                <tr class="group hover:bg-surface-hover/50 transition-colors">
+                  <%# Priority %>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg glass border border-glass-border text-sm font-semibold text-text-primary tabular-nums">
+                      <%= rule.priority %>
+                    </span>
+                  </td>
+
+                  <%# Pattern %>
+                  <td class="px-5 py-3.5">
+                    <code class="font-mono text-sm text-text-primary px-2 py-1 rounded-lg glass border border-glass-border"><%= rule.pattern %></code>
+                  </td>
+
+                  <%# Match Type %>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <% badge_variant = case rule.match_type
+                      when "contains" then :info
+                      when "starts_with" then :warning
+                      when "exact" then :success
+                      when "regex" then :danger
+                      else :neutral
+                    end %>
+                    <%= render BadgeComponent.new(variant: badge_variant, size: :sm) do %>
+                      <%= rule.match_type.humanize %>
+                    <% end %>
+                  </td>
+
+                  <%# Category %>
+                  <td class="px-5 py-3.5">
+                    <span class="inline-flex items-center gap-2 text-sm text-text-primary">
+                      <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <%= rule.category.color %>"></span>
+                      <%= rule.category.name %>
+                    </span>
+                  </td>
+
+                  <%# Actions %>
+                  <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
+                      <%= link_to edit_categorization_rule_path(rule), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all", data: { turbo_frame: "modal" } do %>
+                        <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
+                      <% end %>
+                      <%= link_to categorization_rule_path(rule), data: { turbo_method: :delete, turbo_confirm: "Delete rule matching '#{rule.pattern}'?" }, class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger-600 transition-all" do %>
+                        <%= heroicon "trash", variant: :mini, options: { class: "w-4 h-4" } %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No categorization rules yet",
+          description: "Create rules to automatically categorize new transactions based on their description.",
+          icon: "sparkles",
+          action_text: "Create Rule",
+          action_url: new_categorization_rule_path,
+          action_data: { turbo_frame: "modal" }
+        ) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

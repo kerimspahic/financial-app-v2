@@ -24,6 +24,9 @@ class User < ApplicationRecord
   has_many :audit_logs, dependent: :destroy
   has_many :exchange_conversions, dependent: :destroy
   has_many :saved_filters, dependent: :destroy
+  has_many :account_groups, dependent: :destroy
+  has_many :categorization_rules, dependent: :destroy
+  has_many :account_shares, dependent: :destroy
 
   before_create :set_jti
   after_create :create_default_categories
@@ -31,6 +34,13 @@ class User < ApplicationRecord
 
   def preference
     user_preference || build_user_preference
+  end
+
+  def accessible_accounts
+    Account.where(
+      "accounts.user_id = :uid OR accounts.id IN (SELECT account_id FROM account_shares WHERE user_id = :uid AND accepted_at IS NOT NULL)",
+      uid: id
+    )
   end
 
   def admin?

@@ -34,20 +34,22 @@
                   <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %><%= col["key"] %><% end %>
                 </div>
                 <div class="flex items-center gap-4">
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="hidden" name="table_config[columns][<%= idx %>][key]" value="<%= col["key"] %>">
-                    <input type="hidden" name="table_config[columns][<%= idx %>][label]" value="<%= col["label"] %>">
-                    <input type="checkbox" name="table_config[columns][<%= idx %>][default_visible]" value="true"
-                      <%= "checked" if col["default_visible"] %>
-                      class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
-                    <span class="text-xs text-text-secondary">Visible</span>
-                  </label>
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" name="table_config[columns][<%= idx %>][sortable]" value="true"
-                      <%= "checked" if col["sortable"] %>
-                      class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
-                    <span class="text-xs text-text-secondary">Sortable</span>
-                  </label>
+                  <input type="hidden" name="table_config[columns][<%= idx %>][key]" value="<%= col["key"] %>">
+                  <input type="hidden" name="table_config[columns][<%= idx %>][label]" value="<%= col["label"] %>">
+                  <%= render CheckboxComponent.new(
+                    name: "table_config[columns][#{idx}][default_visible]",
+                    value: "true",
+                    checked: col["default_visible"],
+                    label: "Visible",
+                    size: :sm
+                  ) %>
+                  <%= render CheckboxComponent.new(
+                    name: "table_config[columns][#{idx}][sortable]",
+                    value: "true",
+                    checked: col["sortable"],
+                    label: "Sortable",
+                    size: :sm
+                  ) %>
                 </div>
               </div>
             <% end %>
@@ -74,12 +76,14 @@
             <% all_search_fields = %w[description notes category_name account_name] %>
             <% active_fields = @table_config.search_fields || [] %>
             <% all_search_fields.each do |field| %>
-              <label class="flex items-center gap-2 cursor-pointer p-2 glass rounded-lg">
-                <input type="checkbox" name="table_config[search_fields][]" value="<%= field %>"
-                  <%= "checked" if active_fields.include?(field) %>
-                  class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
-                <span class="text-sm text-text-secondary"><%= field.humanize %></span>
-              </label>
+              <%= render CheckboxComponent.new(
+                name: "table_config[search_fields][]",
+                value: field,
+                checked: active_fields.include?(field),
+                label: field.humanize,
+                size: :sm,
+                wrapper_class: "items-center p-2 glass rounded-lg"
+              ) %>
             <% end %>
           </div>
         <% end %>
@@ -110,15 +114,18 @@
                     <%= render BadgeComponent.new(variant: :info, size: :sm) do %><%= filter["type"] %><% end %>
                   </div>
                 </div>
-                <label class="flex items-center gap-2 cursor-pointer">
+                <div class="flex items-center gap-2">
                   <input type="hidden" name="table_config[filters][<%= idx %>][key]" value="<%= filter["key"] %>">
                   <input type="hidden" name="table_config[filters][<%= idx %>][type]" value="<%= filter["type"] %>">
                   <input type="hidden" name="table_config[filters][<%= idx %>][label]" value="<%= filter["label"] %>">
-                  <input type="checkbox" name="table_config[filters][<%= idx %>][enabled]" value="true"
-                    <%= "checked" if filter["enabled"] %>
-                    class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
-                  <span class="text-xs text-text-secondary">Enabled</span>
-                </label>
+                  <%= render CheckboxComponent.new(
+                    name: "table_config[filters][#{idx}][enabled]",
+                    value: "true",
+                    checked: filter["enabled"],
+                    label: "Enabled",
+                    size: :sm
+                  ) %>
+                </div>
               </div>
             <% end %>
           </div>

@@ -401,6 +401,90 @@ body::after {
 }
 
 /* ════════════════════════════════════════════════════════
+   Custom Checkbox & Toggle Switch
+   ════════════════════════════════════════════════════════ */
+.toggle-track {
+  container-type: normal;
+}
+
+.toggle-track:has(input:checked) {
+  background-color: var(--primary-500);
+  border-color: var(--primary-500);
+}
+
+.toggle-track:has(input:not(:checked)) {
+  background-color: var(--surface-hover);
+  border: 1px solid var(--glass-border);
+}
+
+.toggle-track:has(input:checked) .toggle-thumb {
+  --tw-translate-x: calc(100% + 2px);
+}
+
+.toggle-track:has(input:not(:checked)) .toggle-thumb {
+  --tw-translate-x: 2px;
+}
+
+.toggle-track:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateX(var(--tw-translate-x, 2px)) translateY(-50%);
+  transition: transform 200ms ease-in-out;
+}
+
+/* Custom checkbox styling for glass theme */
+input[type="checkbox"]:not(.sr-only) {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  border: 1.5px solid var(--glass-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 150ms ease;
+}
+
+input[type="checkbox"]:not(.sr-only):hover {
+  border-color: var(--primary-500);
+}
+
+input[type="checkbox"]:not(.sr-only):checked {
+  background-color: var(--primary-500);
+  border-color: var(--primary-500);
+}
+
+input[type="checkbox"]:not(.sr-only):checked::after {
+  content: "";
+  display: block;
+  width: 55%;
+  height: 30%;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(-45deg) translateY(-10%);
+}
+
+input[type="checkbox"]:not(.sr-only):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--tw-ring-color, var(--primary-500)), 0.3);
+}
+
+input[type="checkbox"]:not(.sr-only):disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input[type="checkbox"]:not(.sr-only):disabled:hover {
+  border-color: var(--glass-border);
+}
+
+/* ════════════════════════════════════════════════════════
    Tooltip
    ════════════════════════════════════════════════════════ */
 .tooltip-popup {

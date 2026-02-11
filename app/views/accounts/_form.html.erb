@@ -1,34 +1,126 @@
-<%= form_with(model: account, class: "space-y-6") do |form| %>
+<%= form_with(model: account, class: "space-y-6", data: { controller: "account-type-toggle" }) do |form| %>
   <% if params[:return_to].present? %>
     <%= hidden_field_tag :return_to, params[:return_to] %>
   <% end %>
-  <% if account.errors.any? %>
-    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
-      <strong><%= pluralize(account.errors.count, "error") %> prevented this account from being saved:</strong>
-      <ul class="mt-2 list-disc list-inside">
-        <% account.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    <% end %>
-  <% end %>
 
-  <%= render InputComponent.new(form: form, field: :name, label: "Name", placeholder: "e.g., Main Checking") %>
+  <%# Emoji Picker (Feature 10) %>
+  <div data-controller="emoji-picker" class="flex items-end gap-4">
+    <div class="relative">
+      <button type="button" data-action="click->emoji-picker#toggle"
+        class="w-12 h-12 rounded-xl glass border border-glass-border flex items-center justify-center hover:bg-surface-hover transition-all cursor-pointer overflow-hidden shrink-0">
+        <span data-emoji-picker-target="display" class="text-2xl leading-none">
+          <% if account.icon_emoji.present? %>
+            <%= account.icon_emoji %>
+          <% else %>
+            <%= heroicon "face-smile", variant: :outline, options: { class: "w-5 h-5 text-text-muted" } %>
+          <% end %>
+        </span>
+      </button>
+      <div data-emoji-picker-target="picker" class="hidden absolute top-14 left-0 z-50 glass-strong rounded-xl p-4 shadow-xl border border-glass-border w-64">
+        <div class="grid grid-cols-5 gap-2">
+          <% %w[🏦 💰 💳 🏠 🚗 📈 💎 🎯 ✈️ 🛡️ 💼 🪙 🎓 🏥 💻 🏢 🎮 🍽️ 🛒 ⚡].each do |emoji| %>
+            <button type="button" data-action="click->emoji-picker#select" data-emoji="<%= emoji %>"
+              class="w-10 h-10 flex items-center justify-center text-xl rounded-lg hover:bg-surface-hover transition-colors cursor-pointer">
+              <%= emoji %>
+            </button>
+          <% end %>
+        </div>
+        <button type="button" data-action="click->emoji-picker#clear"
+          class="mt-2.5 w-full text-xs text-text-muted hover:text-text-primary text-center py-1.5 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer">
+          Clear
+        </button>
+      </div>
+    </div>
+    <%= form.hidden_field :icon_emoji, data: { emoji_picker_target: "input" } %>
+    <div class="flex-1">
+      <%= render InputComponent.new(form: form, field: :name, label: "Name", placeholder: "e.g., Main Checking") %>
+    </div>
+  </div>
 
-  <%= render InputComponent.new(
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(
+      form: form,
+      field: :account_type,
+      label: "Account Type",
+      type: :select,
+      collection: Account.account_types.keys.map { |t| [t.humanize, t] },
+      include_blank: "Select type",
+      data: { account_type_toggle_target: "typeSelect", action: "change->account-type-toggle#toggle" }
+    ) %>
+    <%= render InputComponent.new(
+      form: form,
+      field: :account_group_id,
+      label: "Group",
+      type: :select,
+      collection: current_user.account_groups.ordered.map { |g| [g.name, g.id] },
+      include_blank: "No group"
+    ) %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(form: form, field: :balance, label: "Balance", type: :number, step: "0.01") %>
+    <%= render InputComponent.new(
+      form: form,
+      field: :currency,
+      label: "Currency",
+      type: :select,
+      collection: ExchangeConversion.currency_options,
+      include_blank: false
+    ) %>
+  </div>
+
+  <%= render InputComponent.new(form: form, field: :balance_goal, label: "Balance Goal", type: :number, step: "0.01", placeholder: "Optional target balance", hint: "Set a target balance to track progress") %>
+
+  <div data-account-type-toggle-target="creditFields" class="<%= 'hidden' unless account.credit_card? %>">
+    <div class="grid grid-cols-2 gap-4">
+      <%= render InputComponent.new(form: form, field: :credit_limit, label: "Credit Limit", type: :number, step: "0.01", placeholder: "e.g., 5000") %>
+      <%= render InputComponent.new(form: form, field: :interest_rate, label: "Interest Rate (%)", type: :number, step: "0.01", placeholder: "e.g., 19.99") %>
+    </div>
+  </div>
+
+  <%# Loan Fields (Feature 8) %>
+  <div data-account-type-toggle-target="loanFields" class="<%= 'hidden' if account.credit_card? %>">
+    <div class="space-y-3">
+      <p class="text-sm font-medium text-text-secondary">Loan Details (optional)</p>
+      <div class="grid grid-cols-2 gap-4">
+        <%= render InputComponent.new(form: form, field: :original_loan_amount, label: "Original Loan Amount", type: :number, step: "0.01", placeholder: "e.g., 250000") %>
+        <%= render InputComponent.new(form: form, field: :loan_term_months, label: "Loan Term (months)", type: :number, placeholder: "e.g., 360") %>
+      </div>
+      <% unless account.credit_card? %>
+        <%= render InputComponent.new(form: form, field: :interest_rate, label: "Interest Rate (%)", type: :number, step: "0.01", placeholder: "e.g., 6.5") %>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render CheckboxComponent.new(
     form: form,
-    field: :account_type,
-    label: "Account Type",
-    type: :select,
-    collection: Account.account_types.keys.map { |t| [t.humanize, t] },
-    include_blank: "Select type"
+    field: :exclude_from_net_worth,
+    toggle: true,
+    label: "Exclude from net worth calculation",
+    description: "This account won't be counted toward your net worth"
   ) %>
 
-  <%= render InputComponent.new(form: form, field: :balance, label: "Balance", type: :number, step: "0.01") %>
+  <%= render InputComponent.new(form: form, field: :description, label: "Description", type: :textarea, placeholder: "Optional notes about this account...", rows: 2) %>
 
-  <%= render InputComponent.new(form: form, field: :currency, label: "Currency") %>
+  <%# Account Details - Collapsible (Features 3, 9) %>
+  <div data-controller="collapsible" data-collapsible-open-value="<%= account.bank_name.present? || account.account_number_masked.present? || account.iban.present? %>">
+    <button type="button" data-action="click->collapsible#toggle"
+      class="flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors group">
+      <%= heroicon "chevron-down", variant: :mini, options: { class: "w-4 h-4 text-text-muted transition-transform", data: { collapsible_target: "icon" } } %>
+      Account Details
+    </button>
+    <div data-collapsible-target="content" class="<%= 'hidden' unless account.bank_name.present? || account.account_number_masked.present? || account.iban.present? %> mt-3 space-y-4">
+      <%= render InputComponent.new(form: form, field: :bank_name, label: "Bank / Institution", placeholder: "e.g., Chase, Vanguard") %>
+      <div class="grid grid-cols-2 gap-4">
+        <%= render InputComponent.new(form: form, field: :account_number_masked, label: "Account Number (last 4)", placeholder: "e.g., ****1234") %>
+        <%= render InputComponent.new(form: form, field: :iban, label: "IBAN", placeholder: "e.g., DE89 3704 0044 0532 0130 00") %>
+      </div>
+    </div>
+  </div>
 
-  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
-    <%= account.persisted? ? "Update Account" : "Create Account" %>
-  <% end %>
+  <div class="sticky bottom-0 z-10 -mx-6 px-6 py-4 mt-2 border-t border-glass-border bg-surface/80 backdrop-blur-xl">
+    <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+      <%= account.persisted? ? "Update Account" : "Create Account" %>
+    <% end %>
+  </div>
 <% end %>

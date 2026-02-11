@@ -1,0 +1,11 @@
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: "New Rule" } do %>
+      <%= render "form", categorization_rule: @categorization_rule %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render layout: "shared/form_page", locals: { title: "New Rule", back_text: "Back to rules", back_path: categorization_rules_path } do %>
+    <%= render "form", categorization_rule: @categorization_rule %>
+  <% end %>
+<% end %>

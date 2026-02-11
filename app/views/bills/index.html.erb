@@ -1,11 +1,107 @@
 <div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: "Bill Reminders", subtitle: "Never miss a payment") %>
+  <%= render PageHeaderComponent.new(
+    title: "Bills & Payments",
+    subtitle: "Track and manage your recurring bills"
+  ) do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_bill_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+        Add Bill
+      <% end %>
+    <% end %>
+  <% end %>
 
-  <%= render CardComponent.new do %>
-    <%= render EmptyStateComponent.new(
-      title: "Coming Soon",
-      description: "Track upcoming bills, set reminders, and mark payments as they are completed.",
-      icon: "bell-alert"
+  <%# Stats %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-card-entrance">
+    <%= render StatCardComponent.new(
+      label: "Monthly Bills",
+      value: number_to_currency(@total_monthly),
+      icon: "calendar",
+      color: "text-primary-600"
     ) %>
+    <%= render StatCardComponent.new(
+      label: "Annual Cost",
+      value: number_to_currency(@total_annual),
+      icon: "banknotes",
+      color: "text-info-600"
+    ) %>
+    <%= render StatCardComponent.new(
+      label: "Overdue",
+      value: @overdue_count.to_s,
+      icon: "exclamation-triangle",
+      color: @overdue_count > 0 ? "text-danger-600" : "text-success-600"
+    ) %>
+  </div>
+
+  <% if @overdue_bills.any? || @due_soon_bills.any? || @upcoming_bills.any? || @paid_bills.any? %>
+    <%# Overdue Bills %>
+    <% if @overdue_bills.any? %>
+      <div class="space-y-3 animate-card-entrance stagger-2">
+        <h2 class="text-lg font-semibold text-danger-600 flex items-center gap-2">
+          <%= heroicon "exclamation-triangle", variant: :outline, options: { class: "w-5 h-5" } %>
+          Overdue (<%= @overdue_bills.size %>)
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <% @overdue_bills.each do |bill| %>
+            <%= render "bill_card", bill: bill %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Due Soon Bills %>
+    <% if @due_soon_bills.any? %>
+      <div class="space-y-3 animate-card-entrance stagger-3">
+        <h2 class="text-lg font-semibold text-warning-600 flex items-center gap-2">
+          <%= heroicon "clock", variant: :outline, options: { class: "w-5 h-5" } %>
+          Due Soon (<%= @due_soon_bills.size %>)
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <% @due_soon_bills.each do |bill| %>
+            <%= render "bill_card", bill: bill %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Upcoming Bills %>
+    <% if @upcoming_bills.any? %>
+      <div class="space-y-3 animate-card-entrance stagger-4">
+        <h2 class="text-lg font-semibold text-text-primary flex items-center gap-2">
+          <%= heroicon "calendar-days", variant: :outline, options: { class: "w-5 h-5" } %>
+          Upcoming (<%= @upcoming_bills.size %>)
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <% @upcoming_bills.each do |bill| %>
+            <%= render "bill_card", bill: bill %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Paid Bills %>
+    <% if @paid_bills.any? %>
+      <div class="space-y-3 animate-card-entrance stagger-5">
+        <h2 class="text-lg font-semibold text-success-600 flex items-center gap-2">
+          <%= heroicon "check-circle", variant: :outline, options: { class: "w-5 h-5" } %>
+          Paid (<%= @paid_bills.size %>)
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <% @paid_bills.each do |bill| %>
+            <%= render "bill_card", bill: bill %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No bills yet",
+        description: "Add your first bill to start tracking payments and never miss a due date.",
+        icon: "bell-alert",
+        action_text: "Add Bill",
+        action_url: new_bill_path,
+        action_data: { turbo_frame: "modal" }
+      ) %>
+    <% end %>
   <% end %>
 </div>

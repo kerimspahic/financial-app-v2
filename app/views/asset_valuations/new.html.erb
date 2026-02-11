@@ -1,0 +1,5 @@
+<%= turbo_frame_tag "modal" do %>
+  <%= render layout: "shared/modal_form", locals: { title: "Add Valuation" } do %>
+    <%= render "form", valuation: @valuation, account: @account %>
+  <% end %>
+<% end %>

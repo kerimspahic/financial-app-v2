@@ -1,0 +1,247 @@
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: @bill.name } do %>
+      <div class="space-y-5">
+        <%# Bill Header %>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center shadow-lg">
+              <%= heroicon "bell-alert", variant: :solid, options: { class: "w-6 h-6 text-primary-600" } %>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-text-primary"><%= @bill.name %></h3>
+              <p class="text-sm text-text-secondary capitalize"><%= @bill.frequency %></p>
+            </div>
+          </div>
+          <%= render BadgeComponent.new(variant: @bill.status_variant, dot: true) do %>
+            <%= @bill.status.to_s.humanize %>
+          <% end %>
+        </div>
+
+        <%# Details Grid %>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">Amount</p>
+            <p class="text-lg font-bold text-text-primary"><%= number_to_currency(@bill.amount) %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">Next Due</p>
+            <p class="text-lg font-bold text-text-primary"><%= @bill.next_due_date.strftime("%b %d") %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">Annual Cost</p>
+            <p class="text-lg font-bold text-text-primary"><%= number_to_currency(@bill.annual_cost) %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">Days Until Due</p>
+            <p class="text-lg font-bold <%= @bill.days_until_due < 0 ? 'text-danger-600' : 'text-text-primary' %>">
+              <%= @bill.days_until_due %>
+            </p>
+          </div>
+        </div>
+
+        <%# Additional Details %>
+        <div class="space-y-2 text-sm">
+          <% if @bill.category.present? %>
+            <div class="flex items-center justify-between py-1.5">
+              <span class="text-text-muted">Category</span>
+              <span class="text-text-primary font-medium"><%= @bill.category.name %></span>
+            </div>
+          <% end %>
+          <% if @bill.account.present? %>
+            <div class="flex items-center justify-between py-1.5">
+              <span class="text-text-muted">Payment Account</span>
+              <span class="text-text-primary font-medium"><%= @bill.account.name %></span>
+            </div>
+          <% end %>
+          <% if @bill.auto_pay? %>
+            <div class="flex items-center justify-between py-1.5">
+              <span class="text-text-muted">Auto-pay</span>
+              <%= render BadgeComponent.new(variant: :info, size: :sm) do %>
+                Enabled
+              <% end %>
+            </div>
+          <% end %>
+          <% if @bill.reminder_days_before.present? && @bill.reminder_days_before > 0 %>
+            <div class="flex items-center justify-between py-1.5">
+              <span class="text-text-muted">Reminder</span>
+              <span class="text-text-primary font-medium"><%= pluralize(@bill.reminder_days_before, "day") %> before</span>
+            </div>
+          <% end %>
+          <% if @bill.website_url.present? %>
+            <div class="flex items-center justify-between py-1.5">
+              <span class="text-text-muted">Website</span>
+              <%= link_to @bill.website_url.truncate(30), @bill.website_url, target: "_blank", rel: "noopener",
+                  class: "text-primary-600 hover:text-primary-700 font-medium" %>
+            </div>
+          <% end %>
+          <% if @bill.notes.present? %>
+            <div class="pt-2 border-t border-glass-border">
+              <p class="text-text-muted mb-1">Notes</p>
+              <p class="text-text-primary"><%= @bill.notes %></p>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Payment History %>
+        <div class="border-t border-glass-border pt-4">
+          <h4 class="text-sm font-semibold text-text-primary mb-3">
+            Payment History
+            <% if @payments.any? %>
+              <span class="text-text-muted font-normal">(<%= @payments.size %>)</span>
+            <% end %>
+          </h4>
+
+          <% if @payments.any? %>
+            <div class="space-y-0 divide-y divide-glass-border max-h-48 overflow-y-auto">
+              <% @payments.each do |payment| %>
+                <div class="flex items-center justify-between py-2.5">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-success-50 flex items-center justify-center flex-shrink-0">
+                      <%= heroicon "check-circle", variant: :solid, options: { class: "w-4 h-4 text-success-600" } %>
+                    </div>
+                    <div>
+                      <p class="text-sm font-semibold text-success-600"><%= number_to_currency(payment.amount) %></p>
+                      <p class="text-xs text-text-muted"><%= payment.paid_date.strftime("%b %d, %Y") %></p>
+                    </div>
+                  </div>
+                  <% if payment.linked_transaction.present? %>
+                    <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %>
+                      Linked
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-sm text-text-muted text-center py-4">No payments recorded yet.</p>
+          <% end %>
+        </div>
+
+        <%# Footer Actions %>
+        <div class="flex items-center justify-between pt-2 border-t border-glass-border">
+          <div class="flex items-center gap-2">
+            <%= render ButtonComponent.new(variant: :secondary, size: :sm, href: edit_bill_path(@bill), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+              Edit
+            <% end %>
+            <%= render ButtonComponent.new(variant: :danger, size: :sm, href: bill_path(@bill), method: :delete, confirm: "Delete '#{@bill.name}'? This will also remove all payment history.", icon: "trash") do %>
+              Delete
+            <% end %>
+          </div>
+          <% unless @bill.status == :paid %>
+            <%= button_to pay_bill_path(@bill), method: :post, class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-success-50 text-success-700 hover:bg-success-100 transition-colors cursor-pointer" do %>
+              <%= heroicon "check-circle", variant: :outline, options: { class: "w-4 h-4" } %>
+              Mark Paid
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% else %>
+  <div class="space-y-6">
+    <%= render PageHeaderComponent.new(title: @bill.name) do |header| %>
+      <% header.with_actions do %>
+        <div class="flex items-center gap-2">
+          <% unless @bill.status == :paid %>
+            <%= button_to pay_bill_path(@bill), method: :post, class: "inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-success-50 text-success-700 hover:bg-success-100 transition-colors cursor-pointer" do %>
+              <%= heroicon "check-circle", variant: :outline, options: { class: "w-4 h-4" } %>
+              Mark Paid
+            <% end %>
+          <% end %>
+          <%= render ButtonComponent.new(variant: :secondary, href: edit_bill_path(@bill), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+            Edit
+          <% end %>
+          <%= render ButtonComponent.new(variant: :danger, href: bill_path(@bill), method: :delete, confirm: "Delete '#{@bill.name}'? This will also remove all payment history.", icon: "trash") do %>
+            Delete
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <div class="flex items-center gap-2 -mt-4 mb-4">
+      <%= render BadgeComponent.new(variant: @bill.status_variant, dot: true) do %>
+        <%= @bill.status.to_s.humanize %>
+      <% end %>
+      <%= render BadgeComponent.new(variant: :neutral) do %>
+        <%= @bill.frequency.humanize %>
+      <% end %>
+      <% if @bill.auto_pay? %>
+        <%= render BadgeComponent.new(variant: :info) do %>
+          Auto-pay
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Stats Row %>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <%= render StatCardComponent.new(
+        label: "Amount",
+        value: number_to_currency(@bill.amount),
+        icon: "banknotes",
+        color: "text-primary-600"
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Next Due",
+        value: @bill.next_due_date.strftime("%b %d, %Y"),
+        icon: "calendar-days"
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Annual Cost",
+        value: number_to_currency(@bill.annual_cost),
+        icon: "chart-bar",
+        color: "text-info-600"
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Payments",
+        value: @payments.size.to_s,
+        icon: "check-circle",
+        color: "text-success-600"
+      ) %>
+    </div>
+
+    <%# Payment History %>
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-lg font-semibold text-text-primary">
+          Payment History
+          <% if @payments.any? %>
+            <span class="text-text-muted font-normal text-sm">(<%= @payments.size %>)</span>
+          <% end %>
+        </h2>
+      <% end %>
+      <% if @payments.any? %>
+        <div class="divide-y divide-glass-border">
+          <% @payments.each do |payment| %>
+            <div class="flex items-center justify-between py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-success-50 flex items-center justify-center flex-shrink-0">
+                  <%= heroicon "check-circle", variant: :solid, options: { class: "w-5 h-5 text-success-600" } %>
+                </div>
+                <div>
+                  <p class="font-semibold text-success-600"><%= number_to_currency(payment.amount) %></p>
+                  <p class="text-sm text-text-muted"><%= payment.paid_date.strftime("%b %d, %Y") %></p>
+                </div>
+              </div>
+              <% if payment.linked_transaction.present? %>
+                <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %>
+                  Transaction linked
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <%= render EmptyStateComponent.new(
+          title: "No payments yet",
+          description: "Payments will appear here when you mark this bill as paid.",
+          icon: "check-circle"
+        ) %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-4">
+      <%= link_to "Back to bills", bills_path, class: "text-sm text-text-secondary hover:text-text-primary" %>
+    </div>
+  </div>
+<% end %>

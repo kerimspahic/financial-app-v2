@@ -11,8 +11,44 @@ class DashboardController < ApplicationController
   }.freeze
 
   def index
-    @accounts = current_user.accounts
+    @accounts = current_user.accounts.active
     @total_balance = @accounts.sum(:balance)
+
+    # Net worth computation
+    nw_accounts = current_user.accounts.active.included_in_net_worth
+    @total_assets = nw_accounts.where(account_type: [ :checking, :savings, :cash, :investment, :property, :vehicle ].map { |t| Account.account_types[t] }).sum(:balance)
+    @total_liabilities = nw_accounts.where(account_type: Account.account_types[:credit_card]).sum(:balance)
+    @net_worth = @total_assets - @total_liabilities
+
+    # Net worth change this month for stat cards
+    start_of_month = Date.current.beginning_of_month
+    account_ids = @accounts.map(&:id)
+    if account_ids.any?
+      month_start_snapshots = AccountBalanceSnapshot
+        .where(account_id: account_ids)
+        .where("date <= ?", start_of_month)
+        .order(Arel.sql("account_id, date DESC"))
+        .select("DISTINCT ON (account_id) account_id, balance")
+
+      prior_balances = month_start_snapshots.index_by(&:account_id)
+      prior_assets = 0
+      prior_liabilities = 0
+      @accounts.each do |acct|
+        snap = prior_balances[acct.id]
+        next unless snap
+        if acct.asset?
+          prior_assets += snap.balance
+        elsif acct.liability?
+          prior_liabilities += snap.balance
+        end
+      end
+      prior_net_worth = prior_assets - prior_liabilities
+
+      @net_worth_change = prior_net_worth.zero? ? nil : ((@net_worth - prior_net_worth) / prior_net_worth * 100).round(1)
+      @assets_change = prior_assets.zero? ? nil : ((@total_assets - prior_assets) / prior_assets * 100).round(1)
+      @liabilities_change = prior_liabilities.zero? ? nil : ((@total_liabilities - prior_liabilities) / prior_liabilities * 100).round(1)
+    end
+
     @recent_transactions = current_user.transactions.recent.includes(:account, :category).limit(10)
 
     current_month = Date.current.month
@@ -22,6 +58,10 @@ class DashboardController < ApplicationController
     @monthly_income = month_transactions.income.sum(:amount)
     @monthly_expenses = month_transactions.expense.sum(:amount)
     @budgets = current_user.budgets.where(month: current_month, year: current_year).includes(:category)
+
+    @upcoming_bills = current_user.bills.active
+      .where("due_date >= ? AND due_date <= ?", Date.current, Date.current + 7.days)
+      .order(:due_date).includes(:category).limit(5)
 
     load_monthly_totals
     @monthly_chart_data = monthly_chart_data

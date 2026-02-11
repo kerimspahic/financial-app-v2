@@ -1,4 +1,4 @@
-<%= form_with(model: transaction, class: "space-y-6") do |form| %>
+<%= form_with(model: transaction, class: "space-y-6", data: { controller: "transfer-toggle split-transaction" }) do |form| %>
   <% if transaction.errors.any? %>
     <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
       <strong><%= pluralize(transaction.errors.count, "error") %> prevented this transaction from being saved:</strong>
@@ -20,7 +20,8 @@
       label: "Type",
       type: :select,
       collection: Transaction.transaction_types.keys.map { |t| [t.humanize, t] },
-      include_blank: "Select type"
+      include_blank: "Select type",
+      data: { transfer_toggle_target: "typeSelect", action: "change->transfer-toggle#toggle" }
     ) %>
   </div>
 
@@ -30,9 +31,9 @@
     <%= render InputComponent.new(
       form: form,
       field: :account_id,
-      label: "Account",
+      label: "From Account",
       type: :select,
-      collection: current_user.accounts.map { |a| [a.name, a.id] },
+      collection: current_user.accounts.active.ordered.map { |a| [a.name, a.id] },
       include_blank: "Select account"
     ) %>
     <%= render InputComponent.new(
@@ -44,6 +45,128 @@
       include_blank: "Select category"
     ) %>
   </div>
+
+  <div data-transfer-toggle-target="destinationField" class="<%= 'hidden' unless transaction.transfer? %>">
+    <%= render InputComponent.new(
+      form: form,
+      field: :destination_account_id,
+      label: "To Account",
+      type: :select,
+      collection: current_user.accounts.active.ordered.map { |a| [a.name, a.id] },
+      include_blank: "Select destination account"
+    ) %>
+  </div>
+
+  <%# Tag picker %>
+  <div data-controller="tag-select" data-action="click@window->tag-select#closeOnClickOutside">
+    <label class="block text-sm font-medium text-text-primary mb-1.5">Tags</label>
+    <div class="relative">
+      <button type="button" data-action="click->tag-select#toggle"
+        class="block w-full rounded-xl border border-input-border px-4 py-2.5 text-sm glass text-left focus:outline-none focus:ring-2 focus:ring-input-focus">
+        <span data-tag-select-target="display" class="<%= transaction.tags.any? ? 'text-text-primary' : 'text-text-muted' %>">
+          <%= transaction.tags.any? ? transaction.tags.map(&:name).join(", ") : "Select tags..." %>
+        </span>
+      </button>
+      <div data-tag-select-target="menu" class="hidden absolute z-50 mt-1 w-full bg-surface rounded-xl shadow-xl border border-border p-2 max-h-48 overflow-y-auto">
+        <% current_user.tags.order(:name).each do |tag| %>
+          <%= render CheckboxComponent.new(
+            name: "transaction[tag_ids][]",
+            value: tag.id.to_s,
+            checked: transaction.tags.include?(tag),
+            size: :sm,
+            wrapper_class: "items-center px-3 py-2 rounded-lg hover:bg-surface-hover transition-colors",
+            data: { tag_select_target: "checkbox", tag_name: tag.name, action: "change->tag-select#update" }
+          ) do %>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="inline-block w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <%= tag.color || '#94a3b8' %>"></span>
+              <%= tag.name %>
+            </span>
+          <% end %>
+        <% end %>
+        <% if current_user.tags.empty? %>
+          <p class="px-3 py-2 text-sm text-text-muted">No tags yet. <%= link_to "Create one", new_tag_path, class: "text-primary-600 hover:underline", data: { turbo_frame: "modal" } %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# Split Transactions %>
+  <div>
+    <button type="button" data-action="click->split-transaction#toggle"
+      class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
+      <%= heroicon "scissors", variant: :mini, options: { class: "w-4 h-4" } %>
+      <span>Split Transaction</span>
+    </button>
+
+    <div data-split-transaction-target="splitSection" class="<%= transaction.split? ? '' : 'hidden' %> mt-3 space-y-3 p-4 rounded-xl glass border border-glass-border">
+      <div class="flex items-center justify-between">
+        <label class="block text-sm font-medium text-text-primary">Split Categories</label>
+        <span class="text-xs text-text-muted">Total: <span data-split-transaction-target="total">$0.00</span></span>
+      </div>
+
+      <div data-split-transaction-target="container" class="space-y-2">
+        <% transaction.transaction_splits.each do |split| %>
+          <div data-split-row class="flex items-center gap-2">
+            <%= form.fields_for :transaction_splits, split do |sf| %>
+              <%= sf.hidden_field :id %>
+              <input type="hidden" name="<%= sf.object_name %>[_destroy]" value="0">
+              <%= sf.select :category_id,
+                options_for_select(current_user.categories.map { |c| [ c.name, c.id ] }, split.category_id),
+                { include_blank: "Category" },
+                class: "flex-1 rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30" %>
+              <%= sf.number_field :amount, step: "0.01", min: "0.01", placeholder: "Amount",
+                data: { action: "input->split-transaction#updateTotal" },
+                class: "w-28 rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30" %>
+              <%= sf.text_field :memo, placeholder: "Memo",
+                class: "w-32 rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30" %>
+            <% end %>
+            <button type="button" data-action="click->split-transaction#removeRow"
+              class="p-1.5 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-500/10 text-text-muted hover:text-danger-600 transition-all shrink-0">
+              <%= heroicon "x-mark", variant: :mini, options: { class: "w-4 h-4" } %>
+            </button>
+          </div>
+        <% end %>
+      </div>
+
+      <template data-split-transaction-target="template">
+        <div data-split-row class="flex items-center gap-2">
+          <select name="transaction[transaction_splits_attributes][NEW_RECORD][category_id]"
+            class="flex-1 rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+            <option value="">Category</option>
+            <% current_user.categories.each do |c| %>
+              <option value="<%= c.id %>"><%= c.name %></option>
+            <% end %>
+          </select>
+          <input type="number" name="transaction[transaction_splits_attributes][NEW_RECORD][amount]"
+            step="0.01" min="0.01" placeholder="Amount"
+            data-action="input->split-transaction#updateTotal"
+            class="w-28 rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+          <input type="text" name="transaction[transaction_splits_attributes][NEW_RECORD][memo]"
+            placeholder="Memo"
+            class="w-32 rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+          <button type="button" data-action="click->split-transaction#removeRow"
+            class="p-1.5 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-500/10 text-text-muted hover:text-danger-600 transition-all shrink-0">
+            <%= heroicon "x-mark", variant: :mini, options: { class: "w-4 h-4" } %>
+          </button>
+        </div>
+      </template>
+
+      <button type="button" data-action="click->split-transaction#addRow"
+        class="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
+        <%= heroicon "plus", variant: :mini, options: { class: "w-3.5 h-3.5" } %>
+        Add Split
+      </button>
+    </div>
+  </div>
+
+  <%= render InputComponent.new(
+    form: form,
+    field: :clearing_status,
+    label: "Clearing Status",
+    type: :select,
+    collection: Transaction.clearing_statuses.keys.map { |s| [ s.humanize, s ] },
+    include_blank: false
+  ) %>
 
   <%= render InputComponent.new(form: form, field: :notes, label: "Notes", type: :textarea, placeholder: "Optional notes...", rows: 3) %>
 

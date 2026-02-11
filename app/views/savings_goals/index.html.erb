@@ -1,11 +1,138 @@
 <div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: "Savings Goals", subtitle: "Track your progress") %>
+  <%= render PageHeaderComponent.new(
+    title: "Savings Goals",
+    subtitle: "Track your progress toward financial milestones"
+  ) do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_savings_goal_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+        New Goal
+      <% end %>
+    <% end %>
+  <% end %>
 
-  <%= render CardComponent.new do %>
-    <%= render EmptyStateComponent.new(
-      title: "Coming Soon",
-      description: "Create savings goals, track contributions, and watch your progress toward financial milestones.",
-      icon: "flag"
+  <%# Overview Stats %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-card-entrance">
+    <%= render StatCardComponent.new(
+      label: "Total Saved",
+      value: number_to_currency(@total_saved),
+      icon: "banknotes",
+      color: "text-success-600"
     ) %>
+    <%= render StatCardComponent.new(
+      label: "Total Target",
+      value: number_to_currency(@total_target),
+      icon: "flag",
+      color: "text-primary-600"
+    ) %>
+    <%= render StatCardComponent.new(
+      label: "Overall Progress",
+      value: "#{@overall_percentage}%",
+      icon: "chart-bar",
+      color: "text-info-600"
+    ) %>
+  </div>
+
+  <% if @savings_goals.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% @savings_goals.each_with_index do |goal, index| %>
+        <div class="animate-card-entrance stagger-<%= [ index + 1, 6 ].min %>">
+          <%= render CardComponent.new(class: "group relative") do %>
+            <%# Edit/Delete buttons on hover %>
+            <div class="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_savings_goal_path(goal), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+              <% end %>
+              <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: savings_goal_path(goal), method: :delete, confirm: "Delete '#{goal.name}'? This will also remove all contributions.", icon: "trash") do %>
+              <% end %>
+            </div>
+
+            <%# Goal Header with Icon and Name %>
+            <%= link_to savings_goal_path(goal), data: { turbo_frame: "modal" }, class: "block" do %>
+              <div class="flex items-start gap-3 mb-4">
+                <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl shadow-lg"
+                     style="background-color: <%= goal.color.presence || '#10b981' %>;">
+                  <% if goal.icon.present? %>
+                    <span><%= goal.icon %></span>
+                  <% else %>
+                    <%= heroicon "flag", variant: :solid, options: { class: "w-6 h-6" } %>
+                  <% end %>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-lg font-semibold text-text-primary truncate"><%= goal.name %></h3>
+                  <% if goal.account.present? %>
+                    <p class="text-sm text-text-secondary truncate"><%= goal.account.name %></p>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
+            <%# Progress Bar %>
+            <%= render ProgressBarComponent.new(
+              value: goal.progress_percentage,
+              max: 100,
+              show_percentage: true,
+              color: "bg-success-500",
+              warning_threshold: 101,
+              danger_threshold: 101
+            ) %>
+
+            <%# Amount Details %>
+            <div class="mt-3 flex items-baseline justify-between">
+              <span class="text-sm font-semibold text-text-primary"><%= number_to_currency(goal.current_amount) %></span>
+              <span class="text-sm text-text-secondary">of <%= number_to_currency(goal.target_amount) %></span>
+            </div>
+
+            <%# Deadline Info %>
+            <% if goal.deadline.present? %>
+              <div class="mt-3 flex items-center justify-between pt-3 border-t border-glass-border">
+                <div class="flex items-center gap-1.5 text-sm text-text-secondary">
+                  <%= heroicon "calendar-days", variant: :outline, options: { class: "w-4 h-4" } %>
+                  <% if goal.days_remaining && goal.days_remaining > 0 %>
+                    <span><%= pluralize(goal.days_remaining, "day") %> left</span>
+                  <% elsif goal.days_remaining && goal.days_remaining == 0 %>
+                    <span>Due today</span>
+                  <% else %>
+                    <span class="text-danger-600">Overdue by <%= pluralize(goal.days_remaining.abs, "day") %></span>
+                  <% end %>
+                </div>
+                <% if goal.progress_percentage >= 100 %>
+                  <%= render BadgeComponent.new(variant: :success, dot: true, size: :sm) do %>
+                    Complete
+                  <% end %>
+                <% elsif goal.days_remaining && goal.days_remaining < 0 %>
+                  <%= render BadgeComponent.new(variant: :danger, dot: true, size: :sm) do %>
+                    Overdue
+                  <% end %>
+                <% elsif goal.on_track? %>
+                  <%= render BadgeComponent.new(variant: :success, dot: true, size: :sm) do %>
+                    On Track
+                  <% end %>
+                <% else %>
+                  <%= render BadgeComponent.new(variant: :warning, dot: true, size: :sm) do %>
+                    Behind
+                  <% end %>
+                <% end %>
+              </div>
+            <% elsif goal.progress_percentage >= 100 %>
+              <div class="mt-3 pt-3 border-t border-glass-border">
+                <%= render BadgeComponent.new(variant: :success, dot: true, size: :sm) do %>
+                  Complete
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No savings goals yet",
+        description: "Create your first savings goal to start tracking progress toward your financial milestones.",
+        icon: "flag",
+        action_text: "Create Goal",
+        action_url: new_savings_goal_path,
+        action_data: { turbo_frame: "modal" }
+      ) %>
+    <% end %>
   <% end %>
 </div>

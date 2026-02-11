@@ -1,0 +1,11 @@
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: "Edit Account Group" } do %>
+      <%= render "form", account_group: @account_group %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render layout: "shared/form_page", locals: { title: "Edit Account Group", back_text: "Back to accounts", back_path: accounts_path } do %>
+    <%= render "form", account_group: @account_group %>
+  <% end %>
+<% end %>

@@ -1,0 +1,376 @@
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: @savings_goal.name } do %>
+      <div class="space-y-5">
+        <%# Goal Header with Icon and Color %>
+        <div class="flex items-center gap-3">
+          <div class="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg"
+               style="background-color: <%= @savings_goal.color.presence || '#10b981' %>;">
+            <% if @savings_goal.icon.present? %>
+              <span><%= @savings_goal.icon %></span>
+            <% else %>
+              <%= heroicon "flag", variant: :solid, options: { class: "w-7 h-7" } %>
+            <% end %>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-text-primary"><%= @savings_goal.name %></h3>
+            <% if @savings_goal.account.present? %>
+              <p class="text-sm text-text-secondary">Linked to <%= @savings_goal.account.name %></p>
+            <% end %>
+          </div>
+        </div>
+
+        <%# Large Progress Bar %>
+        <div class="glass rounded-xl p-4">
+          <%= render ProgressBarComponent.new(
+            value: @savings_goal.progress_percentage,
+            max: 100,
+            label: "Progress",
+            show_percentage: true,
+            color: "bg-success-500",
+            warning_threshold: 101,
+            danger_threshold: 101
+          ) %>
+        </div>
+
+        <%# Stats Grid %>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">Saved</p>
+            <p class="text-lg font-bold text-success-600"><%= number_to_currency(@savings_goal.current_amount) %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">Target</p>
+            <p class="text-lg font-bold text-text-primary"><%= number_to_currency(@savings_goal.target_amount) %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">Remaining</p>
+            <p class="text-lg font-bold text-text-primary"><%= number_to_currency(@savings_goal.remaining_amount) %></p>
+          </div>
+          <div class="glass rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-text-muted mb-1">
+              <% if @savings_goal.deadline.present? %>
+                Days Left
+              <% else %>
+                Progress
+              <% end %>
+            </p>
+            <p class="text-lg font-bold <%= deadline_color(@savings_goal) %>">
+              <% if @savings_goal.deadline.present? && @savings_goal.days_remaining %>
+                <% if @savings_goal.days_remaining >= 0 %>
+                  <%= @savings_goal.days_remaining %>
+                <% else %>
+                  <span class="text-danger-600">-<%= @savings_goal.days_remaining.abs %></span>
+                <% end %>
+              <% else %>
+                <%= @savings_goal.progress_percentage %>%
+              <% end %>
+            </p>
+          </div>
+        </div>
+
+        <%# Status Badge %>
+        <% if @savings_goal.deadline.present? %>
+          <div class="flex items-center gap-2">
+            <%= heroicon "calendar-days", variant: :outline, options: { class: "w-4 h-4 text-text-secondary" } %>
+            <span class="text-sm text-text-secondary">Deadline: <%= @savings_goal.deadline.strftime("%b %d, %Y") %></span>
+            <% if @savings_goal.progress_percentage >= 100 %>
+              <%= render BadgeComponent.new(variant: :success, dot: true, size: :sm) do %>
+                Complete
+              <% end %>
+            <% elsif @savings_goal.days_remaining && @savings_goal.days_remaining < 0 %>
+              <%= render BadgeComponent.new(variant: :danger, dot: true, size: :sm) do %>
+                Overdue
+              <% end %>
+            <% elsif @savings_goal.on_track? %>
+              <%= render BadgeComponent.new(variant: :success, dot: true, size: :sm) do %>
+                On Track
+              <% end %>
+            <% else %>
+              <%= render BadgeComponent.new(variant: :warning, dot: true, size: :sm) do %>
+                Behind
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <%# Contribution Form %>
+        <div class="border-t border-glass-border pt-4">
+          <h4 class="text-sm font-semibold text-text-primary mb-3">Add Contribution</h4>
+          <%= form_with(url: contribute_savings_goal_path(@savings_goal), method: :post, class: "flex items-end gap-2") do |form| %>
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-text-muted mb-1">Amount</label>
+              <%= form.number_field :amount, name: "savings_contribution[amount]", step: "0.01", min: "0.01",
+                  required: true, placeholder: "0.00",
+                  class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-text-muted mb-1">Date</label>
+              <%= form.date_field :date, name: "savings_contribution[date]", value: Date.current,
+                  required: true,
+                  class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
+            </div>
+            <%= render ButtonComponent.new(variant: :primary, size: :md, type: "submit", submit: true, icon: "plus") do %>
+              Add
+            <% end %>
+          <% end %>
+        </div>
+
+        <%# Contribution History %>
+        <div class="border-t border-glass-border pt-4">
+          <h4 class="text-sm font-semibold text-text-primary mb-3">
+            Contribution History
+            <% if @contributions.any? %>
+              <span class="text-text-muted font-normal">(<%= @contributions.size %>)</span>
+            <% end %>
+          </h4>
+
+          <% if @contributions.any? %>
+            <div class="space-y-0 divide-y divide-glass-border max-h-64 overflow-y-auto">
+              <% @contributions.each do |contribution| %>
+                <div class="flex items-center justify-between py-2.5 group">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-success-50 flex items-center justify-center flex-shrink-0">
+                      <%= heroicon "arrow-up-circle", variant: :solid, options: { class: "w-4 h-4 text-success-600" } %>
+                    </div>
+                    <div>
+                      <p class="text-sm font-semibold text-success-600">+<%= number_to_currency(contribution.amount) %></p>
+                      <p class="text-xs text-text-muted">
+                        <%= contribution.date.strftime("%b %d, %Y") %>
+                        <% if contribution.note.present? %>
+                          &middot; <%= contribution.note %>
+                        <% end %>
+                      </p>
+                    </div>
+                  </div>
+                  <%= render ButtonComponent.new(
+                    variant: :ghost,
+                    size: :sm,
+                    href: remove_contribution_savings_goal_path(@savings_goal, contribution_id: contribution.id),
+                    method: :delete,
+                    confirm: "Remove this #{number_to_currency(contribution.amount)} contribution?",
+                    icon: "x-mark",
+                    class: "opacity-0 group-hover:opacity-100 transition-opacity text-danger-600 hover:text-danger-700"
+                  ) do %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-sm text-text-muted text-center py-4">No contributions yet. Add your first one above.</p>
+          <% end %>
+        </div>
+
+        <%# Footer Actions %>
+        <div class="flex items-center justify-between pt-2 border-t border-glass-border">
+          <div class="flex items-center gap-2">
+            <%= render ButtonComponent.new(variant: :secondary, size: :sm, href: edit_savings_goal_path(@savings_goal), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+              Edit
+            <% end %>
+            <%= render ButtonComponent.new(variant: :danger, size: :sm, href: savings_goal_path(@savings_goal), method: :delete, confirm: "Delete '#{@savings_goal.name}'? This will also remove all contributions.", icon: "trash") do %>
+              Delete
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% else %>
+  <div class="space-y-6">
+    <%= render PageHeaderComponent.new(title: @savings_goal.name) do |header| %>
+      <% header.with_actions do %>
+        <div class="flex items-center gap-2">
+          <%= render ButtonComponent.new(variant: :secondary, href: edit_savings_goal_path(@savings_goal), icon: "pencil", data: { turbo_frame: "modal" }) do %>
+            Edit
+          <% end %>
+          <%= render ButtonComponent.new(variant: :danger, href: savings_goal_path(@savings_goal), method: :delete, confirm: "Delete '#{@savings_goal.name}'? This will also remove all contributions.", icon: "trash") do %>
+            Delete
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# Goal Info %>
+    <div class="flex items-center gap-2 -mt-4 mb-4">
+      <% if @savings_goal.account.present? %>
+        <%= render BadgeComponent.new(variant: :info) do %>
+          <%= @savings_goal.account.name %>
+        <% end %>
+      <% end %>
+      <% if @savings_goal.deadline.present? %>
+        <%= render BadgeComponent.new(variant: :neutral) do %>
+          Deadline: <%= @savings_goal.deadline.strftime("%b %d, %Y") %>
+        <% end %>
+      <% end %>
+      <% if @savings_goal.progress_percentage >= 100 %>
+        <%= render BadgeComponent.new(variant: :success, dot: true) do %>
+          Complete
+        <% end %>
+      <% elsif @savings_goal.deadline.present? && @savings_goal.days_remaining && @savings_goal.days_remaining < 0 %>
+        <%= render BadgeComponent.new(variant: :danger, dot: true) do %>
+          Overdue
+        <% end %>
+      <% elsif @savings_goal.deadline.present? && @savings_goal.on_track? %>
+        <%= render BadgeComponent.new(variant: :success, dot: true) do %>
+          On Track
+        <% end %>
+      <% elsif @savings_goal.deadline.present? %>
+        <%= render BadgeComponent.new(variant: :warning, dot: true) do %>
+          Behind
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Balance Card %>
+    <%= render CardComponent.new do %>
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg"
+               style="background-color: <%= @savings_goal.color.presence || '#10b981' %>;">
+            <% if @savings_goal.icon.present? %>
+              <span><%= @savings_goal.icon %></span>
+            <% else %>
+              <%= heroicon "flag", variant: :solid, options: { class: "w-7 h-7" } %>
+            <% end %>
+          </div>
+          <div>
+            <p class="text-sm text-text-secondary">Current Progress</p>
+            <p class="text-3xl font-bold text-text-primary"><%= number_to_currency(@savings_goal.current_amount) %></p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-text-secondary">Target</p>
+          <p class="text-lg font-semibold text-text-primary"><%= number_to_currency(@savings_goal.target_amount) %></p>
+        </div>
+      </div>
+      <%= render ProgressBarComponent.new(
+        value: @savings_goal.progress_percentage,
+        max: 100,
+        show_percentage: true,
+        color: "bg-success-500",
+        warning_threshold: 101,
+        danger_threshold: 101
+      ) %>
+      <p class="mt-2 text-sm text-text-secondary">
+        <%= number_to_currency(@savings_goal.remaining_amount) %> remaining
+        <% if @savings_goal.deadline.present? && @savings_goal.days_remaining && @savings_goal.days_remaining > 0 %>
+          &middot; <%= pluralize(@savings_goal.days_remaining, "day") %> left
+        <% end %>
+      </p>
+    <% end %>
+
+    <%# Stats Row %>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <%= render StatCardComponent.new(
+        label: "Total Saved",
+        value: number_to_currency(@savings_goal.current_amount),
+        icon: "banknotes",
+        color: "text-success-600"
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Remaining",
+        value: number_to_currency(@savings_goal.remaining_amount),
+        icon: "arrow-trending-up",
+        color: "text-primary-600"
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Progress",
+        value: "#{@savings_goal.progress_percentage}%",
+        icon: "chart-bar",
+        color: "text-info-600"
+      ) %>
+      <%= render StatCardComponent.new(
+        label: "Contributions",
+        value: @contributions.size.to_s,
+        icon: "plus-circle"
+      ) %>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <%# Contribution Form Card %>
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">Add Contribution</h2>
+        <% end %>
+        <%= form_with(url: contribute_savings_goal_path(@savings_goal), method: :post, class: "space-y-4") do |form| %>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-text-primary">Amount *</label>
+              <%= form.number_field :amount, name: "savings_contribution[amount]", step: "0.01", min: "0.01",
+                  required: true, placeholder: "0.00",
+                  class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
+            </div>
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-text-primary">Date *</label>
+              <%= form.date_field :date, name: "savings_contribution[date]", value: Date.current,
+                  required: true,
+                  class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-text-primary">Note</label>
+            <%= form.text_field :note, name: "savings_contribution[note]", placeholder: "Optional note...",
+                class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
+          </div>
+          <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true, icon: "plus") do %>
+            Add Contribution
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%# Contribution History Card %>
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-lg font-semibold text-text-primary">
+            Contribution History
+            <% if @contributions.any? %>
+              <span class="text-text-muted font-normal text-sm">(<%= @contributions.size %>)</span>
+            <% end %>
+          </h2>
+        <% end %>
+        <% if @contributions.any? %>
+          <div class="divide-y divide-glass-border">
+            <% @contributions.each do |contribution| %>
+              <div class="flex items-center justify-between py-3 group">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-success-50 flex items-center justify-center flex-shrink-0">
+                    <%= heroicon "arrow-up-circle", variant: :solid, options: { class: "w-5 h-5 text-success-600" } %>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-success-600">+<%= number_to_currency(contribution.amount) %></p>
+                    <p class="text-sm text-text-muted">
+                      <%= contribution.date.strftime("%b %d, %Y") %>
+                      <% if contribution.note.present? %>
+                        &middot; <%= contribution.note %>
+                      <% end %>
+                    </p>
+                  </div>
+                </div>
+                <%= render ButtonComponent.new(
+                  variant: :ghost,
+                  size: :sm,
+                  href: remove_contribution_savings_goal_path(@savings_goal, contribution_id: contribution.id),
+                  method: :delete,
+                  confirm: "Remove this #{number_to_currency(contribution.amount)} contribution?",
+                  icon: "x-mark",
+                  class: "opacity-0 group-hover:opacity-100 transition-opacity text-danger-600 hover:text-danger-700"
+                ) do %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <%= render EmptyStateComponent.new(
+            title: "No contributions yet",
+            description: "Add your first contribution to start tracking progress.",
+            icon: "banknotes"
+          ) %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="mt-4">
+      <%= link_to "Back to goals", savings_goals_path, class: "text-sm text-text-secondary hover:text-text-primary" %>
+    </div>
+  </div>
+<% end %>

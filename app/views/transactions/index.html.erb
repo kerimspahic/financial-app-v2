@@ -80,13 +80,14 @@
                 <div data-dropdown-target="menu" class="hidden absolute right-0 mt-2 w-52 bg-surface rounded-xl shadow-xl border border-border z-50 p-1.5">
                   <p class="px-3 py-1.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider">Toggle Columns</p>
                   <% (@table_config.columns || []).each do |col| %>
-                    <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-surface-hover cursor-pointer transition-colors">
-                      <input type="checkbox" value="<%= col["key"] %>"
-                        <%= "checked" if @visible_columns.include?(col["key"]) %>
-                        data-action="change->column-toggle#toggle"
-                        class="w-3.5 h-3.5 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500/30 focus:ring-offset-0">
-                      <span class="text-sm text-text-primary"><%= col["label"] %></span>
-                    </label>
+                    <%= render CheckboxComponent.new(
+                      value: col["key"],
+                      checked: @visible_columns.include?(col["key"]),
+                      label: col["label"],
+                      size: :sm,
+                      wrapper_class: "items-center px-3 py-2 rounded-lg hover:bg-surface-hover transition-colors",
+                      data: { action: "change->column-toggle#toggle" }
+                    ) %>
                   <% end %>
                 </div>
               </div>
@@ -231,7 +232,8 @@
 
     <%# ── Transaction Table ── %>
     <% if @transactions.any? %>
-      <div class="animate-card-entrance stagger-3">
+      <div class="animate-card-entrance stagger-3" data-controller="bulk-select">
+        <%= form_tag "#", method: :post, data: { bulk_select_target: "form", bulk_update_url: bulk_update_transactions_path, bulk_destroy_url: bulk_destroy_transactions_path } do %>
         <%= render CardComponent.new(padding: false) do %>
           <div class="overflow-hidden">
             <%
@@ -242,16 +244,22 @@
                 "account" => "w-[140px]",
                 "amount" => "w-[110px]",
                 "transaction_type" => "w-[100px]",
+                "clearing_status" => "w-[100px]",
                 "notes" => "w-[180px]",
-                "tags" => "w-[160px]"
+                "tags" => "w-[160px]",
+                "balance" => "w-[120px]"
               }
             %>
             <table class="w-full table-fixed">
               <thead>
                 <tr class="border-b border-glass-border">
+                  <th class="px-3 py-3 w-[40px]">
+                    <input type="checkbox" data-bulk-select-target="selectAll" data-action="change->bulk-select#toggleAll"
+                      class="w-3.5 h-3.5 rounded">
+                  </th>
                   <% (@table_config.columns || []).each do |col| %>
                     <% next unless @visible_columns.include?(col["key"]) %>
-                    <th class="px-5 py-3 text-<%= col["key"] == "amount" ? "right" : "left" %> text-[10px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap <%= col_widths[col["key"]] %>" data-column="<%= col["key"] %>">
+                    <th class="px-5 py-3 text-<%= %w[amount balance].include?(col["key"]) ? "right" : "left" %> text-[10px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap <%= col_widths[col["key"]] %>" data-column="<%= col["key"] %>">
                       <% if col["sortable"] %>
                         <% sort_key = (col["sort_key"] || col["key"]).to_sym %>
                         <%= sort_link(@q, sort_key, col["label"], default_order: col["key"] == "date" ? :desc : :asc, hide_indicator: false) %>
@@ -266,6 +274,10 @@
               <tbody class="divide-y divide-glass-border/50">
                 <% @transactions.each do |t| %>
                   <tr class="group hover:bg-surface-hover/50 transition-colors">
+                    <td class="px-3 py-3.5">
+                      <input type="checkbox" value="<%= t.id %>" data-bulk-select-target="checkbox" data-action="change->bulk-select#toggleOne"
+                        class="w-3.5 h-3.5 rounded">
+                    </td>
                     <% (@table_config.columns || []).each do |col| %>
                       <% next unless @visible_columns.include?(col["key"]) %>
                       <% case col["key"] %>
@@ -299,11 +311,19 @@
                         </td>
                       <% when "category" %>
                         <td class="px-5 py-3.5 overflow-hidden" data-column="category">
-                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary max-w-full"
-                            data-controller="tooltip" data-tooltip-text-value="<%= t.category.name %>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: <%= t.category.color %>"></span>
-                            <span class="truncate"><%= t.category.name %></span>
-                          </span>
+                          <% if t.split? %>
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary max-w-full"
+                              data-controller="tooltip" data-tooltip-text-value="<%= t.transaction_splits.map { |s| "#{s.category.name}: #{number_to_currency(s.amount)}" }.join(', ') %>">
+                              <%= heroicon "scissors", variant: :mini, options: { class: "w-3.5 h-3.5 shrink-0" } %>
+                              <span class="truncate">Split (<%= t.transaction_splits.size %>)</span>
+                            </span>
+                          <% else %>
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary max-w-full"
+                              data-controller="tooltip" data-tooltip-text-value="<%= t.category.name %>">
+                              <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: <%= t.category.color %>"></span>
+                              <span class="truncate"><%= t.category.name %></span>
+                            </span>
+                          <% end %>
                         </td>
                       <% when "account" %>
                         <td class="px-5 py-3.5 overflow-hidden" data-column="account">
@@ -326,6 +346,26 @@
                             <%= t.transaction_type.humanize %>
                           <% end %>
                         </td>
+                      <% when "clearing_status" %>
+                        <td class="px-5 py-3.5 whitespace-nowrap" data-column="clearing_status">
+                          <% case t.clearing_status %>
+                          <% when "uncleared" %>
+                            <span class="inline-flex items-center gap-1 text-xs text-text-muted">
+                              <%= heroicon "minus-circle", variant: :mini, options: { class: "w-4 h-4" } %>
+                              Uncleared
+                            </span>
+                          <% when "cleared" %>
+                            <span class="inline-flex items-center gap-1 text-xs text-success-600 dark:text-success-500">
+                              <%= heroicon "check", variant: :mini, options: { class: "w-4 h-4" } %>
+                              Cleared
+                            </span>
+                          <% when "reconciled" %>
+                            <span class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400">
+                              <%= heroicon "check-badge", variant: :mini, options: { class: "w-4 h-4" } %>
+                              Reconciled
+                            </span>
+                          <% end %>
+                        </td>
                       <% when "notes" %>
                         <td class="px-5 py-3.5 overflow-hidden" data-column="notes">
                           <span class="text-sm text-text-muted truncate block"
@@ -337,30 +377,85 @@
                           <div class="flex flex-nowrap gap-1 overflow-hidden"
                             data-controller="tooltip" data-tooltip-text-value="<%= t.tags.map(&:name).join(', ') %>">
                             <% t.tags.each do |tag| %>
-                              <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %><%= tag.name %><% end %>
+                              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border" style="background-color: <%= tag.color %>15; border-color: <%= tag.color %>30; color: <%= tag.color %>">
+                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: <%= tag.color %>"></span>
+                                <%= tag.name %>
+                              </span>
                             <% end %>
                             <% if t.tags.empty? %>
                               <span class="text-xs text-text-muted">&mdash;</span>
                             <% end %>
                           </div>
                         </td>
+                      <% when "balance" %>
+                        <td class="px-5 py-3.5 whitespace-nowrap text-right" data-column="balance">
+                          <% if @running_balances&.key?(t.id) %>
+                            <span class="text-sm font-medium tabular-nums <%= @running_balances[t.id] >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
+                              <%= number_to_currency(@running_balances[t.id]) %>
+                            </span>
+                          <% else %>
+                            <span class="text-xs text-text-muted">&mdash;</span>
+                          <% end %>
+                        </td>
                       <% end %>
                     <% end %>
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                      <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                        <%= link_to transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-all", data: { turbo_frame: "modal" } do %>
-                          <%= heroicon "eye", variant: :mini, options: { class: "w-4 h-4" } %>
-                        <% end %>
-                        <%= link_to edit_transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all", data: { turbo_frame: "modal" } do %>
-                          <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
-                        <% end %>
-                      </div>
+                      <% if t.reconciled? %>
+                        <div class="flex items-center justify-end gap-1 text-text-muted">
+                          <%= heroicon "lock-closed", variant: :mini, options: { class: "w-4 h-4" } %>
+                          <span class="text-[10px] font-medium">Locked</span>
+                        </div>
+                      <% else %>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
+                          <%= link_to transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-all", data: { turbo_frame: "modal" } do %>
+                            <%= heroicon "eye", variant: :mini, options: { class: "w-4 h-4" } %>
+                          <% end %>
+                          <%= link_to edit_transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all", data: { turbo_frame: "modal" } do %>
+                            <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
+                          <% end %>
+                        </div>
+                      <% end %>
                     </td>
                   </tr>
                 <% end %>
               </tbody>
             </table>
           </div>
+        <% end %>
+
+        <%# ── Bulk Actions Floating Toolbar ── %>
+        <div data-bulk-select-target="toolbar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div class="glass-strong rounded-2xl shadow-2xl border border-glass-border px-6 py-3 flex items-center gap-4">
+            <span class="text-sm font-medium text-text-primary" data-bulk-select-target="count">0 selected</span>
+            <div class="h-5 w-px bg-glass-border"></div>
+            <div class="flex items-center gap-2">
+              <select name="bulk_category_id" class="rounded-lg glass border border-glass-border text-text-primary px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+                <option value="">Change Category</option>
+                <% current_user.categories.each do |c| %>
+                  <option value="<%= c.id %>"><%= c.name %></option>
+                <% end %>
+              </select>
+              <select name="bulk_clearing_status" class="rounded-lg glass border border-glass-border text-text-primary px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+                <option value="">Change Status</option>
+                <% Transaction.clearing_statuses.keys.each do |s| %>
+                  <option value="<%= s %>"><%= s.humanize %></option>
+                <% end %>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="click->bulk-select#submitBulkUpdate"
+                class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg gradient-primary text-white shadow-sm hover:shadow-md transition-all">
+                <%= heroicon "check", variant: :mini, options: { class: "w-4 h-4" } %>
+                Apply
+              </button>
+              <button type="button" data-action="click->bulk-select#submitBulkDestroy"
+                class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg bg-danger-500 hover:bg-danger-600 text-white shadow-sm hover:shadow-md transition-all">
+                <%= heroicon "trash", variant: :mini, options: { class: "w-4 h-4" } %>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
         <% end %>
       </div>
 

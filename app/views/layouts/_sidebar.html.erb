@@ -27,23 +27,24 @@
     <%= sidebar_link "Budgets", budgets_path, icon: "calculator" if current_user.has_permission?("manage_budgets") %>
     <%= sidebar_link "Categories", categories_path, icon: "tag" if current_user.has_permission?("manage_categories") %>
     <%= sidebar_link "Exchange", exchanges_path, icon: "currency-dollar" if current_user.has_permission?("manage_exchanges") %>
+    <%= sidebar_link "Auto-Rules", categorization_rules_path, icon: "sparkles" if current_user.has_permission?("manage_categories") %>
 
     <%= sidebar_section "Planning" %>
-    <%= sidebar_link "Recurring", recurring_transactions_path, icon: "arrow-path", badge: "Soon" if current_user.has_permission?("manage_recurring_transactions") %>
-    <%= sidebar_link "Goals", savings_goals_path, icon: "flag", badge: "Soon" if current_user.has_permission?("manage_savings_goals") %>
-    <%= sidebar_link "Bills", bills_path, icon: "bell-alert", badge: "Soon" if current_user.has_permission?("manage_bills") %>
+    <%= sidebar_link "Recurring", recurring_transactions_path, icon: "arrow-path" if current_user.has_permission?("manage_recurring_transactions") %>
+    <%= sidebar_link "Goals", savings_goals_path, icon: "flag" if current_user.has_permission?("manage_savings_goals") %>
+    <%= sidebar_link "Bills", bills_path, icon: "bell-alert" if current_user.has_permission?("manage_bills") %>
     <%= sidebar_link "Reports", reports_path, icon: "chart-bar", badge: "Soon" if current_user.has_permission?("view_reports") %>
 
     <%= sidebar_section "More" %>
     <%= sidebar_link "Notifications", notifications_path, icon: "bell", badge: "Soon" if current_user.has_permission?("view_notifications") %>
     <%= sidebar_link "Debt Tracker", debt_accounts_path, icon: "banknotes", badge: "Soon" if current_user.has_permission?("manage_debt_accounts") %>
     <%= sidebar_link "Subscriptions", subscriptions_path, icon: "credit-card", badge: "Soon" if current_user.has_permission?("manage_subscriptions") %>
-    <%= sidebar_link "Tags", tags_path, icon: "hashtag", badge: "Soon" if current_user.has_permission?("manage_tags") %>
+    <%= sidebar_link "Tags", tags_path, icon: "hashtag" if current_user.has_permission?("manage_tags") %>
     <%= sidebar_link "Wishlist", wishlist_index_path, icon: "gift", badge: "Soon" if current_user.has_permission?("manage_wishlist") %>
 
     <%= sidebar_section "System" %>
     <%= sidebar_link "Settings", settings_profile_path, icon: "cog-6-tooth", active_path_prefix: "/settings" %>
-    <%= sidebar_link "Imports", import_export_path, icon: "arrow-down-tray", badge: "Soon" if current_user.has_permission?("manage_imports") %>
+    <%= sidebar_link "Imports", new_import_path, icon: "arrow-down-tray" if current_user.has_permission?("manage_imports") %>
     <%= sidebar_link "Integrations", integrations_path, icon: "puzzle-piece", badge: "Soon" if current_user.has_permission?("manage_integrations") %>
     <%= sidebar_link "Insights", insights_path, icon: "light-bulb", badge: "Soon" if current_user.has_permission?("view_insights") %>
     <%= sidebar_link "Activity Log", audit_logs_path, icon: "clipboard-document-list", badge: "Soon" if current_user.has_permission?("view_audit_logs") %>

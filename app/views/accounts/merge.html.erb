@@ -1,0 +1,50 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Merge Account") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :ghost, href: accounts_path, icon: "arrow-left") do %>
+        Cancel
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render CardComponent.new do %>
+    <div class="space-y-4">
+      <%= render AlertComponent.new(variant: :warning, dismissable: false, timeout: 0) do %>
+        <strong>This action cannot be undone.</strong> All transactions, holdings, and valuations
+        from "<%= @account.name %>" will be moved to the target account. The source account will be deleted.
+      <% end %>
+
+      <div class="glass rounded-xl p-4">
+        <p class="text-sm text-text-secondary">Source Account</p>
+        <p class="text-xl font-bold text-text-primary"><%= @account.name %></p>
+        <p class="text-sm text-text-muted">
+          <%= @account.transactions.count %> transactions &middot;
+          Balance: <%= number_to_currency(@account.balance) %>
+        </p>
+      </div>
+
+      <%= form_tag perform_merge_account_path(@account), method: :patch, class: "space-y-4" do %>
+        <div>
+          <label class="block text-sm font-medium text-text-primary mb-1.5">Merge into:</label>
+          <select name="target_account_id" required
+            class="block w-full rounded-xl border border-input-border px-4 py-2.5 text-sm glass focus:outline-none focus:ring-2 focus:ring-input-focus">
+            <option value="">Select target account...</option>
+            <% @other_accounts.each do |a| %>
+              <option value="<%= a.id %>"><%= a.name %> (<%= a.account_type.humanize %> — <%= number_to_currency(a.balance) %>)</option>
+            <% end %>
+          </select>
+        </div>
+
+        <%= render ButtonComponent.new(
+          variant: :danger,
+          type: "submit",
+          submit: true,
+          icon: "arrow-path",
+          data: { turbo_confirm: "Are you sure? This will permanently merge '#{@account.name}' into the selected account." }
+        ) do %>
+          Merge Account
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

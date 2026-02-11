@@ -1,0 +1,43 @@
+<%= form_with(model: savings_goal, class: "space-y-6") do |form| %>
+  <% if savings_goal.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(savings_goal.errors.count, "error") %> prevented this goal from being saved:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% savings_goal.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :name, label: "Goal Name", required: true, placeholder: "e.g., Emergency Fund") %>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(form: form, field: :target_amount, label: "Target Amount", type: :number, required: true, step: "0.01", min: "0.01") %>
+    <%= render InputComponent.new(form: form, field: :deadline, label: "Deadline", type: :date, hint: "Optional target date") %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div class="space-y-1">
+      <%= form.label :color, class: "block text-sm font-medium text-text-primary" do %>
+        Color
+      <% end %>
+      <%= form.color_field :color, class: "h-10 w-20 rounded-lg border border-input-border cursor-pointer" %>
+      <p class="text-xs text-text-muted">Choose a color for your goal</p>
+    </div>
+    <%= render InputComponent.new(form: form, field: :icon, label: "Icon", hint: "Optional emoji icon (e.g., \u{1F3E0} \u{1F697} \u{2708}\uFE0F})", placeholder: "\u{1F3AF}") %>
+  </div>
+
+  <%= render InputComponent.new(
+    form: form,
+    field: :account_id,
+    label: "Linked Account",
+    type: :select,
+    collection: current_user.accounts.active.ordered.map { |a| [ a.name, a.id ] },
+    include_blank: "No linked account (optional)"
+  ) %>
+
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    <%= savings_goal.persisted? ? "Update Goal" : "Create Goal" %>
+  <% end %>
+<% end %>

@@ -35,18 +35,21 @@ user.roles << user_role unless user.has_role?("user")
 # ─── Accounts ─────────────────────────────────────────────────────────────────
 
 # Clear existing financial data for a clean seed
+user.savings_goals.destroy_all
+user.bills.destroy_all
 user.transactions.destroy_all
 user.budgets.destroy_all
 user.accounts.destroy_all
+user.account_groups.destroy_all
 
 accounts = {}
 
 account_data = [
-  { name: "Main Checking",      account_type: :checking,    balance: 0, currency: "USD" },
-  { name: "High-Yield Savings", account_type: :savings,     balance: 0, currency: "USD" },
-  { name: "Visa Platinum",      account_type: :credit_card, balance: 0, currency: "USD" },
-  { name: "Cash Wallet",        account_type: :cash,        balance: 0, currency: "USD" },
-  { name: "Brokerage Account",  account_type: :investment,  balance: 0, currency: "USD" }
+  { name: "Main Checking",      account_type: :checking,    balance: 0, currency: "USD", icon_emoji: "🏦", bank_name: "Chase Bank", account_number_masked: "****4521" },
+  { name: "High-Yield Savings", account_type: :savings,     balance: 0, currency: "USD", icon_emoji: "💰", bank_name: "Marcus by Goldman Sachs" },
+  { name: "Visa Platinum",      account_type: :credit_card, balance: 0, currency: "USD", icon_emoji: "💳", bank_name: "Chase Bank", account_number_masked: "****7890" },
+  { name: "Cash Wallet",        account_type: :cash,        balance: 0, currency: "USD", icon_emoji: "👛" },
+  { name: "Brokerage Account",  account_type: :investment,  balance: 0, currency: "USD", icon_emoji: "📈", bank_name: "Fidelity Investments", account_number_masked: "****3344" }
 ]
 
 account_data.each do |data|
@@ -445,10 +448,60 @@ accounts[:investment].update_columns(balance: accounts[:investment].balance + 15
 accounts[:savings].update_columns(balance: accounts[:savings].balance + 8_000)
 accounts[:cash].update_columns(balance: accounts[:cash].balance + 200)
 
+# ─── Account Groups ──────────────────────────────────────────────────────────
+
+personal_group = user.account_groups.create!(name: "Personal", position: 0)
+investing_group = user.account_groups.create!(name: "Investing", position: 1)
+
+accounts[:checking].update!(account_group: personal_group, position: 0, description: "Primary checking account for daily expenses and salary deposits.")
+accounts[:savings].update!(account_group: personal_group, position: 1, description: "High-yield savings for emergency fund.", balance_goal: 25_000)
+accounts[:credit_card].update!(account_group: personal_group, position: 2, description: "Visa Platinum rewards card. 2% cash back on everything.", credit_limit: 10_000, interest_rate: 19.99)
+accounts[:cash].update!(account_group: personal_group, position: 3)
+accounts[:investment].update!(account_group: investing_group, position: 0, description: "Diversified brokerage account: ETFs and index funds.", balance_goal: 50_000)
+
+puts "Account groups: #{user.account_groups.count}"
+
 puts "Account balances:"
 user.accounts.reload.each do |a|
   puts "  #{a.name} (#{a.account_type}): $#{'%.2f' % a.balance}"
 end
+
+# ─── Balance Snapshots ──────────────────────────────────────────────────────
+#
+# Generate daily snapshots for the last 6 months by computing running balances.
+
+user.accounts.reload.each do |account|
+  # Get all transactions for this account sorted by date
+  txns = account.transactions.order(:date, :created_at).to_a
+
+  # Start with balance excluding all transactions (base amount)
+  income_total = txns.select(&:income?).sum(&:amount)
+  expense_total = txns.select(&:expense?).sum(&:amount)
+  computed_final = income_total - expense_total
+  base_amount = account.balance - computed_final
+
+  # Build snapshots day by day
+  running = base_amount
+  start_date = 6.months.ago.to_date
+  txn_index = 0
+
+  (start_date..Date.current).each do |date|
+    # Add transactions that happened on this date
+    while txn_index < txns.length && txns[txn_index].date <= date
+      t = txns[txn_index]
+      running += t.amount if t.income?
+      running -= t.amount if t.expense?
+      txn_index += 1
+    end
+
+    # Record weekly snapshots (every 3 days) to avoid too many rows
+    if date == start_date || date == Date.current || date.day % 3 == 0
+      AccountBalanceSnapshot.create!(account: account, date: date, balance: running)
+    end
+  end
+end
+
+puts "Balance snapshots: #{AccountBalanceSnapshot.count}"
 
 # ─── Budgets ──────────────────────────────────────────────────────────────────
 
@@ -511,7 +564,9 @@ TableConfig.find_or_create_by!(page_key: "transactions") do |tc|
     { key: "amount", label: "Amount", default_visible: true, sortable: true },
     { key: "transaction_type", label: "Type", sortable: true },
     { key: "notes", label: "Notes", sortable: true },
-    { key: "tags", label: "Tags", sortable: false }
+    { key: "tags", label: "Tags", sortable: false },
+    { key: "clearing_status", label: "Status", default_visible: true, sortable: true },
+    { key: "balance", label: "Balance", default_visible: false, sortable: false }
   ]
   tc.search_fields = %w[description notes category_name account_name]
   tc.filters = [
@@ -524,6 +579,218 @@ TableConfig.find_or_create_by!(page_key: "transactions") do |tc|
 end
 puts "Table configs: #{TableConfig.count}"
 
+# ─── Tags ────────────────────────────────────────────────────────────────────
+
+user.tags.destroy_all
+
+tags = [
+  { name: "Tax Deductible", color: "#10b981" },
+  { name: "Business",       color: "#3b82f6" },
+  { name: "Vacation",       color: "#f59e0b" },
+  { name: "Recurring",      color: "#8b5cf6" },
+  { name: "Reimbursable",   color: "#ef4444" },
+  { name: "Essential",      color: "#06b6d4" }
+].map { |t| user.tags.create!(t) }
+
+# Randomly tag ~30% of transactions
+all_txns = user.transactions.to_a
+tagged_count = 0
+all_txns.sample((all_txns.size * 0.3).to_i).each do |txn|
+  txn.tags << tags.sample(rand(1..2))
+  tagged_count += 1
+end
+
+puts "Tags: #{user.tags.count} (#{tagged_count} transactions tagged)"
+
+# ─── Savings Goals ──────────────────────────────────────────────────────────
+
+user.savings_goals.destroy_all
+
+goals_data = [
+  { name: "Emergency Fund",    target_amount: 10_000, color: "#10b981", icon: "🛡️",  account: accounts[:savings], deadline: 6.months.from_now.to_date },
+  { name: "Japan Trip",        target_amount: 5_000,  color: "#f59e0b", icon: "✈️",  account: nil,                deadline: 8.months.from_now.to_date },
+  { name: "New Laptop",        target_amount: 2_500,  color: "#3b82f6", icon: "💻",  account: nil,                deadline: 4.months.from_now.to_date },
+  { name: "Investment Cushion", target_amount: 20_000, color: "#8b5cf6", icon: "📈",  account: accounts[:investment], deadline: 1.year.from_now.to_date }
+]
+
+goals_data.each do |gd|
+  goal = user.savings_goals.create!(
+    name: gd[:name],
+    target_amount: gd[:target_amount],
+    color: gd[:color],
+    icon: gd[:icon],
+    account: gd[:account],
+    deadline: gd[:deadline]
+  )
+
+  # Add historical contributions
+  total_contributed = 0
+  months_back = rand(3..6)
+  months_back.times do |i|
+    contrib_date = (months_back - i).months.ago.to_date + rand(1..15)
+    amount = (gd[:target_amount] * rand(0.05..0.15)).round(2)
+    goal.savings_contributions.create!(
+      amount: amount,
+      date: contrib_date,
+      note: [ "Monthly contribution", "Bonus deposit", "Extra savings", "Auto-transfer" ].sample
+    )
+    total_contributed += amount
+  end
+  goal.update_columns(current_amount: total_contributed)
+end
+
+puts "Savings goals: #{user.savings_goals.count} (#{SavingsContribution.count} contributions)"
+
+# ─── Categorization Rules ───────────────────────────────────────────────────
+
+user.categorization_rules.destroy_all
+
+rules_data = [
+  { pattern: "Starbucks",          match_type: :contains,    category: "Dining Out",       priority: 10 },
+  { pattern: "Netflix",            match_type: :exact,       category: "Subscriptions",    priority: 10 },
+  { pattern: "Spotify",            match_type: :contains,    category: "Subscriptions",    priority: 10 },
+  { pattern: "Uber",               match_type: :starts_with, category: "Transportation",   priority: 8 },
+  { pattern: "Lyft",               match_type: :starts_with, category: "Transportation",   priority: 8 },
+  { pattern: "Amazon",             match_type: :starts_with, category: "Shopping",         priority: 5 },
+  { pattern: "Whole Foods",        match_type: :contains,    category: "Food & Groceries", priority: 9 },
+  { pattern: "Gas Station",        match_type: :starts_with, category: "Transportation",   priority: 7 },
+  { pattern: "Gym|Fitness|Planet", match_type: :regex,       category: "Healthcare",       priority: 6 },
+  { pattern: "Electric|Water|Gas|Internet|Phone", match_type: :regex, category: "Utilities", priority: 7 }
+]
+
+rules_data.each do |rd|
+  cat = cats[rd[:category]]
+  next unless cat
+
+  user.categorization_rules.create!(
+    pattern: rd[:pattern],
+    match_type: rd[:match_type],
+    category: cat,
+    priority: rd[:priority]
+  )
+end
+
+puts "Categorization rules: #{user.categorization_rules.count}"
+
+# ─── Property & Vehicle Accounts ─────────────────────────────────────────────
+
+property_account = user.accounts.create!(
+  name: "Primary Residence",
+  account_type: :property,
+  balance: 425_000,
+  currency: "USD",
+  icon_emoji: "🏠",
+  bank_name: "Wells Fargo Mortgage",
+  account_number_masked: "****8812",
+  original_loan_amount: 350_000,
+  loan_term_months: 360,
+  interest_rate: 6.5
+)
+
+vehicle_account = user.accounts.create!(
+  name: "2022 Honda Civic",
+  account_type: :vehicle,
+  balance: 22_500,
+  currency: "USD",
+  icon_emoji: "🚗",
+  original_loan_amount: 28_000,
+  loan_term_months: 60,
+  interest_rate: 4.9
+)
+
+# Asset valuations for property (appreciating)
+12.times do |i|
+  date = (12 - i).months.ago.to_date
+  base_value = 400_000 + (i * 2_300) + rand(-500..500)
+  property_account.asset_valuations.create!(
+    value: base_value,
+    date: date,
+    source: %w[manual zillow].sample,
+    notes: i == 0 ? "Purchase price estimate" : nil
+  )
+end
+
+# Asset valuations for vehicle (depreciating)
+12.times do |i|
+  date = (12 - i).months.ago.to_date
+  base_value = 26_000 - (i * 300) + rand(-200..200)
+  vehicle_account.asset_valuations.create!(
+    value: base_value,
+    date: date,
+    source: %w[manual kbb].sample,
+    notes: i == 0 ? "Purchase price" : nil
+  )
+end
+
+puts "Property/Vehicle accounts: 2 (#{AssetValuation.count} valuations)"
+
+# ─── Holdings (Investment Account) ──────────────────────────────────────────
+
+Holding.where(account: accounts[:investment]).destroy_all
+
+holdings_data = [
+  { symbol: "VOO",  name: "Vanguard S&P 500 ETF",        holding_type: "etf",    shares: 25.0,    cost_basis_per_share: 380.50, current_price: 412.75 },
+  { symbol: "VTI",  name: "Vanguard Total Market ETF",    holding_type: "etf",    shares: 40.0,    cost_basis_per_share: 215.30, current_price: 238.90 },
+  { symbol: "AAPL", name: "Apple Inc.",                    holding_type: "stock",  shares: 15.0,    cost_basis_per_share: 145.00, current_price: 178.50 },
+  { symbol: "MSFT", name: "Microsoft Corp.",               holding_type: "stock",  shares: 10.0,    cost_basis_per_share: 280.00, current_price: 415.20 },
+  { symbol: "BND",  name: "Vanguard Total Bond Market",   holding_type: "bond",   shares: 50.0,    cost_basis_per_share: 72.50,  current_price: 71.80 }
+]
+
+holdings_data.each do |hd|
+  accounts[:investment].holdings.create!(hd.merge(last_price_update: Date.current))
+end
+
+puts "Holdings: #{Holding.count}"
+
+# ─── Benchmark (S&P 500) ────────────────────────────────────────────────────
+
+Benchmark.destroy_all
+
+monthly_returns = {}
+12.times do |i|
+  month_key = (12 - i).months.ago.to_date.strftime("%Y-%m")
+  monthly_returns[month_key] = (rand(-3.0..4.0)).round(2)
+end
+
+Benchmark.create!(name: "S&P 500", monthly_returns: monthly_returns)
+
+puts "Benchmarks: #{Benchmark.count}"
+
+# ─── Bills ───────────────────────────────────────────────────────────────────
+
+user.bills.destroy_all
+BillPayment.where(bill_id: user.bills.select(:id)).destroy_all
+
+bills_data = [
+  { name: "Rent",          amount: 1850.00, frequency: :monthly,    due_date: Date.current.beginning_of_month + 1, category: cats["Housing"],        account: accounts[:checking],   reminder_days_before: 3 },
+  { name: "Electric Bill",  amount: 120.00,  frequency: :monthly,    due_date: Date.current.beginning_of_month + 15, category: cats["Utilities"],     account: accounts[:checking],   reminder_days_before: 5 },
+  { name: "Internet",      amount: 65.00,   frequency: :monthly,    due_date: Date.current.beginning_of_month + 10, category: cats["Utilities"],      account: accounts[:checking],   auto_pay: true, reminder_days_before: 2 },
+  { name: "Netflix",       amount: 15.99,   frequency: :monthly,    due_date: Date.current.beginning_of_month + 8,  category: cats["Subscriptions"], account: accounts[:credit_card], auto_pay: true, reminder_days_before: 0 },
+  { name: "Car Insurance",  amount: 480.00,  frequency: :quarterly,  due_date: Date.current.beginning_of_month + 20, category: cats["Transportation"], account: accounts[:checking],  reminder_days_before: 7 },
+  { name: "Gym Membership", amount: 24.99,   frequency: :monthly,    due_date: Date.current.beginning_of_month + 5,  category: cats["Healthcare"],    account: accounts[:credit_card], auto_pay: true, reminder_days_before: 0, website_url: "https://planetfitness.com" }
+]
+
+bills_data.each do |bd|
+  bill = user.bills.create!(bd)
+  # Add some payment history
+  2.times do |i|
+    paid_date = bd[:due_date] - (i + 1).months
+    bill.bill_payments.create!(paid_date: paid_date, amount: bd[:amount])
+  end
+end
+
+puts "Bills: #{user.bills.count} (#{BillPayment.count} payments)"
+
+# ─── Account Groups for Property/Vehicle ─────────────────────────────────────
+
+assets_group = user.account_groups.find_or_create_by!(name: "Assets") do |g|
+  g.position = 2
+end
+property_account.update!(account_group: assets_group, position: 0)
+vehicle_account.update!(account_group: assets_group, position: 1)
+
+puts "Updated account groups for property/vehicle"
+
 puts "\nSeed complete!"
 puts "  Login: demo@example.com / password123"
 puts "  Accounts: #{user.accounts.count}"
@@ -531,3 +798,6 @@ puts "  Categories: #{user.categories.count}"
 puts "  Transactions: #{user.transactions.count}"
 puts "  Budgets: #{user.budgets.count}"
 puts "  Exchange conversions: #{user.exchange_conversions.count}"
+puts "  Holdings: #{Holding.count}"
+puts "  Bills: #{user.bills.count}"
+puts "  Asset Valuations: #{AssetValuation.count}"

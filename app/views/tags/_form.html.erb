@@ -1,0 +1,16 @@
+<%= form_with(model: tag, class: "space-y-6") do |form| %>
+  <%= render InputComponent.new(form: form, field: :name, label: "Name", placeholder: "e.g., vacation, tax-deductible") %>
+
+  <div>
+    <label class="block text-sm font-medium text-text-primary mb-1.5">Color</label>
+    <div class="flex items-center gap-3">
+      <%= form.color_field :color, value: tag.color || "#94a3b8",
+          class: "w-10 h-10 rounded-lg border border-input-border cursor-pointer" %>
+      <span class="text-sm text-text-muted">Choose a color for this tag</span>
+    </div>
+  </div>
+
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    <%= tag.persisted? ? "Update Tag" : "Create Tag" %>
+  <% end %>
+<% end %>

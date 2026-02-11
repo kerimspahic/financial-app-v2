@@ -1,0 +1,122 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "#{@account.name} — Holdings") do |header| %>
+    <% header.with_actions do %>
+      <div class="flex items-center gap-2">
+        <%= render ButtonComponent.new(variant: :ghost, href: account_path(@account), icon: "arrow-left") do %>
+          Back
+        <% end %>
+        <% if @account.investment? %>
+          <%= render ButtonComponent.new(variant: :ghost, href: performance_account_path(@account), icon: "chart-bar") do %>
+            Performance
+          <% end %>
+        <% end %>
+        <%= render ButtonComponent.new(variant: :primary, href: new_account_holding_path(@account), icon: "plus", data: { turbo_frame: "modal" }) do %>
+          Add Holding
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <%= render StatCardComponent.new(
+      label: "Portfolio Value",
+      value: number_to_currency(@total_value),
+      icon: "chart-bar-square",
+      color: :primary
+    ) %>
+    <%= render StatCardComponent.new(
+      label: "Total Cost Basis",
+      value: number_to_currency(@total_cost_basis),
+      icon: "banknotes"
+    ) %>
+    <%= render StatCardComponent.new(
+      label: "Unrealized Gain/Loss",
+      value: number_to_currency(@total_gain_loss),
+      icon: @total_gain_loss >= 0 ? "arrow-trending-up" : "arrow-trending-down",
+      color: @total_gain_loss >= 0 ? :success : :danger,
+      change: "#{@total_return_percent}%"
+    ) %>
+  </div>
+
+  <% if @holdings.any? %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h3 class="text-lg font-semibold text-text-primary">Allocation</h3>
+        <% end %>
+        <div class="h-64"
+          data-controller="chart"
+          data-chart-type-value="doughnut"
+          data-chart-data-value="<%= @allocation_data.to_json %>">
+        </div>
+      <% end %>
+
+      <div class="lg:col-span-2">
+        <%= render CardComponent.new(padding: false) do %>
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-glass-border">
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Symbol</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider">Shares</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider">Cost Basis</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider">Price</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider">Value</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider">Gain/Loss</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider">%</th>
+                <th class="px-5 py-3 w-16"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-glass-border/50">
+              <% @holdings.each do |h| %>
+                <tr class="group hover:bg-surface-hover/50 transition-colors">
+                  <td class="px-5 py-3.5">
+                    <p class="font-semibold text-text-primary text-sm"><%= h.symbol %></p>
+                    <p class="text-[10px] text-text-muted"><%= h.name %></p>
+                  </td>
+                  <td class="px-5 py-3.5 text-right text-sm tabular-nums text-text-primary"><%= number_with_precision(h.shares, precision: 4, strip_insignificant_zeros: true) %></td>
+                  <td class="px-5 py-3.5 text-right text-sm tabular-nums text-text-secondary"><%= number_to_currency(h.cost_basis_per_share) %></td>
+                  <td class="px-5 py-3.5 text-right text-sm tabular-nums text-text-primary"><%= h.current_price ? number_to_currency(h.current_price) : "—" %></td>
+                  <td class="px-5 py-3.5 text-right text-sm font-semibold tabular-nums text-text-primary"><%= number_to_currency(h.display_value) %></td>
+                  <td class="px-5 py-3.5 text-right text-sm tabular-nums">
+                    <% if h.unrealized_gain_loss %>
+                      <span class="<%= h.gain_or_loss? == :gain ? 'text-success-600' : 'text-danger-600' %>">
+                        <%= h.unrealized_gain_loss >= 0 ? '+' : '' %><%= number_to_currency(h.unrealized_gain_loss) %>
+                      </span>
+                      <p class="text-[10px] <%= h.gain_or_loss? == :gain ? 'text-success-500' : 'text-danger-500' %>">
+                        <%= h.unrealized_gain_loss_percent >= 0 ? '+' : '' %><%= h.unrealized_gain_loss_percent %>%
+                      </p>
+                    <% else %>
+                      <span class="text-text-muted">—</span>
+                    <% end %>
+                  </td>
+                  <td class="px-5 py-3.5 text-right text-sm tabular-nums text-text-secondary"><%= h.allocation_percentage(@total_value) %>%</td>
+                  <td class="px-5 py-3.5 text-right">
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                      <%= link_to edit_account_holding_path(@account, h), class: "p-1 rounded-lg hover:bg-surface-hover transition-colors", data: { turbo_frame: "modal" } do %>
+                        <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4 text-text-muted" } %>
+                      <% end %>
+                      <%= link_to account_holding_path(@account, h), method: :delete, class: "p-1 rounded-lg hover:bg-surface-hover transition-colors", data: { turbo_confirm: "Remove #{h.symbol}?" } do %>
+                        <%= heroicon "trash", variant: :mini, options: { class: "w-4 h-4 text-text-muted hover:text-danger-500" } %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No holdings yet",
+        description: "Add your investment positions to track portfolio performance.",
+        icon: "chart-bar-square",
+        action_text: "Add Holding",
+        action_url: new_account_holding_path(@account),
+        action_data: { turbo_frame: "modal" }
+      ) %>
+    <% end %>
+  <% end %>
+</div>
