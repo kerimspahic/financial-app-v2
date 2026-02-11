@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   root "dashboard#index"
   resources :accounts
   resources :transactions
+  resources :saved_filters, only: [ :create, :destroy ]
+  patch "table_preferences", to: "table_preferences#update"
   resources :categories, except: :show
   resources :budgets, except: :show
   resources :exchanges, only: [ :index, :create, :destroy ] do
@@ -47,6 +49,7 @@ Rails.application.routes.draw do
     end
     resources :roles, except: [ :show ]
     resource :settings, only: [ :show, :update ]
+    resources :table_configs, only: [ :index, :edit, :update ]
     resources :audit_logs, only: [ :index ]
     resources :announcements, only: [ :index ]
     get "system_health", to: "system_health#show"

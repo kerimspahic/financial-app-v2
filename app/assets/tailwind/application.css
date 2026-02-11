@@ -401,6 +401,38 @@ body::after {
 }
 
 /* ════════════════════════════════════════════════════════
+   Tooltip
+   ════════════════════════════════════════════════════════ */
+.tooltip-popup {
+  position: fixed;
+  z-index: 9999;
+  max-width: 320px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 150ms ease, transform 150ms ease;
+  word-break: break-word;
+  white-space: pre-line;
+}
+
+.tooltip-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dark .tooltip-popup {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ════════════════════════════════════════════════════════
    Gradient utilities
    ════════════════════════════════════════════════════════ */
 .gradient-primary {

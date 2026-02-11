@@ -47,6 +47,31 @@
         <% end %>
       </div>
 
+      <%# Table Search Debounce %>
+      <div class="animate-card-entrance stagger-2">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-blue-500/10">
+                <%= heroicon "magnifying-glass", variant: :outline, options: { class: "w-5 h-5 text-blue-500" } %>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-text-primary">Search Debounce</h3>
+                <p class="text-xs text-text-muted">Delay (ms) before auto-searching after the user stops typing</p>
+              </div>
+            </div>
+          <% end %>
+          <div class="flex items-center gap-4">
+            <input type="range" name="search_debounce" value="<%= @search_debounce %>"
+              min="100" max="3000" step="100"
+              data-controller="range-preview" data-action="input->range-preview#update"
+              class="flex-1 h-2 rounded-full appearance-none cursor-pointer accent-primary-500 bg-surface-alt">
+            <span data-range-preview-target="display"
+              class="text-sm font-mono font-medium text-text-primary w-16 text-right"><%= @search_debounce %>ms</span>
+          </div>
+        <% end %>
+      </div>
+
       <div class="flex justify-end">
         <%= render ButtonComponent.new(variant: :primary, submit: true, icon: "check") do %>
           Save System Settings
@@ -55,7 +80,7 @@
     <% end %>
 
     <%# Registration Settings placeholder %>
-    <div class="animate-card-entrance stagger-2">
+    <div class="animate-card-entrance stagger-3">
       <%= render CardComponent.new do |card| %>
         <% card.with_header do %>
           <div class="flex items-center justify-between">
@@ -73,7 +98,7 @@
     </div>
 
     <%# Maintenance Mode placeholder %>
-    <div class="animate-card-entrance stagger-3">
+    <div class="animate-card-entrance stagger-4">
       <%= render CardComponent.new do |card| %>
         <% card.with_header do %>
           <div class="flex items-center justify-between">
@@ -91,7 +116,7 @@
     </div>
 
     <%# Session Settings placeholder %>
-    <div class="animate-card-entrance stagger-4">
+    <div class="animate-card-entrance stagger-5">
       <%= render CardComponent.new do |card| %>
         <% card.with_header do %>
           <div class="flex items-center justify-between">

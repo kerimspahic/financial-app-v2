@@ -1,0 +1,79 @@
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-text-primary">Table Configurations</h2>
+      <p class="text-sm text-text-secondary mt-1">Manage columns, search fields, and filters for each page</p>
+    </div>
+
+    <% if @table_configs.any? %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <% @table_configs.each_with_index do |config, i| %>
+          <div class="animate-card-entrance stagger-<%= i + 1 %>">
+            <%= render CardComponent.new do |card| %>
+              <% card.with_header do %>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl gradient-primary">
+                      <%= heroicon "table-cells", variant: :outline, options: { class: "w-5 h-5 text-white" } %>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold text-text-primary"><%= config.page_key.humanize %></h3>
+                      <p class="text-xs text-text-muted"><%= config.columns.size %> columns configured</p>
+                    </div>
+                  </div>
+                  <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_admin_table_config_path(config), icon: "pencil-square") do %>
+                    Edit
+                  <% end %>
+                </div>
+              <% end %>
+
+              <div class="space-y-3">
+                <div>
+                  <p class="text-xs font-medium text-text-muted uppercase mb-2">Visible Columns</p>
+                  <div class="flex flex-wrap gap-1">
+                    <% config.visible_columns.each do |col| %>
+                      <%= render BadgeComponent.new(variant: :success, size: :sm) do %><%= col["label"] %><% end %>
+                    <% end %>
+                    <% hidden_count = config.columns.size - config.visible_columns.size %>
+                    <% if hidden_count > 0 %>
+                      <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %>+<%= hidden_count %> hidden<% end %>
+                    <% end %>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="text-xs font-medium text-text-muted uppercase mb-2">Active Filters</p>
+                  <div class="flex flex-wrap gap-1">
+                    <% config.enabled_filters.each do |f| %>
+                      <%= render BadgeComponent.new(variant: :info, size: :sm) do %><%= f["label"] %><% end %>
+                    <% end %>
+                    <% if config.enabled_filters.empty? %>
+                      <span class="text-xs text-text-muted italic">No filters enabled</span>
+                    <% end %>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="text-xs font-medium text-text-muted uppercase mb-2">Search Fields</p>
+                  <div class="flex flex-wrap gap-1">
+                    <% (config.search_fields || []).each do |field| %>
+                      <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %><%= field.humanize %><% end %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No table configurations",
+          description: "Table configurations will be created automatically when pages are first visited.",
+          icon: "table-cells"
+        ) %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

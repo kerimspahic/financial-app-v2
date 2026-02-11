@@ -5,11 +5,23 @@ class TransactionsController < ApplicationController
   before_action :set_transaction, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    transactions = current_user.transactions.recent.includes(:account, :category)
-    transactions = transactions.where(account_id: params[:account_id]) if params[:account_id].present?
-    transactions = transactions.where(category_id: params[:category_id]) if params[:category_id].present?
-    transactions = transactions.where(transaction_type: params[:transaction_type]) if params[:transaction_type].present?
-    @pagy, @transactions = pagy(transactions, limit: user_per_page)
+    @table_config = TableConfig.for_page("transactions")
+    @saved_filters = current_user.saved_filters.for_page("transactions")
+
+    scope = current_user.transactions.includes(:account, :category, :tags)
+
+    # pg_search: full-text search
+    scope = scope.search_all(params[:search]) if params[:search].present?
+
+    # Ransack: filtering + sorting
+    @q = scope.ransack(params[:q])
+    @q.sorts = "date desc" if @q.sorts.empty?
+
+    # Pagy: pagination
+    @pagy, @transactions = pagy(@q.result, limit: user_per_page)
+
+    # Resolve visible columns
+    @visible_columns = resolve_visible_columns("transactions")
   end
 
   def show
@@ -53,5 +65,11 @@ class TransactionsController < ApplicationController
 
   def transaction_params
     params.expect(transaction: [ :description, :amount, :transaction_type, :date, :notes, :account_id, :category_id ])
+  end
+
+  def resolve_visible_columns(page_key)
+    default_keys = @table_config.visible_column_keys
+    user_settings = current_user.preference.table_settings&.dig(page_key, "visible_columns")
+    user_settings.presence || default_keys
   end
 end

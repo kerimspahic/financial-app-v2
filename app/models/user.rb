@@ -23,6 +23,7 @@ class User < ApplicationRecord
   has_many :wishlist_items, dependent: :destroy
   has_many :audit_logs, dependent: :destroy
   has_many :exchange_conversions, dependent: :destroy
+  has_many :saved_filters, dependent: :destroy
 
   before_create :set_jti
   after_create :create_default_categories

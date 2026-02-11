@@ -1,0 +1,135 @@
+<%= render "admin/shared/admin_layout" do %>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-semibold text-text-primary">Edit Table: <%= @table_config.page_key.humanize %></h2>
+        <p class="text-sm text-text-secondary mt-1">Configure columns, search, and filters for this page</p>
+      </div>
+      <%= render ButtonComponent.new(variant: :ghost, href: admin_table_configs_path, icon: "arrow-left") do %>
+        Back
+      <% end %>
+    </div>
+
+    <%= form_with model: @table_config, url: admin_table_config_path(@table_config), method: :patch, class: "space-y-6" do |form| %>
+      <%# Columns Configuration %>
+      <div class="animate-card-entrance stagger-1">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl gradient-primary">
+                <%= heroicon "view-columns", variant: :outline, options: { class: "w-5 h-5 text-white" } %>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-text-primary">Columns</h3>
+                <p class="text-xs text-text-muted">Toggle default visibility and sortability</p>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="space-y-3">
+            <% (@table_config.columns || []).each_with_index do |col, idx| %>
+              <div class="flex items-center justify-between p-3 glass rounded-xl">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-medium text-text-primary"><%= col["label"] %></span>
+                  <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %><%= col["key"] %><% end %>
+                </div>
+                <div class="flex items-center gap-4">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="hidden" name="table_config[columns][<%= idx %>][key]" value="<%= col["key"] %>">
+                    <input type="hidden" name="table_config[columns][<%= idx %>][label]" value="<%= col["label"] %>">
+                    <input type="checkbox" name="table_config[columns][<%= idx %>][default_visible]" value="true"
+                      <%= "checked" if col["default_visible"] %>
+                      class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
+                    <span class="text-xs text-text-secondary">Visible</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="table_config[columns][<%= idx %>][sortable]" value="true"
+                      <%= "checked" if col["sortable"] %>
+                      class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
+                    <span class="text-xs text-text-secondary">Sortable</span>
+                  </label>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Search Fields Configuration %>
+      <div class="animate-card-entrance stagger-2">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-blue-500/10">
+                <%= heroicon "magnifying-glass", variant: :outline, options: { class: "w-5 h-5 text-blue-500" } %>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-text-primary">Search Fields</h3>
+                <p class="text-xs text-text-muted">Select which fields the search bar queries</p>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="flex flex-wrap gap-3">
+            <% all_search_fields = %w[description notes category_name account_name] %>
+            <% active_fields = @table_config.search_fields || [] %>
+            <% all_search_fields.each do |field| %>
+              <label class="flex items-center gap-2 cursor-pointer p-2 glass rounded-lg">
+                <input type="checkbox" name="table_config[search_fields][]" value="<%= field %>"
+                  <%= "checked" if active_fields.include?(field) %>
+                  class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
+                <span class="text-sm text-text-secondary"><%= field.humanize %></span>
+              </label>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Filters Configuration %>
+      <div class="animate-card-entrance stagger-3">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-purple-500/10">
+                <%= heroicon "funnel", variant: :outline, options: { class: "w-5 h-5 text-purple-500" } %>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-text-primary">Filters</h3>
+                <p class="text-xs text-text-muted">Enable or disable filters for this page</p>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="space-y-3">
+            <% (@table_config.filters || []).each_with_index do |filter, idx| %>
+              <div class="flex items-center justify-between p-3 glass rounded-xl">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-medium text-text-primary"><%= filter["label"] %></span>
+                  <div class="flex items-center gap-1">
+                    <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %><%= filter["key"] %><% end %>
+                    <%= render BadgeComponent.new(variant: :info, size: :sm) do %><%= filter["type"] %><% end %>
+                  </div>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="hidden" name="table_config[filters][<%= idx %>][key]" value="<%= filter["key"] %>">
+                  <input type="hidden" name="table_config[filters][<%= idx %>][type]" value="<%= filter["type"] %>">
+                  <input type="hidden" name="table_config[filters][<%= idx %>][label]" value="<%= filter["label"] %>">
+                  <input type="checkbox" name="table_config[filters][<%= idx %>][enabled]" value="true"
+                    <%= "checked" if filter["enabled"] %>
+                    class="w-4 h-4 text-primary-500 rounded border-glass-border bg-surface focus:ring-primary-500">
+                  <span class="text-xs text-text-secondary">Enabled</span>
+                </label>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="flex justify-end">
+        <%= render ButtonComponent.new(variant: :primary, submit: true, icon: "check") do %>
+          Save Configuration
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

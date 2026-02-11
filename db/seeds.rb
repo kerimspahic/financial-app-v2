@@ -500,6 +500,30 @@ user.exchange_conversions.destroy_all
 
 puts "Exchange conversions: #{user.exchange_conversions.count}"
 
+# ─── Table Configurations ───────────────────────────────────────────────────
+
+TableConfig.find_or_create_by!(page_key: "transactions") do |tc|
+  tc.columns = [
+    { key: "date", label: "Date", default_visible: true, sortable: true },
+    { key: "description", label: "Description", default_visible: true, sortable: true },
+    { key: "category", label: "Category", default_visible: true, sortable: true, sort_key: "category_name" },
+    { key: "account", label: "Account", default_visible: true, sortable: true, sort_key: "account_name" },
+    { key: "amount", label: "Amount", default_visible: true, sortable: true },
+    { key: "transaction_type", label: "Type", sortable: true },
+    { key: "notes", label: "Notes", sortable: true },
+    { key: "tags", label: "Tags", sortable: false }
+  ]
+  tc.search_fields = %w[description notes category_name account_name]
+  tc.filters = [
+    { key: "transaction_type", type: "enum", label: "Type", enabled: true },
+    { key: "account_id", type: "select", label: "Account", enabled: true },
+    { key: "category_id", type: "select", label: "Category", enabled: true },
+    { key: "date", type: "date_range", label: "Date Range", enabled: true },
+    { key: "amount", type: "range", label: "Amount Range", enabled: false }
+  ]
+end
+puts "Table configs: #{TableConfig.count}"
+
 puts "\nSeed complete!"
 puts "  Login: demo@example.com / password123"
 puts "  Accounts: #{user.accounts.count}"

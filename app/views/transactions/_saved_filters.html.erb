@@ -1,0 +1,83 @@
+<% if saved_filters.any? || params[:q].present? || params[:search].present? %>
+  <div class="flex items-center gap-3 pt-3 border-t border-glass-border" data-controller="saved-filter confirm-dialog">
+    <% if saved_filters.any? %>
+      <div class="flex items-center gap-2 flex-wrap">
+        <%= heroicon "bookmark", variant: :outline, options: { class: "w-3.5 h-3.5 text-text-muted shrink-0" } %>
+        <% saved_filters.each do |filter| %>
+          <span class="inline-flex items-center gap-1 group/chip">
+            <%= link_to transactions_path(filter.filter_params.symbolize_keys),
+              class: "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium glass border border-glass-border text-text-secondary hover:text-primary-600 hover:border-primary-500/30 transition-all",
+              data: { turbo_frame: "transactions_content" } do %>
+              <%= filter.name %>
+            <% end %>
+            <button type="button"
+              data-action="confirm-dialog#open"
+              data-filter-name="<%= filter.name %>"
+              data-filter-url="<%= saved_filter_path(filter) %>"
+              class="opacity-0 group-hover/chip:opacity-100 -ml-1 p-0.5 rounded-full text-text-muted hover:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-500/10 transition-all">
+              <%= heroicon "x-mark", variant: :mini, options: { class: "w-3 h-3" } %>
+            </button>
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if params[:q].present? || params[:search].present? %>
+      <div class="flex items-center gap-2 ml-auto" data-saved-filter-target="saveForm">
+        <input type="text" placeholder="Save as..."
+          data-saved-filter-target="nameInput"
+          class="text-xs px-2.5 py-1.5 w-28 rounded-lg glass border border-glass-border text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+        <button type="button" data-action="saved-filter#save"
+          data-url="<%= saved_filters_path %>"
+          data-page-key="transactions"
+          class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg glass border border-glass-border text-primary-600 dark:text-primary-400 hover:border-primary-500/30 font-medium transition-all">
+          <%= heroicon "bookmark", variant: :mini, options: { class: "w-3 h-3" } %>
+          Save
+        </button>
+      </div>
+    <% end %>
+
+    <%# ── Shared Confirm Delete Modal ── %>
+    <% if saved_filters.any? %>
+      <div data-confirm-dialog-target="dialog" class="hidden fixed inset-0 z-50 flex items-center justify-center" aria-hidden="true"
+           data-action="keydown.esc->confirm-dialog#close">
+        <div data-confirm-dialog-target="backdrop" data-action="click->confirm-dialog#closeOnBackdrop"
+             class="fixed inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity duration-200 opacity-0"></div>
+
+        <div class="relative glass-strong rounded-2xl shadow-2xl w-full max-w-sm mx-4 z-10 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-danger-500/5 to-transparent pointer-events-none"></div>
+          <div class="relative p-6">
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-danger-50 dark:bg-danger-500/10">
+                <%= heroicon "trash", variant: :outline, options: { class: "w-5 h-5 text-danger-600 dark:text-danger-400" } %>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-semibold text-text-primary">Delete saved filter</h3>
+                <p class="mt-1 text-sm text-text-secondary">
+                  Are you sure you want to delete
+                  "<span data-confirm-dialog-target="name" class="font-medium text-text-primary"></span>"?
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 mt-6">
+              <button type="button" data-action="confirm-dialog#close"
+                class="px-4 py-2 text-sm font-medium rounded-xl glass border border-glass-border text-text-secondary hover:text-text-primary transition-all">
+                Cancel
+              </button>
+              <form data-confirm-dialog-target="form" method="post" action="">
+                <input type="hidden" name="_method" value="delete">
+                <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+                <button type="submit"
+                  class="px-4 py-2 text-sm font-medium rounded-xl bg-danger-600 hover:bg-danger-700 text-white shadow-sm transition-all">
+                  Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

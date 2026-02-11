@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_08_231510) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_205954) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_trgm"
 
   create_table "accounts", force: :cascade do |t|
     t.integer "account_type", null: false
@@ -189,6 +190,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_231510) do
     t.index ["name"], name: "index_roles_on_name", unique: true
   end
 
+  create_table "saved_filters", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "filter_params", default: {}
+    t.boolean "is_default", default: false, null: false
+    t.string "name", null: false
+    t.string "page_key", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "page_key", "name"], name: "index_saved_filters_on_user_id_and_page_key_and_name", unique: true
+    t.index ["user_id", "page_key"], name: "index_saved_filters_on_user_id_and_page_key"
+    t.index ["user_id"], name: "index_saved_filters_on_user_id"
+  end
+
   create_table "savings_contributions", force: :cascade do |t|
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -226,6 +240,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_231510) do
     t.index ["user_id"], name: "index_subscriptions_on_user_id"
   end
 
+  create_table "table_configs", force: :cascade do |t|
+    t.jsonb "columns", default: []
+    t.datetime "created_at", null: false
+    t.jsonb "filters", default: []
+    t.string "page_key", null: false
+    t.jsonb "search_fields", default: []
+    t.datetime "updated_at", null: false
+    t.index ["page_key"], name: "index_table_configs_on_page_key", unique: true
+  end
+
   create_table "tags", force: :cascade do |t|
     t.string "color"
     t.datetime "created_at", null: false
@@ -259,6 +283,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_231510) do
     t.bigint "user_id", null: false
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
+    t.index ["description"], name: "idx_transactions_description_trgm", opclass: :gin_trgm_ops, using: :gin
+    t.index ["notes"], name: "idx_transactions_notes_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["user_id", "date"], name: "idx_transactions_user_date"
     t.index ["user_id", "transaction_type", "date"], name: "idx_transactions_user_type_date"
     t.index ["user_id"], name: "index_transactions_on_user_id"
@@ -268,6 +294,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_231510) do
     t.string "color_mode", default: "green", null: false
     t.datetime "created_at", null: false
     t.integer "per_page", default: 25, null: false
+    t.jsonb "table_configs", default: {}
+    t.jsonb "table_settings", default: {}
     t.string "theme_mode", default: "system", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -332,6 +360,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_231510) do
   add_foreign_key "recurring_transactions", "users"
   add_foreign_key "role_permissions", "permissions"
   add_foreign_key "role_permissions", "roles"
+  add_foreign_key "saved_filters", "users"
   add_foreign_key "savings_contributions", "savings_goals"
   add_foreign_key "savings_goals", "users"
   add_foreign_key "subscriptions", "categories"

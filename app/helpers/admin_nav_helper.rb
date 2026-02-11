@@ -4,6 +4,7 @@ module AdminNavHelper
     { label: "Users", icon: "users", section: :users, group: :access },
     { label: "Roles", icon: "shield-check", section: :roles, group: :access },
     { label: "Settings", icon: "cog-6-tooth", section: :settings, group: :system },
+    { label: "Tables", icon: "table-cells", section: :table_configs, group: :system },
     { label: "Announcements", icon: "megaphone", section: :announcements, group: :system },
     { label: "Audit Log", icon: "clipboard-document-list", section: :audit_logs, group: :monitoring },
     { label: "System Health", icon: "server-stack", section: :system_health, group: :monitoring },
@@ -28,6 +29,7 @@ module AdminNavHelper
     when :audit_logs then admin_audit_logs_path
     when :system_health then admin_system_health_path
     when :exports then admin_exports_path
+    when :table_configs then admin_table_configs_path
     end
   end
 

@@ -7,4 +7,12 @@ class Account < ApplicationRecord
   validates :name, presence: true
   validates :account_type, presence: true
   validates :balance, numericality: true
+
+  def self.ransackable_attributes(auth_object = nil)
+    %w[name account_type]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    []
+  end
 end
