@@ -22,6 +22,9 @@
               </p>
             </div>
             <div class="flex items-center space-x-2">
+              <%= render ButtonComponent.new(variant: :secondary, size: :sm, href: transactions_budget_path(budget), icon: "eye") do %>
+                View
+              <% end %>
               <%= render ButtonComponent.new(variant: :ghost, size: :sm, href: edit_budget_path(budget)) do %>
                 Edit
               <% end %>

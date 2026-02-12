@@ -1,0 +1,108 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Spending Trends", subtitle: "Track your spending patterns over time") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :secondary, href: reports_path, icon: "arrow-left") do %>
+        All Reports
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Filters %>
+  <%= render CardComponent.new do %>
+    <%= form_with url: trends_reports_path, method: :get, class: "flex flex-wrap items-end gap-4" do |f| %>
+      <div class="flex-1 min-w-[160px]">
+        <label class="block text-sm font-medium text-text-secondary mb-1">Start Date</label>
+        <input type="date" name="start_date" value="<%= @start_date %>"
+               class="w-full glass rounded-xl px-4 py-2 text-text-primary border border-glass-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-transparent">
+      </div>
+      <div class="flex-1 min-w-[160px]">
+        <label class="block text-sm font-medium text-text-secondary mb-1">End Date</label>
+        <input type="date" name="end_date" value="<%= @end_date %>"
+               class="w-full glass rounded-xl px-4 py-2 text-text-primary border border-glass-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-transparent">
+      </div>
+      <div class="flex-1 min-w-[160px]">
+        <label class="block text-sm font-medium text-text-secondary mb-1">Granularity</label>
+        <select name="granularity"
+                class="w-full glass rounded-xl px-4 py-2 text-text-primary border border-glass-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-transparent">
+          <option value="monthly" <%= "selected" if @granularity == "monthly" %>>Monthly</option>
+          <option value="weekly" <%= "selected" if @granularity == "weekly" %>>Weekly</option>
+        </select>
+      </div>
+      <div class="flex-1 min-w-[160px]">
+        <label class="block text-sm font-medium text-text-secondary mb-1">Category (optional)</label>
+        <select name="category_id"
+                class="w-full glass rounded-xl px-4 py-2 text-text-primary border border-glass-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-transparent">
+          <option value="">All Categories</option>
+          <% @categories.each do |cat| %>
+            <option value="<%= cat.id %>" <%= "selected" if @category_id.to_s == cat.id.to_s %>>
+              <%= cat.name %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+      <div>
+        <%= render ButtonComponent.new(variant: :primary, submit: true, icon: "funnel") do %>
+          Apply
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @chart_data[:labels].any? %>
+    <%# Line Chart %>
+    <div class="animate-card-entrance stagger-1">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <div class="flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-text-primary">Spending Over Time</h2>
+            <p class="text-sm text-text-secondary"><%= @granularity.capitalize %> view</p>
+          </div>
+        <% end %>
+        <div class="h-80">
+          <canvas data-controller="chart"
+                  data-chart-type-value="line"
+                  data-chart-data-value="<%= @chart_data.to_json %>"></canvas>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Summary Stats %>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-card-entrance stagger-2">
+      <% total = @chart_data[:datasets].first[:data].sum %>
+      <% avg = @chart_data[:datasets].first[:data].any? ? total / @chart_data[:datasets].first[:data].size : 0 %>
+      <% max = @chart_data[:datasets].first[:data].max || 0 %>
+      <div data-controller="counter">
+        <%= render StatCardComponent.new(
+          label: "Total Spent",
+          value: number_to_currency(total),
+          icon: "calculator",
+          color: "text-danger-600"
+        ) %>
+      </div>
+      <div data-controller="counter">
+        <%= render StatCardComponent.new(
+          label: "Average per Period",
+          value: number_to_currency(avg),
+          icon: "chart-bar",
+          color: "text-text-primary"
+        ) %>
+      </div>
+      <div data-controller="counter">
+        <%= render StatCardComponent.new(
+          label: "Peak Period",
+          value: number_to_currency(max),
+          icon: "arrow-trending-up",
+          color: "text-warning-600"
+        ) %>
+      </div>
+    </div>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No trend data",
+        description: "No expense transactions found for this date range. Try expanding the date range.",
+        icon: "arrow-trending-up"
+      ) %>
+    <% end %>
+  <% end %>
+</div>

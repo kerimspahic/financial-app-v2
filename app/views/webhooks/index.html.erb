@@ -1,0 +1,146 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Webhooks", subtitle: "Receive real-time notifications when events occur") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :primary, href: new_webhook_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+        New Webhook
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Description %>
+  <div class="animate-card-entrance stagger-1">
+    <div class="glass rounded-2xl shadow-lg p-5 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none rounded-2xl"></div>
+      <div class="relative flex items-start gap-3">
+        <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center">
+          <%= heroicon "signal", variant: :outline, options: { class: "w-5 h-5 text-primary-600 dark:text-primary-400" } %>
+        </div>
+        <div>
+          <p class="text-sm text-text-secondary leading-relaxed">
+            Webhooks send HTTP POST requests to your specified URL when events occur.
+            Each request includes an HMAC-SHA256 signature in the <code class="text-xs font-mono px-1 py-0.5 rounded glass border border-glass-border">X-Webhook-Signature</code> header for verification.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Webhooks Table %>
+  <% if @webhooks.any? %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new(padding: false) do %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-glass-border">
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[70px]">Status</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">URL</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Events</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[150px]">Last Triggered</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[100px]"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-glass-border/50">
+              <% @webhooks.each do |webhook| %>
+                <tr class="group hover:bg-surface-hover/50 transition-colors <%= 'opacity-50' unless webhook.active? %>">
+                  <%# Active Status %>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <% if webhook.active? %>
+                      <span class="w-3 h-3 rounded-full bg-success-500 shadow-sm shadow-success-500/30 inline-block" title="Active"></span>
+                    <% else %>
+                      <span class="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-600 inline-block" title="Inactive"></span>
+                    <% end %>
+                  </td>
+
+                  <%# URL %>
+                  <td class="px-5 py-3.5">
+                    <code class="font-mono text-xs text-text-primary px-2 py-1 rounded-lg glass border border-glass-border truncate max-w-[300px] inline-block">
+                      <%= webhook.url %>
+                    </code>
+                  </td>
+
+                  <%# Events %>
+                  <td class="px-5 py-3.5">
+                    <div class="flex flex-wrap gap-1">
+                      <% if webhook.events.blank? || webhook.events.empty? %>
+                        <%= render BadgeComponent.new(variant: :info, size: :sm) do %>All Events<% end %>
+                      <% else %>
+                        <% webhook.events.each do |event| %>
+                          <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %><%= event %><% end %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </td>
+
+                  <%# Last Triggered %>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <% if webhook.last_triggered_at %>
+                      <span class="text-xs text-text-muted"><%= time_ago_in_words(webhook.last_triggered_at) %> ago</span>
+                    <% else %>
+                      <span class="text-xs text-text-muted italic">Never</span>
+                    <% end %>
+                  </td>
+
+                  <%# Actions %>
+                  <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
+                      <%= link_to edit_webhook_path(webhook), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all", data: { turbo_frame: "modal" } do %>
+                        <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
+                      <% end %>
+                      <%= link_to webhook_path(webhook), data: { turbo_method: :delete, turbo_confirm: "Delete this webhook?" }, class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger-600 transition-all" do %>
+                        <%= heroicon "trash", variant: :mini, options: { class: "w-4 h-4" } %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No webhooks configured",
+          description: "Create a webhook to receive real-time HTTP notifications when transactions are created, updated, or deleted.",
+          icon: "signal",
+          action_text: "Create Webhook",
+          action_url: new_webhook_path,
+          action_data: { turbo_frame: "modal" }
+        ) %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Available Events Reference %>
+  <div class="animate-card-entrance stagger-3">
+    <%= render CardComponent.new do %>
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-info-500/10 flex items-center justify-center shrink-0">
+            <%= heroicon "book-open", variant: :outline, options: { class: "w-5 h-5 text-info-500" } %>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-text-primary">Available Events</h3>
+            <p class="text-xs text-text-muted">Leave events empty to subscribe to all events</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <% Webhook::AVAILABLE_EVENTS.each do |event| %>
+            <div class="flex items-center gap-3 p-3 rounded-xl glass border border-glass-border">
+              <div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "bolt", variant: :mini, options: { class: "w-4 h-4 text-primary-500" } %>
+              </div>
+              <div>
+                <code class="text-xs font-mono font-medium text-text-primary"><%= event %></code>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

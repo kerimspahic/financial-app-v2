@@ -1,6 +1,6 @@
 class BudgetsController < ApplicationController
   require_permission "manage_budgets"
-  before_action :set_budget, only: [ :edit, :update, :destroy ]
+  before_action :set_budget, only: [ :edit, :update, :destroy, :transactions ]
 
   def index
     @month = (params[:month] || Date.current.month).to_i
@@ -35,6 +35,15 @@ class BudgetsController < ApplicationController
   def destroy
     @budget.destroy
     redirect_to budgets_path, notice: "Budget was successfully deleted."
+  end
+
+  def transactions
+    @transactions = current_user.transactions
+      .expense
+      .where(category_id: @budget.category_id)
+      .by_month(@budget.month, @budget.year)
+      .includes(:account, :category)
+      .order(date: :desc)
   end
 
   private

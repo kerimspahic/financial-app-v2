@@ -1,0 +1,192 @@
+<%# locals: (t:, table_config:, visible_columns:, running_balances: nil) %>
+<tr class="group hover:bg-surface-hover/50 transition-colors cursor-pointer"
+    id="transaction_<%= t.id %>"
+    data-transaction-id="<%= t.id %>"
+    data-keyboard-shortcuts-target="row"
+    data-action="dblclick->inline-edit#edit">
+  <td class="px-3 py-3.5">
+    <input type="checkbox" value="<%= t.id %>" data-bulk-select-target="checkbox" data-action="change->bulk-select#toggleOne"
+      class="w-3.5 h-3.5 rounded">
+  </td>
+  <% (table_config.columns || []).each do |col| %>
+    <% next unless visible_columns.include?(col["key"]) %>
+    <% case col["key"] %>
+    <% when "date" %>
+      <td class="px-5 py-3.5 whitespace-nowrap" data-column="date">
+        <div class="flex flex-col">
+          <span class="text-sm font-medium text-text-primary"><%= t.date.strftime("%b %d") %></span>
+          <span class="text-[10px] text-text-muted"><%= t.date.strftime("%Y") %></span>
+        </div>
+      </td>
+    <% when "payee" %>
+      <td class="px-5 py-3.5 overflow-hidden" data-column="payee">
+        <span class="text-sm text-text-primary truncate block"><%= t.payee.presence || "\u2014" %></span>
+      </td>
+    <% when "description" %>
+      <td class="px-5 py-3.5 overflow-hidden" data-column="description">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
+            <%= t.income? ? 'bg-success-50 dark:bg-success-500/10' : (t.transfer? ? 'bg-info-50 dark:bg-info-500/10' : 'bg-danger-50 dark:bg-danger-500/10') %>">
+            <%= heroicon(
+              t.income? ? "arrow-down-left" : (t.transfer? ? "arrow-path" : "arrow-up-right"),
+              variant: :mini,
+              options: { class: "w-4 h-4 #{t.income? ? 'text-success-600 dark:text-success-500' : (t.transfer? ? 'text-info-600 dark:text-info-500' : 'text-danger-600 dark:text-danger-500')}" }
+            ) %>
+          </div>
+          <div class="min-w-0 flex-1" data-controller="tooltip" data-tooltip-text-value="<%= t.description %><%= t.notes.present? ? "\n#{t.notes}" : '' %>">
+            <div class="flex items-center gap-1.5">
+              <%= link_to t.description, transaction_path(t),
+                class: "text-sm font-medium text-text-primary hover:text-primary-600 transition-colors truncate block",
+                data: { turbo_frame: "modal" } %>
+              <% if t.needs_review? %>
+                <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-warning-100 dark:bg-warning-500/20" data-controller="tooltip" data-tooltip-text-value="Needs review">
+                  <%= heroicon "eye", variant: :mini, options: { class: "w-3 h-3 text-warning-600 dark:text-warning-400" } %>
+                </span>
+              <% end %>
+              <% if t.flag.present? %>
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <%= t.flag_color[:dot] %>"></span>
+              <% end %>
+              <% if t.receipts.attached? %>
+                <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary-100 dark:bg-primary-500/20" data-controller="tooltip" data-tooltip-text-value="<%= t.receipts.count %> receipt(s) attached">
+                  <%= heroicon "paper-clip", variant: :mini, options: { class: "w-3 h-3 text-primary-600 dark:text-primary-400" } %>
+                </span>
+              <% end %>
+              <% if t.transaction_group.present? %>
+                <span class="inline-flex items-center justify-center w-4 h-4 rounded-full <%= t.transaction_group.type_display[:bg] %>" data-controller="tooltip" data-tooltip-text-value="Group: <%= t.transaction_group.name %>">
+                  <%= heroicon "link", variant: :mini, options: { class: "w-3 h-3 #{t.transaction_group.type_display[:text]}" } %>
+                </span>
+              <% end %>
+            </div>
+            <% if t.payee.present? && !visible_columns.include?("payee") %>
+              <p class="text-[10px] text-text-muted truncate"><%= t.payee %></p>
+            <% elsif t.notes.present? %>
+              <p class="text-[10px] text-text-muted truncate"><%= t.notes %></p>
+            <% end %>
+          </div>
+        </div>
+      </td>
+    <% when "category" %>
+      <td class="px-5 py-3.5 overflow-hidden" data-column="category">
+        <% if t.split? %>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary max-w-full"
+            data-controller="tooltip" data-tooltip-text-value="<%= t.transaction_splits.map { |s| "#{s.category.name}: #{number_to_currency(s.amount)}" }.join(', ') %>">
+            <%= heroicon "scissors", variant: :mini, options: { class: "w-3.5 h-3.5 shrink-0" } %>
+            <span class="truncate">Split (<%= t.transaction_splits.size %>)</span>
+          </span>
+        <% else %>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary max-w-full"
+            data-controller="tooltip" data-tooltip-text-value="<%= t.category.name %>">
+            <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: <%= t.category.color %>"></span>
+            <span class="truncate"><%= t.category.name %></span>
+          </span>
+        <% end %>
+      </td>
+    <% when "account" %>
+      <td class="px-5 py-3.5 overflow-hidden" data-column="account">
+        <span class="text-sm text-text-secondary truncate block"
+          data-controller="tooltip" data-tooltip-text-value="<%= t.account.name %>"><%= t.account.name %></span>
+      </td>
+    <% when "amount" %>
+      <td class="px-5 py-3.5 whitespace-nowrap text-right" data-column="amount">
+        <span class="text-sm font-semibold tabular-nums <%= amount_color_class(t) %>">
+          <%= formatted_amount(t) %>
+        </span>
+      </td>
+    <% when "transaction_type" %>
+      <td class="px-5 py-3.5 whitespace-nowrap" data-column="transaction_type">
+        <%= render BadgeComponent.new(
+          variant: t.income? ? :success : (t.expense? ? :danger : :info),
+          size: :sm,
+          dot: true
+        ) do %>
+          <%= t.transaction_type.humanize %>
+        <% end %>
+      </td>
+    <% when "clearing_status" %>
+      <td class="px-5 py-3.5 whitespace-nowrap" data-column="clearing_status">
+        <% case t.clearing_status %>
+        <% when "uncleared" %>
+          <span class="inline-flex items-center gap-1 text-xs text-text-muted">
+            <%= heroicon "minus-circle", variant: :mini, options: { class: "w-4 h-4" } %>
+            Uncleared
+          </span>
+        <% when "cleared" %>
+          <span class="inline-flex items-center gap-1 text-xs text-success-600 dark:text-success-500">
+            <%= heroicon "check", variant: :mini, options: { class: "w-4 h-4" } %>
+            Cleared
+          </span>
+        <% when "reconciled" %>
+          <span class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400">
+            <%= heroicon "check-badge", variant: :mini, options: { class: "w-4 h-4" } %>
+            Reconciled
+          </span>
+        <% end %>
+      </td>
+    <% when "flag" %>
+      <td class="px-5 py-3.5 whitespace-nowrap text-center" data-column="flag">
+        <% if t.flag.present? %>
+          <span class="inline-flex items-center justify-center w-6 h-6 rounded-md <%= t.flag_color[:bg] %>">
+            <%= heroicon "flag", variant: :mini, options: { class: "w-3.5 h-3.5 #{t.flag_color[:text]}" } %>
+          </span>
+        <% else %>
+          <span class="text-xs text-text-muted">&mdash;</span>
+        <% end %>
+      </td>
+    <% when "notes" %>
+      <td class="px-5 py-3.5 overflow-hidden" data-column="notes">
+        <span class="text-sm text-text-muted truncate block"
+          data-controller="tooltip" data-tooltip-text-value="<%= t.notes %>"
+          ><%= t.notes.presence || "\u2014" %></span>
+      </td>
+    <% when "tags" %>
+      <td class="px-5 py-3.5 overflow-hidden" data-column="tags">
+        <div class="flex flex-nowrap gap-1 overflow-hidden"
+          data-controller="tooltip" data-tooltip-text-value="<%= t.tags.map(&:name).join(', ') %>">
+          <% t.tags.each do |tag| %>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border" style="background-color: <%= tag.color %>15; border-color: <%= tag.color %>30; color: <%= tag.color %>">
+              <span class="w-1.5 h-1.5 rounded-full" style="background-color: <%= tag.color %>"></span>
+              <%= tag.name %>
+            </span>
+          <% end %>
+          <% if t.tags.empty? %>
+            <span class="text-xs text-text-muted">&mdash;</span>
+          <% end %>
+        </div>
+      </td>
+    <% when "balance" %>
+      <td class="px-5 py-3.5 whitespace-nowrap text-right" data-column="balance">
+        <% if running_balances&.key?(t.id) %>
+          <span class="text-sm font-medium tabular-nums <%= running_balances[t.id] >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
+            <%= number_to_currency(running_balances[t.id]) %>
+          </span>
+        <% else %>
+          <span class="text-xs text-text-muted">&mdash;</span>
+        <% end %>
+      </td>
+    <% end %>
+  <% end %>
+  <td class="px-5 py-3.5 text-right whitespace-nowrap">
+    <% if t.reconciled? %>
+      <div class="flex items-center justify-end gap-1 text-text-muted">
+        <%= heroicon "lock-closed", variant: :mini, options: { class: "w-4 h-4" } %>
+        <span class="text-[10px] font-medium">Locked</span>
+      </div>
+    <% else %>
+      <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
+        <% if t.needs_review? %>
+          <%= button_to mark_reviewed_transaction_path(t, reviewed: false), method: :patch,
+            class: "p-1.5 rounded-lg hover:bg-success-50 dark:hover:bg-success-500/10 text-text-muted hover:text-success-600 transition-all",
+            data: { turbo: false } do %>
+            <%= heroicon "check-circle", variant: :mini, options: { class: "w-4 h-4" } %>
+          <% end %>
+        <% end %>
+        <%= link_to transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-all", data: { turbo_frame: "modal" } do %>
+          <%= heroicon "eye", variant: :mini, options: { class: "w-4 h-4" } %>
+        <% end %>
+        <%= link_to edit_transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all", data: { turbo_frame: "modal" } do %>
+          <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
+        <% end %>
+      </div>
+    <% end %>
+  </td>
+</tr>

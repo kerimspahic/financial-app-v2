@@ -27,6 +27,9 @@ class User < ApplicationRecord
   has_many :account_groups, dependent: :destroy
   has_many :categorization_rules, dependent: :destroy
   has_many :account_shares, dependent: :destroy
+  has_many :webhooks, dependent: :destroy
+  has_many :transaction_groups, dependent: :destroy
+  has_many :custom_field_definitions, dependent: :destroy
 
   before_create :set_jti
   after_create :create_default_categories

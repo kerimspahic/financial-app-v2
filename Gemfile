@@ -6,6 +6,8 @@ gem "rails", "~> 8.1.2"
 gem "propshaft"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
+# CSV parsing (removed from Ruby 3.4 default gems)
+gem "csv"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -33,6 +35,9 @@ gem "pagy"
 # Search & Filtering
 gem "ransack"
 gem "pg_search"
+
+# PDF parsing for statement imports
+gem "pdf-reader"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]

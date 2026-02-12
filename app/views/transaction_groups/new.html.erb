@@ -1,0 +1,11 @@
+<% if turbo_frame_modal? %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= render layout: "shared/modal_form", locals: { title: "New Transaction Group" } do %>
+      <%= render "form", transaction_group: @transaction_group %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render layout: "shared/form_page", locals: { title: "New Transaction Group", back_text: "Back to groups", back_path: transaction_groups_path } do %>
+    <%= render "form", transaction_group: @transaction_group %>
+  <% end %>
+<% end %>

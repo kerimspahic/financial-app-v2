@@ -1,0 +1,136 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Reconcile Account", subtitle: "Match your transactions against your bank statement") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :secondary, href: transactions_path, icon: "arrow-left") do %>
+        Back to Transactions
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Account Selector %>
+  <div class="animate-card-entrance stagger-1">
+    <%= render CardComponent.new do %>
+      <%= form_with url: reconcile_transactions_path, method: :get, class: "flex items-end gap-4" do %>
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-text-primary mb-1.5">Select Account</label>
+          <select name="account_id" onchange="this.form.requestSubmit()"
+            class="block w-full rounded-xl glass border border-glass-border text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+            <option value="">Choose an account...</option>
+            <% @accounts.each do |a| %>
+              <option value="<%= a.id %>" <%= 'selected' if @account&.id == a.id %>><%= a.name %> (<%= number_to_currency(a.balance) %>)</option>
+            <% end %>
+          </select>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @account && @unreconciled %>
+    <div class="animate-card-entrance stagger-2" data-controller="reconciliation">
+      <%= form_with url: complete_reconciliation_transactions_path, method: :post, class: "space-y-5" do %>
+        <input type="hidden" name="account_id" value="<%= @account.id %>">
+
+        <%# Statement Balance Input %>
+        <%= render CardComponent.new do %>
+          <div class="grid grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-text-primary mb-1.5">Statement Balance</label>
+              <input type="number" name="statement_balance" step="0.01" placeholder="Enter statement balance"
+                data-reconciliation-target="statementBalance"
+                data-action="input->reconciliation#calculate"
+                class="block w-full rounded-xl glass border border-glass-border text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+            </div>
+            <div>
+              <p class="text-sm font-medium text-text-primary mb-1.5">Cleared Balance</p>
+              <p class="text-2xl font-bold text-text-primary" data-reconciliation-target="clearedBalance">
+                <%= number_to_currency(@account.balance) %>
+              </p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-text-primary mb-1.5">Difference</p>
+              <p class="text-2xl font-bold" data-reconciliation-target="difference">$0.00</p>
+              <p class="text-xs text-text-muted">Target: $0.00</p>
+            </div>
+          </div>
+        <% end %>
+
+        <%# Unreconciled Transactions %>
+        <%= render CardComponent.new(padding: false) do %>
+          <div class="overflow-hidden">
+            <div class="px-5 py-3 border-b border-glass-border flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-text-primary">Unreconciled Transactions (<%= @unreconciled.size %>)</h3>
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-text-muted">
+                  Selected: <span data-reconciliation-target="selectedCount">0</span>
+                </span>
+                <span class="text-xs text-text-muted">
+                  Total: <span data-reconciliation-target="selectedTotal">$0.00</span>
+                </span>
+              </div>
+            </div>
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-glass-border">
+                  <th class="px-3 py-2 w-[40px]">
+                    <input type="checkbox" data-reconciliation-target="selectAll"
+                      data-action="change->reconciliation#toggleAll" class="w-3.5 h-3.5 rounded">
+                  </th>
+                  <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Date</th>
+                  <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Description</th>
+                  <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Category</th>
+                  <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Status</th>
+                  <th class="px-5 py-2 text-right text-[10px] font-semibold text-text-muted uppercase">Amount</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-glass-border/50">
+                <% @unreconciled.each do |t| %>
+                  <tr class="hover:bg-surface-hover/50 transition-colors">
+                    <td class="px-3 py-3">
+                      <input type="checkbox" name="transaction_ids[]" value="<%= t.id %>"
+                        data-reconciliation-target="checkbox"
+                        data-action="change->reconciliation#calculate"
+                        data-amount="<%= t.income? ? t.amount.to_f : -t.amount.to_f %>"
+                        class="w-3.5 h-3.5 rounded">
+                    </td>
+                    <td class="px-5 py-3 text-sm text-text-primary"><%= t.date.strftime("%b %d, %Y") %></td>
+                    <td class="px-5 py-3 text-sm text-text-primary"><%= t.description %></td>
+                    <td class="px-5 py-3 text-sm text-text-secondary"><%= t.category.name %></td>
+                    <td class="px-5 py-3">
+                      <% if t.cleared? %>
+                        <span class="inline-flex items-center gap-1 text-xs text-success-600">
+                          <%= heroicon "check", variant: :mini, options: { class: "w-3.5 h-3.5" } %> Cleared
+                        </span>
+                      <% else %>
+                        <span class="inline-flex items-center gap-1 text-xs text-text-muted">
+                          <%= heroicon "minus-circle", variant: :mini, options: { class: "w-3.5 h-3.5" } %> Uncleared
+                        </span>
+                      <% end %>
+                    </td>
+                    <td class="px-5 py-3 text-sm font-semibold text-right tabular-nums <%= amount_color_class(t) %>">
+                      <%= formatted_amount(t) %>
+                    </td>
+                  </tr>
+                <% end %>
+                <% if @unreconciled.empty? %>
+                  <tr>
+                    <td colspan="6" class="px-5 py-8 text-center text-sm text-text-muted">
+                      All transactions for this account are reconciled.
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+
+        <% if @unreconciled.any? %>
+          <div class="flex justify-end">
+            <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true, icon: "check-badge") do %>
+              Finish Reconciliation
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -41,6 +41,26 @@
         <% end %>
       </div>
 
+      <%# Accounting Mode %>
+      <div class="animate-card-entrance stagger-2">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-text-primary">Accounting Mode</h2>
+              <%= render BadgeComponent.new(variant: :warning, size: :sm) do %>Lite<% end %>
+            </div>
+          <% end %>
+          <p class="text-sm text-text-secondary mb-4">
+            Enable double-entry bookkeeping display. When active, transaction forms will include a contra category field
+            and the transaction detail views will show debit/credit columns.
+          </p>
+          <label class="inline-flex items-center gap-3 cursor-pointer">
+            <%= form.check_box :accounting_mode, class: "rounded border-input-border text-primary-600 focus:ring-primary-500 focus:ring-offset-0 w-5 h-5" %>
+            <span class="text-sm font-medium text-text-primary">Enable Accounting Mode</span>
+          </label>
+        <% end %>
+      </div>
+
       <div class="flex justify-end">
         <%= render ButtonComponent.new(variant: :primary, submit: true) do %>
           Save Preferences
@@ -49,7 +69,7 @@
     <% end %>
 
     <%# Currency placeholder %>
-    <div class="animate-card-entrance stagger-2">
+    <div class="animate-card-entrance stagger-3">
       <%= render CardComponent.new do |card| %>
         <% card.with_header do %>
           <div class="flex items-center justify-between">
@@ -65,7 +85,7 @@
     </div>
 
     <%# Date Format placeholder %>
-    <div class="animate-card-entrance stagger-3">
+    <div class="animate-card-entrance stagger-4">
       <%= render CardComponent.new do |card| %>
         <% card.with_header do %>
           <div class="flex items-center justify-between">
@@ -85,7 +105,7 @@
     </div>
 
     <%# Default Dashboard View placeholder %>
-    <div class="animate-card-entrance stagger-4">
+    <div class="animate-card-entrance stagger-5">
       <%= render CardComponent.new do |card| %>
         <% card.with_header do %>
           <div class="flex items-center justify-between">

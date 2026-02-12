@@ -1,0 +1,124 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Custom Fields") do |header| %>
+  <% end %>
+
+  <%# Description %>
+  <div class="animate-card-entrance stagger-1">
+    <div class="glass rounded-2xl shadow-lg p-5 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none rounded-2xl"></div>
+      <div class="relative flex items-start gap-3">
+        <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center">
+          <%= heroicon "adjustments-horizontal", variant: :outline, options: { class: "w-5 h-5 text-primary-600 dark:text-primary-400" } %>
+        </div>
+        <div>
+          <p class="text-sm text-text-secondary leading-relaxed">
+            Define custom fields that will appear on every transaction form. Use these to track additional data specific to your needs, such as project codes, tax categories, or reimbursement status.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Create New Custom Field %>
+  <div class="animate-card-entrance stagger-2">
+    <%= render CardComponent.new do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-lg font-semibold text-text-primary">Add Custom Field</h2>
+      <% end %>
+      <%= form_with(model: @custom_field_definition, url: custom_field_definitions_path, class: "space-y-4") do |form| %>
+        <% if @custom_field_definition.errors.any? %>
+          <%= render AlertComponent.new(variant: :danger, dismissable: false) do %>
+            <ul class="list-disc list-inside text-sm">
+              <% @custom_field_definition.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          <% end %>
+        <% end %>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <%= render InputComponent.new(form: form, field: :name, label: "Field Name", placeholder: "e.g., Project Code") %>
+          <%= render InputComponent.new(
+            form: form,
+            field: :field_type,
+            label: "Type",
+            type: :select,
+            collection: CustomFieldDefinition.field_types.keys.map { |t| [ t.humanize, t ] },
+            include_blank: "Select type"
+          ) %>
+          <%= render InputComponent.new(form: form, field: :position, label: "Position", type: :number, step: "1", min: "0") %>
+        </div>
+
+        <div>
+          <%= render ButtonComponent.new(variant: :primary, submit: true, size: :sm) do %>
+            Add Field
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Existing Custom Fields %>
+  <% if @custom_field_definitions.any? %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new(padding: false) do %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-glass-border">
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Name</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[120px]">Type</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[80px]">Position</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[100px]"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-glass-border/50">
+              <% @custom_field_definitions.each do |field_def| %>
+                <tr class="group hover:bg-surface-hover/50 transition-colors">
+                  <td class="px-5 py-3.5">
+                    <span class="text-sm font-medium text-text-primary"><%= field_def.name %></span>
+                  </td>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <% badge_variant = case field_def.field_type
+                      when "text" then :neutral
+                      when "number" then :info
+                      when "date" then :warning
+                      when "boolean" then :success
+                      when "select" then :danger
+                      else :neutral
+                    end %>
+                    <%= render BadgeComponent.new(variant: badge_variant, size: :sm) do %>
+                      <%= field_def.field_type.humanize %>
+                    <% end %>
+                  </td>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg glass border border-glass-border text-sm font-semibold text-text-primary tabular-nums">
+                      <%= field_def.position %>
+                    </span>
+                  </td>
+                  <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
+                      <%= link_to custom_field_definition_path(field_def), data: { turbo_method: :delete, turbo_confirm: "Delete custom field '#{field_def.name}'? This will not remove data from existing transactions." }, class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger-600 transition-all" do %>
+                        <%= heroicon "trash", variant: :mini, options: { class: "w-4 h-4" } %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No custom fields yet",
+          description: "Create custom fields to add extra data points to your transactions.",
+          icon: "adjustments-horizontal"
+        ) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

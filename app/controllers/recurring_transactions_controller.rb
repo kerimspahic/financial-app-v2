@@ -42,6 +42,11 @@ class RecurringTransactionsController < ApplicationController
     redirect_to recurring_transactions_path, notice: "#{@recurring_transaction.description} #{status}."
   end
 
+  def detected
+    service = RecurringDetectionService.new(current_user)
+    @candidates = service.detect
+  end
+
   private
 
   def set_recurring_transaction

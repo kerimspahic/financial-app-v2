@@ -1,0 +1,128 @@
+<div class="space-y-5">
+  <% display = @transaction_group.type_display %>
+
+  <%= render PageHeaderComponent.new(title: @transaction_group.name) do |header| %>
+    <% header.with_actions do %>
+      <div class="flex items-center gap-2">
+        <%= render ButtonComponent.new(variant: :secondary, href: transaction_groups_path, icon: "arrow-left", size: :sm) do %>
+          All Groups
+        <% end %>
+        <%= render ButtonComponent.new(variant: :danger, size: :sm, href: transaction_group_path(@transaction_group), method: :delete, confirm: "Delete this group?", icon: "trash") do %>
+          Delete Group
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Group Info %>
+  <div class="animate-card-entrance stagger-1">
+    <%= render CardComponent.new do %>
+      <div class="flex items-center gap-4">
+        <span class="inline-flex items-center justify-center w-12 h-12 rounded-xl <%= display[:bg] %>">
+          <%= heroicon display[:icon], variant: :outline, options: { class: "w-6 h-6 #{display[:text]}" } %>
+        </span>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium <%= display[:bg] %> <%= display[:text] %>">
+              <%= @transaction_group.group_type.humanize %>
+            </span>
+          </div>
+          <div class="mt-2 flex items-center gap-4 text-sm text-text-secondary">
+            <span><%= @transactions.count %> transactions</span>
+            <span class="font-semibold text-text-primary"><%= number_to_currency(@transaction_group.total_amount) %> total</span>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Add Transaction Form %>
+  <div class="animate-card-entrance stagger-2">
+    <%= render CardComponent.new do %>
+      <p class="text-sm font-medium text-text-primary mb-3">Add Transaction to Group</p>
+      <%= form_with url: add_transaction_transaction_group_path(@transaction_group), method: :post, class: "flex items-end gap-3" do %>
+        <div class="flex-1">
+          <label class="block text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">Transaction ID</label>
+          <input type="number" name="transaction_id" placeholder="Enter transaction ID"
+            class="block w-full rounded-xl glass border border-glass-border text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+        </div>
+        <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true, size: :md, icon: "plus") do %>
+          Add
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Transactions in Group %>
+  <div class="animate-card-entrance stagger-3">
+    <% if @transactions.any? %>
+      <%= render CardComponent.new(padding: false) do %>
+        <div class="overflow-hidden">
+          <div class="px-5 py-3 border-b border-glass-border">
+            <h3 class="text-sm font-semibold text-text-primary">Grouped Transactions</h3>
+          </div>
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-glass-border">
+                <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Date</th>
+                <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Description</th>
+                <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Category</th>
+                <th class="px-5 py-2 text-left text-[10px] font-semibold text-text-muted uppercase">Account</th>
+                <th class="px-5 py-2 text-right text-[10px] font-semibold text-text-muted uppercase">Amount</th>
+                <th class="px-5 py-2 w-[60px]"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-glass-border/50">
+              <% @transactions.each do |t| %>
+                <tr class="hover:bg-surface-hover/50 transition-colors">
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <span class="text-sm text-text-primary"><%= t.date.strftime("%b %d, %Y") %></span>
+                  </td>
+                  <td class="px-5 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
+                        <%= t.income? ? 'bg-success-50 dark:bg-success-500/10' : (t.transfer? ? 'bg-info-50 dark:bg-info-500/10' : 'bg-danger-50 dark:bg-danger-500/10') %>">
+                        <%= heroicon(
+                          t.income? ? "arrow-down-left" : (t.transfer? ? "arrow-path" : "arrow-up-right"),
+                          variant: :mini,
+                          options: { class: "w-3.5 h-3.5 #{t.income? ? 'text-success-600' : (t.transfer? ? 'text-info-600' : 'text-danger-600')}" }
+                        ) %>
+                      </div>
+                      <%= link_to t.description, transaction_path(t), class: "text-sm font-medium text-text-primary hover:text-primary-600 transition-colors", data: { turbo_frame: "modal" } %>
+                    </div>
+                  </td>
+                  <td class="px-5 py-3">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary">
+                      <span class="w-1.5 h-1.5 rounded-full" style="background-color: <%= t.category.color %>"></span>
+                      <%= t.category.name %>
+                    </span>
+                  </td>
+                  <td class="px-5 py-3 text-sm text-text-secondary"><%= t.account.name %></td>
+                  <td class="px-5 py-3 text-right">
+                    <span class="text-sm font-semibold tabular-nums <%= amount_color_class(t) %>">
+                      <%= formatted_amount(t) %>
+                    </span>
+                  </td>
+                  <td class="px-5 py-3 text-right">
+                    <%= button_to remove_transaction_transaction_group_path(@transaction_group, transaction_id: t.id),
+                      method: :delete,
+                      class: "p-1.5 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-500/10 text-text-muted hover:text-danger-600 transition-all",
+                      data: { turbo_confirm: "Remove this transaction from the group?" } do %>
+                      <%= heroicon "x-mark", variant: :mini, options: { class: "w-4 h-4" } %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    <% else %>
+      <%= render CardComponent.new do %>
+        <div class="text-center py-6">
+          <p class="text-sm text-text-muted">No transactions in this group yet. Add transactions using the form above.</p>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

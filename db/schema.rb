@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_12_300008) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -74,6 +74,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
     t.bigint "user_id", null: false
     t.index ["account_group_id"], name: "index_accounts_on_account_group_id"
     t.index ["user_id"], name: "index_accounts_on_user_id"
+  end
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
   create_table "app_settings", force: :cascade do |t|
@@ -172,8 +200,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
   end
 
   create_table "categorization_rules", force: :cascade do |t|
-    t.bigint "category_id", null: false
+    t.jsonb "actions", default: []
+    t.boolean "active", default: true, null: false
+    t.bigint "category_id"
     t.datetime "created_at", null: false
+    t.integer "match_field", default: 0, null: false
     t.integer "match_type", default: 0, null: false
     t.string "pattern", null: false
     t.integer "priority", default: 0
@@ -182,6 +213,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
     t.index ["category_id"], name: "index_categorization_rules_on_category_id"
     t.index ["user_id", "priority"], name: "index_categorization_rules_on_user_id_and_priority"
     t.index ["user_id"], name: "index_categorization_rules_on_user_id"
+  end
+
+  create_table "custom_field_definitions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "field_type", null: false
+    t.string "name", null: false
+    t.jsonb "options", default: {}
+    t.integer "position", default: 0
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_custom_field_definitions_on_user_id"
   end
 
   create_table "debt_accounts", force: :cascade do |t|
@@ -265,6 +307,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
     t.datetime "created_at", null: false
     t.string "description", null: false
     t.integer "frequency", null: false
+    t.datetime "last_generated_at"
     t.date "next_occurrence", null: false
     t.integer "transaction_type", null: false
     t.datetime "updated_at", null: false
@@ -364,6 +407,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
     t.index ["user_id"], name: "index_tags_on_user_id"
   end
 
+  create_table "transaction_groups", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "group_type", default: 0, null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "name"], name: "index_transaction_groups_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_transaction_groups_on_user_id"
+  end
+
   create_table "transaction_splits", force: :cascade do |t|
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.bigint "category_id", null: false
@@ -390,27 +443,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.bigint "category_id", null: false
     t.integer "clearing_status", default: 0, null: false
+    t.bigint "contra_category_id"
     t.datetime "created_at", null: false
+    t.string "currency", default: "USD", null: false
+    t.jsonb "custom_fields", default: {}
     t.date "date", null: false
     t.string "description", null: false
     t.bigint "destination_account_id"
+    t.decimal "exchange_rate", precision: 15, scale: 6
+    t.boolean "exclude_from_reports", default: false, null: false
+    t.integer "flag"
+    t.boolean "needs_review", default: false, null: false
     t.text "notes"
+    t.decimal "original_amount", precision: 10, scale: 2
+    t.string "payee"
     t.boolean "reconciled", default: false
+    t.bigint "transaction_group_id"
     t.integer "transaction_type", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["account_id", "clearing_status"], name: "index_transactions_on_account_id_and_clearing_status"
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
+    t.index ["contra_category_id"], name: "index_transactions_on_contra_category_id"
     t.index ["description"], name: "idx_transactions_description_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["destination_account_id"], name: "index_transactions_on_destination_account_id"
+    t.index ["flag"], name: "idx_transactions_flag", where: "(flag IS NOT NULL)"
+    t.index ["needs_review"], name: "idx_transactions_needs_review", where: "(needs_review = true)"
     t.index ["notes"], name: "idx_transactions_notes_trgm", opclass: :gin_trgm_ops, using: :gin
+    t.index ["payee"], name: "idx_transactions_payee_trgm", opclass: :gin_trgm_ops, using: :gin
+    t.index ["transaction_group_id"], name: "index_transactions_on_transaction_group_id"
     t.index ["user_id", "date"], name: "idx_transactions_user_date"
     t.index ["user_id", "transaction_type", "date"], name: "idx_transactions_user_type_date"
     t.index ["user_id"], name: "index_transactions_on_user_id"
   end
 
   create_table "user_preferences", force: :cascade do |t|
+    t.boolean "accounting_mode", default: false, null: false
     t.string "color_mode", default: "green", null: false
     t.datetime "created_at", null: false
     t.integer "per_page", default: 25, null: false
@@ -449,6 +518,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "webhooks", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.jsonb "events", default: []
+    t.datetime "last_triggered_at"
+    t.string "secret", null: false
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_webhooks_on_user_id"
+  end
+
   create_table "wishlist_items", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.decimal "estimated_cost", precision: 10, scale: 2
@@ -468,6 +549,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
   add_foreign_key "account_shares", "users"
   add_foreign_key "accounts", "account_groups"
   add_foreign_key "accounts", "users"
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "asset_valuations", "accounts"
   add_foreign_key "audit_logs", "users"
   add_foreign_key "bill_payments", "bills"
@@ -480,6 +563,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
   add_foreign_key "categories", "users"
   add_foreign_key "categorization_rules", "categories"
   add_foreign_key "categorization_rules", "users"
+  add_foreign_key "custom_field_definitions", "users"
   add_foreign_key "debt_accounts", "users"
   add_foreign_key "exchange_conversions", "users"
   add_foreign_key "holdings", "accounts"
@@ -497,6 +581,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
   add_foreign_key "subscriptions", "categories"
   add_foreign_key "subscriptions", "users"
   add_foreign_key "tags", "users"
+  add_foreign_key "transaction_groups", "users"
   add_foreign_key "transaction_splits", "categories"
   add_foreign_key "transaction_splits", "transactions"
   add_foreign_key "transaction_tags", "tags"
@@ -504,9 +589,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_300008) do
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "accounts", column: "destination_account_id"
   add_foreign_key "transactions", "categories"
+  add_foreign_key "transactions", "categories", column: "contra_category_id"
+  add_foreign_key "transactions", "transaction_groups"
   add_foreign_key "transactions", "users"
   add_foreign_key "user_preferences", "users"
   add_foreign_key "user_roles", "roles"
   add_foreign_key "user_roles", "users"
+  add_foreign_key "webhooks", "users"
   add_foreign_key "wishlist_items", "users"
 end

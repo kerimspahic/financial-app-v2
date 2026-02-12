@@ -45,6 +45,23 @@ export default class extends Controller {
     this._submitBulkForm(event.currentTarget.closest("form") || this.formTarget, "bulk_update")
   }
 
+  submitBulkReviewed(event) {
+    event.preventDefault()
+    const form = event.currentTarget.closest("form") || this.formTarget
+
+    // Add bulk_mark_reviewed flag
+    let reviewInput = form.querySelector("input[name='bulk_mark_reviewed']")
+    if (!reviewInput) {
+      reviewInput = document.createElement("input")
+      reviewInput.type = "hidden"
+      reviewInput.name = "bulk_mark_reviewed"
+      form.appendChild(reviewInput)
+    }
+    reviewInput.value = "true"
+
+    this._submitBulkForm(form, "bulk_update")
+  }
+
   submitBulkDestroy(event) {
     event.preventDefault()
     if (!confirm("Are you sure you want to delete the selected transactions?")) return

@@ -1,0 +1,60 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Webhook Details") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :ghost, href: webhooks_path, icon: "arrow-left") do %>
+        Back to Webhooks
+      <% end %>
+      <%= render ButtonComponent.new(variant: :primary, href: edit_webhook_path(@webhook), icon: "pencil-square", data: { turbo_frame: "modal" }) do %>
+        Edit
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="animate-card-entrance stagger-1">
+    <%= render CardComponent.new do %>
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">URL</p>
+            <code class="text-sm font-mono text-text-primary break-all"><%= @webhook.url %></code>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Status</p>
+            <% if @webhook.active? %>
+              <%= render BadgeComponent.new(variant: :success) do %>Active<% end %>
+            <% else %>
+              <%= render BadgeComponent.new(variant: :neutral) do %>Inactive<% end %>
+            <% end %>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Secret</p>
+            <code class="text-sm font-mono text-text-primary"><%= @webhook.secret.first(8) %>...</code>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Last Triggered</p>
+            <p class="text-sm text-text-primary">
+              <% if @webhook.last_triggered_at %>
+                <%= time_ago_in_words(@webhook.last_triggered_at) %> ago
+              <% else %>
+                Never
+              <% end %>
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Events</p>
+          <div class="flex flex-wrap gap-1">
+            <% if @webhook.events.blank? || @webhook.events.empty? %>
+              <%= render BadgeComponent.new(variant: :info) do %>All Events<% end %>
+            <% else %>
+              <% @webhook.events.each do |event| %>
+                <%= render BadgeComponent.new(variant: :neutral) do %><%= event %><% end %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

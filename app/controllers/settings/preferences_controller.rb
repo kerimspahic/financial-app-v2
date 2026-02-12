@@ -18,7 +18,7 @@ module Settings
     private
 
     def preference_params
-      params.expect(user_preference: [ :per_page ])
+      params.expect(user_preference: [ :per_page, :accounting_mode ])
     end
   end
 end

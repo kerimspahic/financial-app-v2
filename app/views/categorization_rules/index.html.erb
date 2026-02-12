@@ -17,9 +17,8 @@
         </div>
         <div>
           <p class="text-sm text-text-secondary leading-relaxed">
-            Rules automatically assign categories to new transactions based on their description.
-            Rules are checked in order of priority (highest first). When a transaction is created without
-            a category, the first matching rule will be applied.
+            Rules automatically process new transactions based on matching patterns in their description, payee, amount, or notes.
+            Rules are checked in order of priority (highest first). Each rule can set a category, add tags, set flags, and more.
           </p>
         </div>
       </div>
@@ -34,16 +33,29 @@
           <table class="w-full">
             <thead>
               <tr class="border-b border-glass-border">
-                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[90px]">Priority</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[70px]">Status</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[80px]">Priority</th>
                 <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Pattern</th>
-                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[130px]">Match Type</th>
-                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[180px]">Category</th>
-                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[80px]"></th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[110px]">Field</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[110px]">Match Type</th>
+                <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Actions</th>
+                <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[100px]"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-glass-border/50">
               <% @categorization_rules.each_with_index do |rule, index| %>
-                <tr class="group hover:bg-surface-hover/50 transition-colors">
+                <tr class="group hover:bg-surface-hover/50 transition-colors <%= 'opacity-50' unless rule.active? %>">
+                  <%# Active Status %>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <%= link_to toggle_categorization_rule_path(rule), data: { turbo_method: :patch }, class: "inline-flex" do %>
+                      <% if rule.active? %>
+                        <span class="w-3 h-3 rounded-full bg-success-500 shadow-sm shadow-success-500/30" title="Active"></span>
+                      <% else %>
+                        <span class="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-600" title="Inactive"></span>
+                      <% end %>
+                    <% end %>
+                  </td>
+
                   <%# Priority %>
                   <td class="px-5 py-3.5 whitespace-nowrap">
                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg glass border border-glass-border text-sm font-semibold text-text-primary tabular-nums">
@@ -54,6 +66,11 @@
                   <%# Pattern %>
                   <td class="px-5 py-3.5">
                     <code class="font-mono text-sm text-text-primary px-2 py-1 rounded-lg glass border border-glass-border"><%= rule.pattern %></code>
+                  </td>
+
+                  <%# Match Field %>
+                  <td class="px-5 py-3.5 whitespace-nowrap">
+                    <span class="text-xs text-text-muted font-medium"><%= rule.match_field.humanize %></span>
                   </td>
 
                   <%# Match Type %>
@@ -70,12 +87,34 @@
                     <% end %>
                   </td>
 
-                  <%# Category %>
+                  <%# Actions Summary %>
                   <td class="px-5 py-3.5">
-                    <span class="inline-flex items-center gap-2 text-sm text-text-primary">
-                      <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <%= rule.category.color %>"></span>
-                      <%= rule.category.name %>
-                    </span>
+                    <div class="flex flex-wrap gap-1">
+                      <% if rule.actions.present? %>
+                        <% Array(rule.actions).each do |action| %>
+                          <% action_label = case action["type"]
+                            when "set_category" then "Category"
+                            when "add_tag" then "Tag"
+                            when "set_payee" then "Payee"
+                            when "set_notes" then "Notes"
+                            when "set_flag" then "Flag"
+                            when "mark_reviewed" then "Reviewed"
+                            when "exclude_from_reports" then "Excluded"
+                            else action["type"]&.humanize
+                          end %>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium glass border border-glass-border text-text-secondary">
+                            <%= action_label %>
+                          </span>
+                        <% end %>
+                      <% elsif rule.category.present? %>
+                        <span class="inline-flex items-center gap-1.5 text-sm text-text-primary">
+                          <span class="w-2 h-2 rounded-full shrink-0" style="background-color: <%= rule.category.color %>"></span>
+                          <%= rule.category.name %>
+                        </span>
+                      <% else %>
+                        <span class="text-xs text-text-muted italic">No actions</span>
+                      <% end %>
+                    </div>
                   </td>
 
                   <%# Actions %>
@@ -101,7 +140,7 @@
       <%= render CardComponent.new do %>
         <%= render EmptyStateComponent.new(
           title: "No categorization rules yet",
-          description: "Create rules to automatically categorize new transactions based on their description.",
+          description: "Create rules to automatically categorize new transactions based on their description, payee, or other fields.",
           icon: "sparkles",
           action_text: "Create Rule",
           action_url: new_categorization_rule_path,

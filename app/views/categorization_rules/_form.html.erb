@@ -10,29 +10,106 @@
     <% end %>
   <% end %>
 
-  <%= render InputComponent.new(form: form, field: :pattern, label: "Pattern", placeholder: "e.g., Starbucks", hint: "The text to match against transaction descriptions") %>
+  <%# Matching Section %>
+  <div class="space-y-1">
+    <h3 class="text-sm font-semibold text-text-primary">Matching</h3>
+    <p class="text-xs text-text-muted">Define which transactions this rule applies to</p>
+  </div>
 
-  <%= render InputComponent.new(
-    form: form,
-    field: :match_type,
-    label: "Match Type",
-    type: :select,
-    collection: CategorizationRule.match_types.keys.map { |t| [ t.humanize, t ] },
-    include_blank: "Select match type"
-  ) %>
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(
+      form: form,
+      field: :match_field,
+      label: "Match Field",
+      type: :select,
+      collection: CategorizationRule.match_fields.keys.map { |f| [ f.humanize, f ] },
+      include_blank: false
+    ) %>
 
+    <%= render InputComponent.new(
+      form: form,
+      field: :match_type,
+      label: "Match Type",
+      type: :select,
+      collection: CategorizationRule.match_types.keys.map { |t| [ t.humanize, t ] },
+      include_blank: "Select match type"
+    ) %>
+  </div>
+
+  <%= render InputComponent.new(form: form, field: :pattern, label: "Pattern", placeholder: "e.g., Starbucks", hint: "The text to match against the selected field") %>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render InputComponent.new(form: form, field: :priority, label: "Priority", type: :number, step: 1, placeholder: "0", hint: "Higher priority rules are checked first") %>
+
+    <div class="space-y-1.5">
+      <label class="block text-sm font-medium text-text-primary">Status</label>
+      <label class="inline-flex items-center gap-2 cursor-pointer">
+        <%= form.check_box :active, class: "rounded border-input-border text-primary-600 focus:ring-primary-500 focus:ring-offset-0 transition-all" %>
+        <span class="text-sm text-text-secondary">Rule is active</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="border-t border-glass-border my-2"></div>
+
+  <%# Quick Category (legacy/convenience) %>
   <%= render InputComponent.new(
     form: form,
     field: :category_id,
-    label: "Category",
+    label: "Quick Category",
     type: :select,
-    collection: current_user.categories.order(:name).map { |c| [ c.name, c.id ] },
-    include_blank: "Select category"
+    collection: @categories.map { |c| [ c.name, c.id ] },
+    include_blank: "None (use actions below)",
+    hint: "Shortcut to set category. Or use advanced actions below."
   ) %>
 
-  <%= render InputComponent.new(form: form, field: :priority, label: "Priority", type: :number, step: 1, placeholder: "0", hint: "Higher priority rules are checked first") %>
+  <div class="border-t border-glass-border my-2"></div>
 
-  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
-    <%= categorization_rule.persisted? ? "Update Rule" : "Create Rule" %>
-  <% end %>
+  <%# Actions Builder %>
+  <div class="space-y-1">
+    <h3 class="text-sm font-semibold text-text-primary">Advanced Actions</h3>
+    <p class="text-xs text-text-muted">Add multiple actions to apply when this rule matches (optional)</p>
+  </div>
+
+  <div data-controller="rule-actions"
+       data-rule-actions-actions-value="<%= categorization_rule.actions.to_json %>"
+       data-rule-actions-categories-value="<%= @categories.map { |c| { id: c.id, name: c.name } }.to_json %>"
+       data-rule-actions-tags-value="<%= @tags.map { |t| { id: t.id, name: t.name } }.to_json %>">
+
+    <%# Existing actions list %>
+    <div data-rule-actions-target="container" class="space-y-2 mb-4"></div>
+
+    <%# Hidden field for submitting actions JSON %>
+    <input type="hidden"
+           name="categorization_rule[actions_data]"
+           data-rule-actions-target="hiddenField"
+           value="<%= categorization_rule.actions.to_json %>" />
+
+    <%# Add new action %>
+    <div class="flex items-center gap-3">
+      <select data-rule-actions-target="actionType"
+              class="flex-1 rounded-xl border border-input-border px-4 py-2.5 text-sm glass text-text-primary focus:outline-none focus:ring-2 focus:ring-input-focus focus:border-transparent transition-all">
+        <option value="">Select action to add...</option>
+        <option value="set_category">Set Category</option>
+        <option value="add_tag">Add Tag</option>
+        <option value="set_payee">Set Payee</option>
+        <option value="set_notes">Set Notes</option>
+        <option value="set_flag">Set Flag</option>
+        <option value="mark_reviewed">Mark as Reviewed</option>
+        <option value="exclude_from_reports">Exclude from Reports</option>
+      </select>
+      <button type="button"
+              data-action="click->rule-actions#addAction"
+              class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium glass border border-glass-border text-text-primary hover:bg-surface-hover transition-all">
+        <%= heroicon "plus", variant: :mini, options: { class: "w-4 h-4" } %>
+        Add
+      </button>
+    </div>
+  </div>
+
+  <div class="pt-2">
+    <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+      <%= categorization_rule.persisted? ? "Update Rule" : "Create Rule" %>
+    <% end %>
+  </div>
 <% end %>

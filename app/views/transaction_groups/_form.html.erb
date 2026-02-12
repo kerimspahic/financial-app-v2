@@ -1,0 +1,51 @@
+<%= form_with(model: transaction_group, class: "space-y-6") do |form| %>
+  <% if transaction_group.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(transaction_group.errors.count, "error") %> prevented this group from being saved:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% transaction_group.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :name, label: "Group Name", placeholder: "e.g., Amazon Return - Order #12345") %>
+
+  <%= render InputComponent.new(
+    form: form,
+    field: :group_type,
+    label: "Group Type",
+    type: :select,
+    collection: TransactionGroup.group_types.keys.map { |t| [ t.humanize, t ] },
+    include_blank: "Select type"
+  ) %>
+
+  <div class="glass rounded-xl p-4 space-y-2">
+    <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Group Types</p>
+    <div class="grid grid-cols-2 gap-2">
+      <% TransactionGroup::GROUP_TYPE_COLORS.each do |type, display| %>
+        <div class="flex items-center gap-2 p-2 rounded-lg">
+          <span class="inline-flex items-center justify-center w-6 h-6 rounded-md <%= display[:bg] %>">
+            <%= heroicon display[:icon], variant: :mini, options: { class: "w-3.5 h-3.5 #{display[:text]}" } %>
+          </span>
+          <div>
+            <p class="text-xs font-medium text-text-primary"><%= type.humanize %></p>
+            <p class="text-[10px] text-text-muted">
+              <% case type %>
+              <% when "refund" %>Returns & refunds
+              <% when "reimbursement" %>Expense reimbursements
+              <% when "related" %>Related transactions
+              <% when "installment" %>Payment plans
+              <% end %>
+            </p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+    Create Group
+  <% end %>
+<% end %>

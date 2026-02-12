@@ -13,4 +13,21 @@ class RecurringTransaction < ApplicationRecord
   validates :next_occurrence, presence: true
 
   scope :active, -> { where(active: true) }
+  scope :due, -> { active.where("next_occurrence <= ?", Date.current) }
+
+  def self.ransackable_attributes(auth_object = nil)
+    %w[description amount transaction_type frequency next_occurrence active account_id category_id created_at]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    %w[account category]
+  end
+
+  def overdue?
+    active? && next_occurrence < Date.current
+  end
+
+  def days_until_next
+    (next_occurrence - Date.current).to_i
+  end
 end

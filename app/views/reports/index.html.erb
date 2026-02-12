@@ -1,11 +1,125 @@
 <div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: "Reports & Exports", subtitle: "Analyze your finances") %>
+  <%= render PageHeaderComponent.new(title: "Reports & Analytics", subtitle: "Analyze your financial data with detailed reports") %>
 
-  <%= render CardComponent.new do %>
-    <%= render EmptyStateComponent.new(
-      title: "Coming Soon",
-      description: "Generate monthly and yearly reports, view spending trends, and export your data.",
-      icon: "chart-bar"
-    ) %>
-  <% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <%# Spending by Payee %>
+    <div class="animate-card-entrance stagger-1">
+      <%= link_to by_payee_reports_path, class: "block group" do %>
+        <%= render CardComponent.new do %>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <%= heroicon "user-group", variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors">Spending by Payee</h3>
+              <p class="text-sm text-text-secondary mt-1">See where your money goes. Breakdown of expenses by payee with totals and averages.</p>
+            </div>
+            <div class="flex-shrink-0">
+              <%= heroicon "chevron-right", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Spending by Tag %>
+    <div class="animate-card-entrance stagger-2">
+      <%= link_to by_tag_reports_path, class: "block group" do %>
+        <%= render CardComponent.new do %>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-purple-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <%= heroicon "tag", variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors">Spending by Tag</h3>
+              <p class="text-sm text-text-secondary mt-1">Analyze spending across custom tags. Visualize distribution with a doughnut chart.</p>
+            </div>
+            <div class="flex-shrink-0">
+              <%= heroicon "chevron-right", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Spending Trends %>
+    <div class="animate-card-entrance stagger-3">
+      <%= link_to trends_reports_path, class: "block group" do %>
+        <%= render CardComponent.new do %>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <%= heroicon "arrow-trending-up", variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors">Spending Trends</h3>
+              <p class="text-sm text-text-secondary mt-1">Track spending over time with weekly or monthly granularity. Filter by category.</p>
+            </div>
+            <div class="flex-shrink-0">
+              <%= heroicon "chevron-right", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Budget vs Actual %>
+    <div class="animate-card-entrance stagger-4">
+      <%= link_to budgets_path, class: "block group" do %>
+        <%= render CardComponent.new do %>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <%= heroicon "chart-pie", variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors">Budget vs. Actual</h3>
+              <p class="text-sm text-text-secondary mt-1">Drill into budget categories to see individual transactions driving your spending.</p>
+            </div>
+            <div class="flex-shrink-0">
+              <%= heroicon "chevron-right", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Cash Flow %>
+    <div class="animate-card-entrance stagger-5">
+      <%= link_to cash_flow_reports_path, class: "block group" do %>
+        <%= render CardComponent.new do %>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <%= heroicon "banknotes", variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors">Cash Flow</h3>
+              <p class="text-sm text-text-secondary mt-1">Monthly income vs expenses with net flow analysis. See your financial health at a glance.</p>
+            </div>
+            <div class="flex-shrink-0">
+              <%= heroicon "chevron-right", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Period Comparisons %>
+    <div class="animate-card-entrance stagger-6">
+      <%= link_to comparisons_reports_path, class: "block group" do %>
+        <%= render CardComponent.new do %>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-cyan-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <%= heroicon "arrows-right-left", variant: :outline, options: { class: "w-6 h-6 text-white" } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-600 transition-colors">Period Comparisons</h3>
+              <p class="text-sm text-text-secondary mt-1">Compare spending between two time periods. Spot trends with percentage change indicators.</p>
+            </div>
+            <div class="flex-shrink-0">
+              <%= heroicon "chevron-right", variant: :outline, options: { class: "w-5 h-5 text-text-muted group-hover:text-primary-600 transition-colors" } %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
 </div>

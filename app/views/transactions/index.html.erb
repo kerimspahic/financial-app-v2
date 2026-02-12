@@ -3,12 +3,20 @@
 <% has_active_filters = filter_params.values.any?(&:present?) %>
 <% enabled_filters = @table_config.enabled_filters %>
 
-<div class="space-y-5">
+<div class="space-y-5" data-controller="keyboard-shortcuts inline-edit"
+     data-keyboard-shortcuts-new-url-value="<%= new_transaction_path %>"
+     data-inline-edit-table-config-value="<%= @table_config.to_json %>"
+     data-inline-edit-visible-columns-value="<%= @visible_columns.to_json %>">
   <%= render PageHeaderComponent.new(title: "Transactions") do |header| %>
     <% header.with_actions do %>
-      <%= render ButtonComponent.new(variant: :primary, href: new_transaction_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
-        New Transaction
-      <% end %>
+      <div class="flex items-center gap-2">
+        <%= render ButtonComponent.new(variant: :secondary, href: export_transactions_path(q: q_params, search: params[:search]), icon: "arrow-down-tray", size: :sm) do %>
+          Export CSV
+        <% end %>
+        <%= render ButtonComponent.new(variant: :primary, href: new_transaction_path, icon: "plus", data: { turbo_frame: "modal" }) do %>
+          New Transaction
+        <% end %>
+      </div>
     <% end %>
   <% end %>
 
@@ -36,7 +44,7 @@
                     <%= heroicon "magnifying-glass", variant: :outline, options: { class: "w-4 h-4 text-text-muted group-focus-within:text-primary-500 transition-colors" } %>
                   </div>
                   <input type="text" name="search" value="<%= params[:search] %>"
-                    placeholder="Search by description, notes, category, account..."
+                    placeholder="Search by description, payee, notes, category, account..."
                     autocomplete="off"
                     data-table-search-target="input"
                     data-action="input->table-search#search"
@@ -51,6 +59,17 @@
                 </div>
               <% end %>
             </div>
+
+            <%# Quick Filters: Needs Review %>
+            <% if @needs_review_count > 0 %>
+              <%= link_to transactions_path(review: params[:review] == "true" ? nil : "true", q: q_params, search: params[:search]),
+                class: "relative flex items-center gap-2 px-3.5 py-2 text-sm rounded-xl border transition-all #{params[:review] == 'true' ? 'glass-strong border-warning-500/30 text-warning-600 dark:text-warning-400' : 'glass border-glass-border text-text-secondary hover:text-text-primary'}",
+                data: { turbo_frame: "transactions_content" } do %>
+                <%= heroicon "eye", variant: :outline, options: { class: "w-4 h-4" } %>
+                <span class="hidden sm:inline">Review</span>
+                <span class="flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded-full bg-warning-500 text-white"><%= @needs_review_count %></span>
+              <% end %>
+            <% end %>
 
             <%# Filter Toggle %>
             <% if enabled_filters.any? %>
@@ -152,6 +171,14 @@
                           <%= f.number_field :amount_lteq, value: q_params["amount_lteq"], step: 0.01, placeholder: "Any",
                             class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
                         </div>
+                      <% when "flag" %>
+                        <div>
+                          <label class="block text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5"><%= filter["label"] %></label>
+                          <%= f.select :flag_eq,
+                            options_for_select([["All Flags", nil]] + Transaction.flags.keys.map { |f_key| [f_key.humanize, f_key] }, q_params["flag_eq"]),
+                            {},
+                            class: "block w-full rounded-lg glass border border-glass-border text-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" %>
+                        </div>
                       <% end %>
                     <% end %>
                   </div>
@@ -165,7 +192,7 @@
                         <% sort_col_key = sort_parts.first %>
                         <% sort_dir = sort_parts.last %>
                         <% sort_col_label = @table_config.columns&.find { |c| (c["sort_key"] || c["key"]) == sort_col_key }&.dig("label") || sort_col_key.humanize %>
-                        <% sort_arrow = sort_dir == "desc" ? "↓" : "↑" %>
+                        <% sort_arrow = sort_dir == "desc" ? "\u2193" : "\u2191" %>
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium glass-strong border border-glass-border text-text-secondary">
                           <%= heroicon "bars-arrow-down", variant: :mini, options: { class: "w-3 h-3" } %>
                           Sort: <%= sort_col_label %> <%= sort_arrow %>
@@ -188,6 +215,7 @@
                             when "date_lteq" then "To: #{Date.parse(value).strftime('%b %d')}"
                             when "amount_gteq" then "Min: $#{value}"
                             when "amount_lteq" then "Max: $#{value}"
+                            when "flag_eq" then "Flag: #{value.humanize}"
                             else "#{key}: #{value}"
                             end
                           %>
@@ -239,12 +267,14 @@
             <%
               col_widths = {
                 "date" => "w-[100px]",
+                "payee" => "w-[140px]",
                 "description" => "w-auto",
                 "category" => "w-[130px]",
                 "account" => "w-[140px]",
                 "amount" => "w-[110px]",
                 "transaction_type" => "w-[100px]",
                 "clearing_status" => "w-[100px]",
+                "flag" => "w-[60px]",
                 "notes" => "w-[180px]",
                 "tags" => "w-[160px]",
                 "balance" => "w-[120px]"
@@ -271,152 +301,9 @@
                   <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[70px]"></th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-glass-border/50">
+              <tbody class="divide-y divide-glass-border/50" data-keyboard-shortcuts-target="tableBody">
                 <% @transactions.each do |t| %>
-                  <tr class="group hover:bg-surface-hover/50 transition-colors">
-                    <td class="px-3 py-3.5">
-                      <input type="checkbox" value="<%= t.id %>" data-bulk-select-target="checkbox" data-action="change->bulk-select#toggleOne"
-                        class="w-3.5 h-3.5 rounded">
-                    </td>
-                    <% (@table_config.columns || []).each do |col| %>
-                      <% next unless @visible_columns.include?(col["key"]) %>
-                      <% case col["key"] %>
-                      <% when "date" %>
-                        <td class="px-5 py-3.5 whitespace-nowrap" data-column="date">
-                          <div class="flex flex-col">
-                            <span class="text-sm font-medium text-text-primary"><%= t.date.strftime("%b %d") %></span>
-                            <span class="text-[10px] text-text-muted"><%= t.date.strftime("%Y") %></span>
-                          </div>
-                        </td>
-                      <% when "description" %>
-                        <td class="px-5 py-3.5 overflow-hidden" data-column="description">
-                          <div class="flex items-center gap-3 min-w-0">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
-                              <%= t.income? ? 'bg-success-50 dark:bg-success-500/10' : (t.transfer? ? 'bg-info-50 dark:bg-info-500/10' : 'bg-danger-50 dark:bg-danger-500/10') %>">
-                              <%= heroicon(
-                                t.income? ? "arrow-down-left" : (t.transfer? ? "arrow-path" : "arrow-up-right"),
-                                variant: :mini,
-                                options: { class: "w-4 h-4 #{t.income? ? 'text-success-600 dark:text-success-500' : (t.transfer? ? 'text-info-600 dark:text-info-500' : 'text-danger-600 dark:text-danger-500')}" }
-                              ) %>
-                            </div>
-                            <div class="min-w-0 flex-1" data-controller="tooltip" data-tooltip-text-value="<%= t.description %><%= t.notes.present? ? "\n#{t.notes}" : '' %>">
-                              <%= link_to t.description, transaction_path(t),
-                                class: "text-sm font-medium text-text-primary hover:text-primary-600 transition-colors truncate block",
-                                data: { turbo_frame: "modal" } %>
-                              <% if t.notes.present? %>
-                                <p class="text-[10px] text-text-muted truncate"><%= t.notes %></p>
-                              <% end %>
-                            </div>
-                          </div>
-                        </td>
-                      <% when "category" %>
-                        <td class="px-5 py-3.5 overflow-hidden" data-column="category">
-                          <% if t.split? %>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary max-w-full"
-                              data-controller="tooltip" data-tooltip-text-value="<%= t.transaction_splits.map { |s| "#{s.category.name}: #{number_to_currency(s.amount)}" }.join(', ') %>">
-                              <%= heroicon "scissors", variant: :mini, options: { class: "w-3.5 h-3.5 shrink-0" } %>
-                              <span class="truncate">Split (<%= t.transaction_splits.size %>)</span>
-                            </span>
-                          <% else %>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium glass border border-glass-border text-text-secondary max-w-full"
-                              data-controller="tooltip" data-tooltip-text-value="<%= t.category.name %>">
-                              <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: <%= t.category.color %>"></span>
-                              <span class="truncate"><%= t.category.name %></span>
-                            </span>
-                          <% end %>
-                        </td>
-                      <% when "account" %>
-                        <td class="px-5 py-3.5 overflow-hidden" data-column="account">
-                          <span class="text-sm text-text-secondary truncate block"
-                            data-controller="tooltip" data-tooltip-text-value="<%= t.account.name %>"><%= t.account.name %></span>
-                        </td>
-                      <% when "amount" %>
-                        <td class="px-5 py-3.5 whitespace-nowrap text-right" data-column="amount">
-                          <span class="text-sm font-semibold tabular-nums <%= amount_color_class(t) %>">
-                            <%= formatted_amount(t) %>
-                          </span>
-                        </td>
-                      <% when "transaction_type" %>
-                        <td class="px-5 py-3.5 whitespace-nowrap" data-column="transaction_type">
-                          <%= render BadgeComponent.new(
-                            variant: t.income? ? :success : (t.expense? ? :danger : :info),
-                            size: :sm,
-                            dot: true
-                          ) do %>
-                            <%= t.transaction_type.humanize %>
-                          <% end %>
-                        </td>
-                      <% when "clearing_status" %>
-                        <td class="px-5 py-3.5 whitespace-nowrap" data-column="clearing_status">
-                          <% case t.clearing_status %>
-                          <% when "uncleared" %>
-                            <span class="inline-flex items-center gap-1 text-xs text-text-muted">
-                              <%= heroicon "minus-circle", variant: :mini, options: { class: "w-4 h-4" } %>
-                              Uncleared
-                            </span>
-                          <% when "cleared" %>
-                            <span class="inline-flex items-center gap-1 text-xs text-success-600 dark:text-success-500">
-                              <%= heroicon "check", variant: :mini, options: { class: "w-4 h-4" } %>
-                              Cleared
-                            </span>
-                          <% when "reconciled" %>
-                            <span class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400">
-                              <%= heroicon "check-badge", variant: :mini, options: { class: "w-4 h-4" } %>
-                              Reconciled
-                            </span>
-                          <% end %>
-                        </td>
-                      <% when "notes" %>
-                        <td class="px-5 py-3.5 overflow-hidden" data-column="notes">
-                          <span class="text-sm text-text-muted truncate block"
-                            data-controller="tooltip" data-tooltip-text-value="<%= t.notes %>"
-                            ><%= t.notes.presence || "\u2014" %></span>
-                        </td>
-                      <% when "tags" %>
-                        <td class="px-5 py-3.5 overflow-hidden" data-column="tags">
-                          <div class="flex flex-nowrap gap-1 overflow-hidden"
-                            data-controller="tooltip" data-tooltip-text-value="<%= t.tags.map(&:name).join(', ') %>">
-                            <% t.tags.each do |tag| %>
-                              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border" style="background-color: <%= tag.color %>15; border-color: <%= tag.color %>30; color: <%= tag.color %>">
-                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: <%= tag.color %>"></span>
-                                <%= tag.name %>
-                              </span>
-                            <% end %>
-                            <% if t.tags.empty? %>
-                              <span class="text-xs text-text-muted">&mdash;</span>
-                            <% end %>
-                          </div>
-                        </td>
-                      <% when "balance" %>
-                        <td class="px-5 py-3.5 whitespace-nowrap text-right" data-column="balance">
-                          <% if @running_balances&.key?(t.id) %>
-                            <span class="text-sm font-medium tabular-nums <%= @running_balances[t.id] >= 0 ? 'text-text-primary' : 'text-danger-600' %>">
-                              <%= number_to_currency(@running_balances[t.id]) %>
-                            </span>
-                          <% else %>
-                            <span class="text-xs text-text-muted">&mdash;</span>
-                          <% end %>
-                        </td>
-                      <% end %>
-                    <% end %>
-                    <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                      <% if t.reconciled? %>
-                        <div class="flex items-center justify-end gap-1 text-text-muted">
-                          <%= heroicon "lock-closed", variant: :mini, options: { class: "w-4 h-4" } %>
-                          <span class="text-[10px] font-medium">Locked</span>
-                        </div>
-                      <% else %>
-                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                          <%= link_to transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-all", data: { turbo_frame: "modal" } do %>
-                            <%= heroicon "eye", variant: :mini, options: { class: "w-4 h-4" } %>
-                          <% end %>
-                          <%= link_to edit_transaction_path(t), class: "p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all", data: { turbo_frame: "modal" } do %>
-                            <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
-                          <% end %>
-                        </div>
-                      <% end %>
-                    </td>
-                  </tr>
+                  <%= render partial: "transactions/row", locals: { t: t, table_config: @table_config, visible_columns: @visible_columns, running_balances: @running_balances } %>
                 <% end %>
               </tbody>
             </table>
@@ -441,12 +328,24 @@
                   <option value="<%= s %>"><%= s.humanize %></option>
                 <% end %>
               </select>
+              <select name="bulk_flag" class="rounded-lg glass border border-glass-border text-text-primary px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30">
+                <option value="">Set Flag</option>
+                <% Transaction.flags.keys.each do |f_key| %>
+                  <option value="<%= f_key %>"><%= f_key.humanize %></option>
+                <% end %>
+                <option value="">Remove Flag</option>
+              </select>
             </div>
             <div class="flex items-center gap-2">
               <button type="button" data-action="click->bulk-select#submitBulkUpdate"
                 class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg gradient-primary text-white shadow-sm hover:shadow-md transition-all">
                 <%= heroicon "check", variant: :mini, options: { class: "w-4 h-4" } %>
                 Apply
+              </button>
+              <button type="button" data-action="click->bulk-select#submitBulkReviewed"
+                class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg bg-success-500 hover:bg-success-600 text-white shadow-sm hover:shadow-md transition-all">
+                <%= heroicon "check-circle", variant: :mini, options: { class: "w-4 h-4" } %>
+                Mark Reviewed
               </button>
               <button type="button" data-action="click->bulk-select#submitBulkDestroy"
                 class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg bg-danger-500 hover:bg-danger-600 text-white shadow-sm hover:shadow-md transition-all">
@@ -523,4 +422,61 @@
     <% end %>
     </div>
   <% end %>
+
+  <%# Keyboard Shortcuts Help Modal %>
+  <div data-keyboard-shortcuts-target="helpModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="fixed inset-0 bg-overlay/60 backdrop-blur-sm" data-action="click->keyboard-shortcuts#hideHelp"></div>
+    <div class="relative glass-strong rounded-2xl shadow-2xl w-full max-w-md mx-4 z-10 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-glass-border">
+        <h3 class="text-lg font-semibold text-text-primary">Keyboard Shortcuts</h3>
+        <button data-action="click->keyboard-shortcuts#hideHelp" class="text-text-muted hover:text-text-primary transition-colors">
+          <%= heroicon "x-mark", variant: :outline, options: { class: "w-5 h-5" } %>
+        </button>
+      </div>
+      <div class="p-6 space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-text-secondary">New transaction</span>
+          <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">n</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-text-secondary">Navigate down</span>
+          <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">j</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-text-secondary">Navigate up</span>
+          <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">k</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-text-secondary">Edit selected</span>
+          <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">e</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-text-secondary">View selected</span>
+          <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">Enter</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-text-secondary">Focus search</span>
+          <div class="flex gap-1">
+            <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">f</kbd>
+            <span class="text-xs text-text-muted">or</span>
+            <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">/</kbd>
+          </div>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-text-secondary">Show this help</span>
+          <kbd class="px-2 py-1 rounded-lg glass border border-glass-border text-xs font-mono font-semibold text-text-primary">?</kbd>
+        </div>
+      </div>
+      <div class="px-6 py-3 border-t border-glass-border bg-surface/50">
+        <p class="text-xs text-text-muted text-center">Press <kbd class="px-1.5 py-0.5 rounded glass border border-glass-border text-[10px] font-mono">Esc</kbd> to close</p>
+      </div>
+    </div>
+  </div>
+
+  <%# Keyboard shortcut hint %>
+  <div class="text-center">
+    <button data-action="click->keyboard-shortcuts#showHelp" class="text-xs text-text-muted hover:text-text-secondary transition-colors">
+      Press <kbd class="px-1.5 py-0.5 rounded glass border border-glass-border text-[10px] font-mono font-semibold">?</kbd> for keyboard shortcuts
+    </button>
+  </div>
 </div>

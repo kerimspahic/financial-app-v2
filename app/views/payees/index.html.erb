@@ -1,0 +1,181 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Payee Management") do |header| %>
+    <% header.with_actions do %>
+      <span class="text-sm text-text-muted"><%= @total_payees %> unique payees</span>
+    <% end %>
+  <% end %>
+
+  <%# Description %>
+  <div class="animate-card-entrance stagger-1">
+    <div class="glass rounded-2xl shadow-lg p-5 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none rounded-2xl"></div>
+      <div class="relative flex items-start gap-3">
+        <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center">
+          <%= heroicon "building-storefront", variant: :outline, options: { class: "w-5 h-5 text-primary-600 dark:text-primary-400" } %>
+        </div>
+        <div>
+          <p class="text-sm text-text-secondary leading-relaxed">
+            Manage your payees across all transactions. Rename payees to fix typos, or merge
+            multiple payee names into one to keep your data consistent.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if @payees.any? %>
+    <div data-controller="payee-merge" class="space-y-4">
+      <%# Merge toolbar %>
+      <div data-payee-merge-target="mergeForm" class="hidden animate-fade-up">
+        <div class="glass-strong rounded-2xl shadow-lg p-5 border border-glass-border">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <%= heroicon "arrows-pointing-in", variant: :outline, options: { class: "w-5 h-5 text-primary-600 dark:text-primary-400" } %>
+              <span class="text-sm font-medium text-text-primary">
+                Merge <span data-payee-merge-target="selectedCount" class="font-bold text-primary-600 dark:text-primary-400">0</span> payees into:
+              </span>
+            </div>
+            <%= form_tag merge_payees_path, method: :post, class: "flex items-center gap-3 flex-1", id: "merge-form" do %>
+              <div id="merge-payee-inputs"></div>
+              <input type="text" name="target_payee" placeholder="Target payee name..."
+                     data-payee-merge-target="mergeTarget"
+                     class="flex-1 rounded-xl border border-input-border px-4 py-2 text-sm glass text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-input-focus focus:border-transparent transition-all" />
+              <button type="submit" data-payee-merge-target="mergeBtn" disabled
+                      class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <%= heroicon "arrows-pointing-in", variant: :mini, options: { class: "w-4 h-4" } %>
+                Merge
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# Payees Table %>
+      <div class="animate-card-entrance stagger-2">
+        <%= render CardComponent.new(padding: false) do %>
+          <div class="overflow-hidden">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-glass-border">
+                  <th class="px-5 py-3 text-left w-[50px]">
+                    <span class="sr-only">Select</span>
+                  </th>
+                  <th class="px-5 py-3 text-left text-[10px] font-semibold text-text-muted uppercase tracking-wider">Payee</th>
+                  <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[120px]">Transactions</th>
+                  <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[150px]">Total Amount</th>
+                  <th class="px-5 py-3 text-right text-[10px] font-semibold text-text-muted uppercase tracking-wider w-[120px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-glass-border/50">
+                <% @payees.each do |payee_row| %>
+                  <tr class="group hover:bg-surface-hover/50 transition-colors" data-payee="<%= payee_row.payee %>">
+                    <%# Checkbox for merge %>
+                    <td class="px-5 py-3.5">
+                      <input type="checkbox"
+                             value="<%= payee_row.payee %>"
+                             data-payee-merge-target="checkbox"
+                             data-action="change->payee-merge#toggle"
+                             class="rounded border-input-border text-primary-600 focus:ring-primary-500 focus:ring-offset-0 transition-all" />
+                    </td>
+
+                    <%# Payee Name %>
+                    <td class="px-5 py-3.5">
+                      <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center">
+                          <span class="text-xs font-bold text-primary-600 dark:text-primary-400"><%= payee_row.payee[0]&.upcase %></span>
+                        </div>
+                        <span class="font-medium text-text-primary text-sm"><%= payee_row.payee %></span>
+                      </div>
+                    </td>
+
+                    <%# Transaction Count %>
+                    <td class="px-5 py-3.5 text-right">
+                      <span class="text-sm text-text-secondary tabular-nums"><%= payee_row.transaction_count %></span>
+                    </td>
+
+                    <%# Total Amount %>
+                    <td class="px-5 py-3.5 text-right">
+                      <span class="text-sm font-medium text-text-primary tabular-nums"><%= number_to_currency(payee_row.total_amount) %></span>
+                    </td>
+
+                    <%# Actions %>
+                    <td class="px-5 py-3.5 text-right">
+                      <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button"
+                                onclick="document.getElementById('rename-modal-<%= payee_row.payee.parameterize %>').showModal()"
+                                class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition-all"
+                                title="Rename payee">
+                          <%= heroicon "pencil-square", variant: :mini, options: { class: "w-4 h-4" } %>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <%# Rename Dialog %>
+                  <dialog id="rename-modal-<%= payee_row.payee.parameterize %>" class="glass-strong rounded-2xl shadow-2xl p-0 backdrop:bg-black/50 max-w-md w-full">
+                    <div class="p-6 space-y-4">
+                      <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-text-primary">Rename Payee</h3>
+                        <button onclick="this.closest('dialog').close()" class="p-1 rounded-lg hover:bg-surface-hover text-text-muted transition-all">
+                          <%= heroicon "x-mark", variant: :mini, options: { class: "w-5 h-5" } %>
+                        </button>
+                      </div>
+                      <%= form_tag update_all_payees_path, method: :patch, class: "space-y-4" do %>
+                        <input type="hidden" name="old_payee" value="<%= payee_row.payee %>" />
+                        <div class="space-y-1.5">
+                          <label class="block text-sm font-medium text-text-primary">Current Name</label>
+                          <p class="text-sm text-text-secondary"><%= payee_row.payee %></p>
+                        </div>
+                        <div class="space-y-1.5">
+                          <label class="block text-sm font-medium text-text-primary">New Name</label>
+                          <input type="text" name="new_payee" value="<%= payee_row.payee %>" required
+                                 class="block w-full rounded-xl border border-input-border px-4 py-2.5 text-sm glass text-text-primary focus:outline-none focus:ring-2 focus:ring-input-focus focus:border-transparent transition-all" />
+                        </div>
+                        <p class="text-xs text-text-muted">This will update <%= payee_row.transaction_count %> transaction(s).</p>
+                        <div class="flex justify-end gap-3">
+                          <button type="button" onclick="this.closest('dialog').close()"
+                                  class="px-4 py-2 rounded-xl text-sm font-medium glass border border-glass-border text-text-primary hover:bg-surface-hover transition-all">
+                            Cancel
+                          </button>
+                          <button type="submit"
+                                  class="px-4 py-2 rounded-xl text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 transition-all">
+                            Rename
+                          </button>
+                        </div>
+                      <% end %>
+                    </div>
+                  </dialog>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do %>
+        <%= render EmptyStateComponent.new(
+          title: "No payees found",
+          description: "Payees will appear here once you add them to your transactions.",
+          icon: "building-storefront"
+        ) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  // Wire up merge form checkboxes to hidden inputs
+  document.getElementById('merge-form')?.addEventListener('submit', function(e) {
+    const inputs = document.getElementById('merge-payee-inputs');
+    inputs.innerHTML = '';
+    document.querySelectorAll('[data-payee-merge-target="checkbox"]:checked').forEach(cb => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'source_payees[]';
+      input.value = cb.value;
+      inputs.appendChild(input);
+    });
+  });
+</script>

@@ -31,15 +31,34 @@ Rails.application.routes.draw do
   end
   resources :account_groups, except: [ :show ]
   resources :transactions do
+    member do
+      patch :flag_transaction
+      patch :mark_reviewed
+      patch :inline_update
+      delete :remove_receipt
+    end
     collection do
       patch :bulk_update
       delete :bulk_destroy
+      get :export
+      get :reconcile
+      post :complete_reconciliation
+    end
+  end
+  resources :transaction_groups, except: [ :edit, :update ] do
+    member do
+      post :add_transaction
+      delete :remove_transaction
     end
   end
   resources :saved_filters, only: [ :create, :destroy ]
   patch "table_preferences", to: "table_preferences#update"
   resources :categories, except: :show
-  resources :budgets, except: :show
+  resources :budgets, except: :show do
+    member do
+      get :transactions
+    end
+  end
   resources :exchanges, only: [ :index, :create, :destroy ] do
     collection do
       get :rate
@@ -83,6 +102,9 @@ Rails.application.routes.draw do
     member do
       patch :toggle
     end
+    collection do
+      get :detected
+    end
   end
   resources :savings_goals do
     member do
@@ -99,16 +121,36 @@ Rails.application.routes.draw do
   # Phase 3 - Notifications
   resources :notifications, only: [ :index ]
 
-  # Phase 4 - Reports
-  resources :reports, only: [ :index ]
+  # Phase 4/5 - Reports
+  resources :reports, only: [ :index ] do
+    collection do
+      get :by_payee
+      get :by_tag
+      get :trends
+      get :cash_flow
+      get :comparisons
+    end
+  end
 
   # Features
   resources :debt_accounts, only: [ :index ]
   resources :tags
-  resources :categorization_rules, except: [ :show ]
+  resources :categorization_rules, except: [ :show ] do
+    member do
+      patch :toggle
+    end
+  end
+  resources :custom_field_definitions, only: [ :index, :create, :update, :destroy ]
+  resources :payees, only: [ :index ] do
+    collection do
+      post :merge
+      patch :update_all
+    end
+  end
   resources :subscriptions, only: [ :index ]
   resources :wishlist, only: [ :index ]
   resources :audit_logs, only: [ :index ]
+  resources :webhooks
   resources :imports, only: [ :new, :create ] do
     collection do
       post :preview
@@ -128,20 +170,31 @@ Rails.application.routes.draw do
       end
 
       resources :accounts, only: [ :index, :show, :create, :update, :destroy ]
-      resources :transactions, only: [ :index, :show, :create, :update, :destroy ]
+      resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do
+        collection do
+          post :bulk_create
+          patch :bulk_update
+        end
+      end
       resources :categories, only: [ :index, :create, :update, :destroy ]
       resources :budgets, only: [ :index, :create, :update, :destroy ]
       get "dashboard", to: "dashboard#index"
       resource :settings, only: [ :show, :update ]
 
+      # Full API endpoints
+      resources :recurring_transactions do
+        member do
+          patch :toggle
+        end
+      end
+      resources :tags
+
       # Placeholder API endpoints
-      resources :recurring_transactions, only: [ :index ]
       resources :savings_goals, only: [ :index ]
       resources :bills, only: [ :index ]
       resources :notifications, only: [ :index ]
       resources :reports, only: [ :index ]
       resources :debt_accounts, only: [ :index ]
-      resources :tags, only: [ :index ]
       resources :subscriptions, only: [ :index ]
       resources :wishlist, only: [ :index ]
       resources :audit_logs, only: [ :index ]

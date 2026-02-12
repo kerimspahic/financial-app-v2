@@ -1,11 +1,10 @@
-require "csv"
-
 class CsvImportService
   include BalanceUpdatable
 
   FIELD_MAPPINGS = {
     date: %w[date transaction_date trans_date posting_date post_date],
-    description: %w[description desc memo narrative payee details transaction_description],
+    description: %w[description desc narrative details transaction_description],
+    payee: %w[payee merchant vendor seller store company name],
     amount: %w[amount total sum value net_amount],
     credit: %w[credit credit_amount deposit deposits money_in],
     debit: %w[debit debit_amount withdrawal withdrawals money_out charge],
@@ -59,7 +58,7 @@ class CsvImportService
 
   # Performs the import, creating transactions with balance updates
   def import!
-    result = { imported: 0, skipped: 0, errors: [] }
+    result = { imported: 0, skipped: 0, duplicates: 0, errors: [] }
     mapping = effective_mapping
 
     unless mapping[:date]
@@ -85,6 +84,13 @@ class CsvImportService
           transaction = build_transaction(row, mapping)
 
           if transaction.nil?
+            result[:skipped] += 1
+            next
+          end
+
+          # Duplicate detection
+          if duplicate_exists?(transaction)
+            result[:duplicates] += 1
             result[:skipped] += 1
             next
           end
@@ -168,16 +174,29 @@ class CsvImportService
     return nil if amount.nil? || amount.zero?
 
     category = find_category(row, mapping, transaction_type)
+    payee = mapping[:payee] ? row[mapping[:payee]] : nil
 
     @user.transactions.build(
       account: @account,
       date: date,
       description: description,
+      payee: payee,
       amount: amount.abs,
       transaction_type: transaction_type,
       category: category,
-      notes: mapping[:notes] ? row[mapping[:notes]] : nil
+      notes: mapping[:notes] ? row[mapping[:notes]] : nil,
+      needs_review: true
     )
+  end
+
+  def duplicate_exists?(transaction)
+    scope = @user.transactions.where(
+      account_id: transaction.account_id,
+      amount: transaction.amount,
+      description: transaction.description
+    )
+    # Check within ±1 day tolerance
+    scope.where(date: (transaction.date - 1.day)..(transaction.date + 1.day)).exists?
   end
 
   def parse_date(value)

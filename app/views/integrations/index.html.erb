@@ -1,11 +1,184 @@
 <div class="space-y-6">
-  <%= render PageHeaderComponent.new(title: "Integrations", subtitle: "Connect your services") %>
+  <%= render PageHeaderComponent.new(title: "Integrations", subtitle: "Connect your accounts and services") %>
 
-  <%= render CardComponent.new do %>
-    <%= render EmptyStateComponent.new(
-      title: "Coming Soon",
-      description: "Link bank accounts via Plaid, scan receipts with OCR, and connect external services.",
-      icon: "puzzle-piece"
-    ) %>
-  <% end %>
+  <%# Bank Sync Card %>
+  <div class="animate-card-entrance stagger-1">
+    <%= render CardComponent.new do %>
+      <div class="space-y-6">
+        <div class="flex items-start justify-between">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center shrink-0">
+              <%= heroicon "building-library", variant: :outline, options: { class: "w-6 h-6 text-primary-500" } %>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-bold text-text-primary">Bank Sync</h2>
+                <%= render BadgeComponent.new(variant: :warning, size: :sm) do %>Coming Soon<% end %>
+              </div>
+              <p class="mt-1 text-sm text-text-secondary max-w-lg">
+                Automatically import transactions from your bank accounts using secure Open Banking connections.
+                This feature requires a business account with a banking data provider.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-glass-border">
+          <div class="flex items-start gap-2 p-4 rounded-xl bg-info-500/5 border border-info-500/10">
+            <%= heroicon "information-circle", variant: :mini, options: { class: "w-5 h-5 text-info-500 shrink-0 mt-0.5" } %>
+            <div>
+              <p class="text-sm font-medium text-text-primary">Why is this not available yet?</p>
+              <p class="text-xs text-text-secondary mt-1 leading-relaxed">
+                Bank sync integrations (like Plaid or GoCardless) require a verified business account,
+                legal agreements, and ongoing subscription costs. We are actively evaluating providers
+                to bring this feature to you. In the meantime, you can import transactions using
+                CSV, OFX, QFX, or QIF files from your bank.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Supported Providers %>
+  <div class="animate-card-entrance stagger-2">
+    <%= render CardComponent.new do %>
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-surface-hover flex items-center justify-center shrink-0">
+            <%= heroicon "globe-alt", variant: :outline, options: { class: "w-5 h-5 text-text-muted" } %>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-text-primary">Planned Provider Support</h3>
+            <p class="text-xs text-text-muted">These banking data providers are being evaluated</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <%# Plaid %>
+          <div class="p-4 rounded-xl glass border border-glass-border hover:border-primary-500/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "link", variant: :outline, options: { class: "w-5 h-5 text-green-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-text-primary">Plaid</p>
+                <p class="text-[10px] text-text-muted uppercase tracking-wider">United States, Canada, UK</p>
+              </div>
+            </div>
+            <p class="text-xs text-text-secondary leading-relaxed">
+              Industry-leading banking API with support for 12,000+ financial institutions.
+              Real-time balance and transaction data.
+            </p>
+          </div>
+
+          <%# GoCardless (formerly Nordigen) %>
+          <div class="p-4 rounded-xl glass border border-glass-border hover:border-primary-500/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "link", variant: :outline, options: { class: "w-5 h-5 text-blue-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-text-primary">GoCardless Bank Account Data</p>
+                <p class="text-[10px] text-text-muted uppercase tracking-wider">Europe, UK</p>
+              </div>
+            </div>
+            <p class="text-xs text-text-secondary leading-relaxed">
+              Free tier available. Open Banking (PSD2) compliant with 2,500+ European banks.
+              Formerly known as Nordigen.
+            </p>
+          </div>
+
+          <%# TrueLayer %>
+          <div class="p-4 rounded-xl glass border border-glass-border hover:border-primary-500/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "link", variant: :outline, options: { class: "w-5 h-5 text-purple-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-text-primary">TrueLayer</p>
+                <p class="text-[10px] text-text-muted uppercase tracking-wider">Europe, UK</p>
+              </div>
+            </div>
+            <p class="text-xs text-text-secondary leading-relaxed">
+              Open Banking platform supporting account data retrieval and payment initiation
+              across European financial institutions.
+            </p>
+          </div>
+
+          <%# Yodlee %>
+          <div class="p-4 rounded-xl glass border border-glass-border hover:border-primary-500/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "link", variant: :outline, options: { class: "w-5 h-5 text-orange-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-text-primary">Yodlee</p>
+                <p class="text-[10px] text-text-muted uppercase tracking-wider">Global</p>
+              </div>
+            </div>
+            <p class="text-xs text-text-secondary leading-relaxed">
+              Enterprise-grade data aggregation platform by Envestnet supporting
+              financial institutions worldwide.
+            </p>
+          </div>
+
+          <%# MX %>
+          <div class="p-4 rounded-xl glass border border-glass-border hover:border-primary-500/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "link", variant: :outline, options: { class: "w-5 h-5 text-cyan-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-text-primary">MX</p>
+                <p class="text-[10px] text-text-muted uppercase tracking-wider">United States</p>
+              </div>
+            </div>
+            <p class="text-xs text-text-secondary leading-relaxed">
+              Financial data connectivity and analytics platform with
+              automated transaction categorization and cleansing.
+            </p>
+          </div>
+
+          <%# SimpleFIN %>
+          <div class="p-4 rounded-xl glass border border-glass-border hover:border-primary-500/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
+                <%= heroicon "link", variant: :outline, options: { class: "w-5 h-5 text-rose-500" } %>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-text-primary">SimpleFIN</p>
+                <p class="text-[10px] text-text-muted uppercase tracking-wider">United States</p>
+              </div>
+            </div>
+            <p class="text-xs text-text-secondary leading-relaxed">
+              Privacy-focused bridge service designed for self-hosted
+              financial applications. Low-cost alternative to Plaid.
+            </p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Alternative: Manual Import %>
+  <div class="animate-card-entrance stagger-3">
+    <%= render CardComponent.new do %>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-success-500/10 flex items-center justify-center shrink-0">
+            <%= heroicon "arrow-up-tray", variant: :outline, options: { class: "w-5 h-5 text-success-500" } %>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-text-primary">Import Transactions Now</h3>
+            <p class="text-xs text-text-muted">Upload CSV, OFX, QFX, QIF, or PDF files from your bank</p>
+          </div>
+        </div>
+        <%= render ButtonComponent.new(variant: :primary, href: new_import_path, icon: "arrow-up-tray") do %>
+          Import File
+        <% end %>
+      </div>
+    <% end %>
+  </div>
 </div>

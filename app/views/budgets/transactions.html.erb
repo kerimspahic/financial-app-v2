@@ -1,0 +1,110 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(
+    title: "#{@budget.category.name} Transactions",
+    subtitle: "#{Date::MONTHNAMES[@budget.month]} #{@budget.year} — Budget: #{number_to_currency(@budget.amount)}"
+  ) do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :secondary, href: budgets_path(month: @budget.month, year: @budget.year), icon: "arrow-left") do %>
+        Back to Budgets
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Budget Summary %>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-card-entrance stagger-1">
+    <div data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Budget Amount",
+        value: number_to_currency(@budget.amount),
+        icon: "chart-pie",
+        color: "text-text-primary"
+      ) %>
+    </div>
+    <div data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Spent",
+        value: number_to_currency(@budget.spent),
+        icon: "arrow-trending-down",
+        color: "text-danger-600"
+      ) %>
+    </div>
+    <div data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Remaining",
+        value: number_to_currency(@budget.remaining),
+        icon: "banknotes",
+        color: @budget.remaining >= 0 ? "text-success-600" : "text-danger-600"
+      ) %>
+    </div>
+  </div>
+
+  <%# Progress Bar %>
+  <div class="animate-card-entrance stagger-2">
+    <%= render CardComponent.new do %>
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-text-secondary">Budget Usage</span>
+        <span class="text-sm font-semibold <%= @budget.percent_used > 100 ? 'text-danger-600' : @budget.percent_used > 80 ? 'text-warning-600' : 'text-success-600' %>">
+          <%= @budget.percent_used %>%
+        </span>
+      </div>
+      <%= render ProgressBarComponent.new(
+        value: @budget.spent,
+        max: @budget.amount,
+        show_percentage: false
+      ) %>
+    <% end %>
+  </div>
+
+  <%# Transactions List %>
+  <% if @transactions.any? %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new(padding: false) do |card| %>
+        <% card.with_header do %>
+          <div class="flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-text-primary">Transactions (<%= @transactions.size %>)</h2>
+          </div>
+        <% end %>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-glass-border">
+                <th class="text-left px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Date</th>
+                <th class="text-left px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Description</th>
+                <th class="text-left px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Account</th>
+                <th class="text-left px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Payee</th>
+                <th class="text-right px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-glass-border">
+              <% @transactions.each do |transaction| %>
+                <tr class="hover:bg-surface-hover/30 transition-colors">
+                  <td class="px-6 py-4 text-sm text-text-secondary"><%= transaction.date.strftime("%b %d, %Y") %></td>
+                  <td class="px-6 py-4 text-sm font-medium text-text-primary">
+                    <%= link_to transaction.description, edit_transaction_path(transaction), class: "hover:text-primary-600 transition-colors" %>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-text-secondary"><%= transaction.account.name %></td>
+                  <td class="px-6 py-4 text-sm text-text-secondary"><%= transaction.payee.presence || "-" %></td>
+                  <td class="px-6 py-4 text-sm font-semibold text-danger-600 text-right"><%= number_to_currency(transaction.amount) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot>
+              <tr class="border-t-2 border-glass-border bg-surface-hover/20">
+                <td colspan="4" class="px-6 py-4 text-sm font-bold text-text-primary">Total</td>
+                <td class="px-6 py-4 text-sm font-bold text-danger-600 text-right"><%= number_to_currency(@transactions.sum(&:amount)) %></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No transactions",
+        description: "No expense transactions found for #{@budget.category.name} in #{Date::MONTHNAMES[@budget.month]} #{@budget.year}.",
+        icon: "receipt-refund"
+      ) %>
+    <% end %>
+  <% end %>
+</div>

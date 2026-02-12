@@ -1,0 +1,85 @@
+<%# locals: (t:, table_config:, visible_columns:) %>
+<tr class="bg-primary-50/10 dark:bg-primary-500/5 border border-primary-500/20"
+    id="transaction_<%= t.id %>"
+    data-controller="inline-edit"
+    data-inline-edit-transaction-id-value="<%= t.id %>"
+    data-action="keydown.esc->inline-edit#cancel keydown.enter->inline-edit#save">
+  <%= form_with model: t, url: inline_update_transaction_path(t), method: :patch, data: { inline_edit_target: "form" } do |form| %>
+    <td class="px-3 py-2.5">
+      <button type="button" data-action="click->inline-edit#cancel"
+        class="p-1 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-500/10 text-text-muted hover:text-danger-600 transition-all">
+        <%= heroicon "x-mark", variant: :mini, options: { class: "w-4 h-4" } %>
+      </button>
+    </td>
+    <% (table_config.columns || []).each do |col| %>
+      <% next unless visible_columns.include?(col["key"]) %>
+      <% case col["key"] %>
+      <% when "date" %>
+        <td class="px-2 py-2.5" data-column="date">
+          <%= form.date_field :date, class: "w-full rounded-lg glass border border-primary-500/30 text-text-primary px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30" %>
+        </td>
+      <% when "payee" %>
+        <td class="px-2 py-2.5" data-column="payee">
+          <%= form.text_field :payee, class: "w-full rounded-lg glass border border-primary-500/30 text-text-primary px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30", placeholder: "Payee" %>
+        </td>
+      <% when "description" %>
+        <td class="px-2 py-2.5" data-column="description">
+          <%= form.text_field :description, class: "w-full rounded-lg glass border border-primary-500/30 text-text-primary px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30", placeholder: "Description", data: { inline_edit_target: "firstInput" } %>
+        </td>
+      <% when "category" %>
+        <td class="px-2 py-2.5" data-column="category">
+          <%= form.select :category_id,
+            options_for_select(t.user.categories.map { |c| [ c.name, c.id ] }, t.category_id),
+            {},
+            class: "w-full rounded-lg glass border border-primary-500/30 text-text-primary px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30" %>
+        </td>
+      <% when "account" %>
+        <td class="px-2 py-2.5" data-column="account">
+          <%= form.select :account_id,
+            options_for_select(t.user.accounts.active.ordered.map { |a| [ a.name, a.id ] }, t.account_id),
+            {},
+            class: "w-full rounded-lg glass border border-primary-500/30 text-text-primary px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30" %>
+        </td>
+      <% when "amount" %>
+        <td class="px-2 py-2.5 text-right" data-column="amount">
+          <%= form.number_field :amount, step: "0.01", min: "0.01",
+            class: "w-full rounded-lg glass border border-primary-500/30 text-text-primary px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-primary-500/30" %>
+        </td>
+      <% else %>
+        <%# Non-editable columns just show their value %>
+        <td class="px-5 py-2.5 text-sm text-text-muted">
+          <% case col["key"] %>
+          <% when "transaction_type" %>
+            <%= t.transaction_type.humanize %>
+          <% when "clearing_status" %>
+            <%= t.clearing_status.humanize %>
+          <% when "flag" %>
+            <% if t.flag.present? %>
+              <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: <%= t.flag_color[:dot] %>"></span>
+            <% else %>
+              &mdash;
+            <% end %>
+          <% when "notes" %>
+            <%= t.notes.presence || "\u2014" %>
+          <% when "tags" %>
+            <%= t.tags.map(&:name).join(", ").presence || "\u2014" %>
+          <% when "balance" %>
+            &mdash;
+          <% end %>
+        </td>
+      <% end %>
+    <% end %>
+    <td class="px-2 py-2.5 text-right whitespace-nowrap">
+      <div class="flex items-center justify-end gap-1">
+        <button type="submit" data-action="click->inline-edit#save"
+          class="p-1.5 rounded-lg bg-success-500 hover:bg-success-600 text-white transition-all shadow-sm">
+          <%= heroicon "check", variant: :mini, options: { class: "w-4 h-4" } %>
+        </button>
+        <button type="button" data-action="click->inline-edit#cancel"
+          class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger-600 transition-all">
+          <%= heroicon "x-mark", variant: :mini, options: { class: "w-4 h-4" } %>
+        </button>
+      </div>
+    </td>
+  <% end %>
+</tr>

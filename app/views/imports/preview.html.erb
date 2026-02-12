@@ -22,7 +22,12 @@
               <p class="text-xs text-text-muted"><%= @total_rows %> rows detected &middot; <%= @headers.compact.size %> columns</p>
             </div>
           </div>
-          <div>
+          <div class="flex items-center gap-2">
+            <% if @file_type && @file_type != ".csv" %>
+              <%= render BadgeComponent.new(variant: :neutral, size: :sm) do %>
+                <%= @file_type.delete(".").upcase %>
+              <% end %>
+            <% end %>
             <%= render BadgeComponent.new(variant: :info) do %>
               Ready to Map
             <% end %>

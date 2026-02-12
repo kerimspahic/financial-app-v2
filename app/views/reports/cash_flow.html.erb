@@ -1,0 +1,139 @@
+<div class="space-y-6">
+  <%= render PageHeaderComponent.new(title: "Cash Flow", subtitle: "Income vs expenses over time") do |header| %>
+    <% header.with_actions do %>
+      <%= render ButtonComponent.new(variant: :secondary, href: reports_path, icon: "arrow-left") do %>
+        All Reports
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Date Range Filter %>
+  <%= render CardComponent.new do %>
+    <%= form_with url: cash_flow_reports_path, method: :get, class: "flex flex-wrap items-end gap-4" do |f| %>
+      <div class="flex-1 min-w-[180px]">
+        <label class="block text-sm font-medium text-text-secondary mb-1">Start Date</label>
+        <input type="date" name="start_date" value="<%= @start_date %>"
+               class="w-full glass rounded-xl px-4 py-2 text-text-primary border border-glass-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-transparent">
+      </div>
+      <div class="flex-1 min-w-[180px]">
+        <label class="block text-sm font-medium text-text-secondary mb-1">End Date</label>
+        <input type="date" name="end_date" value="<%= @end_date %>"
+               class="w-full glass rounded-xl px-4 py-2 text-text-primary border border-glass-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-transparent">
+      </div>
+      <div>
+        <%= render ButtonComponent.new(variant: :primary, submit: true, icon: "funnel") do %>
+          Apply Filter
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Summary Cards %>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-card-entrance stagger-1">
+    <div data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Total Income",
+        value: number_to_currency(@total_income),
+        icon: "arrow-trending-up",
+        color: "text-success-600"
+      ) %>
+    </div>
+    <div data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Total Expenses",
+        value: number_to_currency(@total_expenses),
+        icon: "arrow-trending-down",
+        color: "text-danger-600"
+      ) %>
+    </div>
+    <div data-controller="counter">
+      <%= render StatCardComponent.new(
+        label: "Net Cash Flow",
+        value: number_to_currency(@total_net),
+        icon: "scale",
+        color: @total_net >= 0 ? "text-success-600" : "text-danger-600"
+      ) %>
+    </div>
+  </div>
+
+  <% if @monthly_data.any? %>
+    <%# Chart %>
+    <div class="animate-card-entrance stagger-2">
+      <%= render CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-xl font-semibold text-text-primary">Monthly Cash Flow</h2>
+        <% end %>
+        <div class="h-80">
+          <canvas data-controller="chart"
+                  data-chart-type-value="bar"
+                  data-chart-data-value="<%= @chart_data.to_json %>"
+                  data-chart-options-value="<%= { scales: { y: { beginAtZero: false } } }.to_json %>"></canvas>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Monthly Breakdown Table %>
+    <div class="animate-card-entrance stagger-3">
+      <%= render CardComponent.new(padding: false) do |card| %>
+        <% card.with_header do %>
+          <h2 class="text-xl font-semibold text-text-primary">Monthly Breakdown</h2>
+        <% end %>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-glass-border">
+                <th class="text-left px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Month</th>
+                <th class="text-right px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Income</th>
+                <th class="text-right px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Expenses</th>
+                <th class="text-right px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Net Flow</th>
+                <th class="text-right px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Savings Rate</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-glass-border">
+              <% @monthly_data.each do |month| %>
+                <tr class="hover:bg-surface-hover/30 transition-colors">
+                  <td class="px-6 py-4 text-sm font-medium text-text-primary"><%= month[:month] %></td>
+                  <td class="px-6 py-4 text-sm font-semibold text-success-600 text-right"><%= number_to_currency(month[:income]) %></td>
+                  <td class="px-6 py-4 text-sm font-semibold text-danger-600 text-right"><%= number_to_currency(month[:expenses]) %></td>
+                  <td class="px-6 py-4 text-sm font-semibold text-right <%= month[:net] >= 0 ? 'text-success-600' : 'text-danger-600' %>">
+                    <%= number_to_currency(month[:net]) %>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-text-secondary text-right">
+                    <% savings_rate = month[:income] > 0 ? (month[:net] / month[:income] * 100).round(1) : 0 %>
+                    <span class="<%= savings_rate >= 0 ? 'text-success-600' : 'text-danger-600' %>">
+                      <%= savings_rate %>%
+                    </span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot>
+              <tr class="border-t-2 border-glass-border bg-surface-hover/20">
+                <td class="px-6 py-4 text-sm font-bold text-text-primary">Total</td>
+                <td class="px-6 py-4 text-sm font-bold text-success-600 text-right"><%= number_to_currency(@total_income) %></td>
+                <td class="px-6 py-4 text-sm font-bold text-danger-600 text-right"><%= number_to_currency(@total_expenses) %></td>
+                <td class="px-6 py-4 text-sm font-bold text-right <%= @total_net >= 0 ? 'text-success-600' : 'text-danger-600' %>">
+                  <%= number_to_currency(@total_net) %>
+                </td>
+                <td class="px-6 py-4 text-sm font-bold text-text-primary text-right">
+                  <% overall_rate = @total_income > 0 ? (@total_net / @total_income * 100).round(1) : 0 %>
+                  <span class="<%= overall_rate >= 0 ? 'text-success-600' : 'text-danger-600' %>">
+                    <%= overall_rate %>%
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render CardComponent.new do %>
+      <%= render EmptyStateComponent.new(
+        title: "No cash flow data",
+        description: "No transactions found for this date range.",
+        icon: "banknotes"
+      ) %>
+    <% end %>
+  <% end %>
+</div>

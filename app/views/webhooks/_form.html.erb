@@ -1,0 +1,55 @@
+<%= form_with(model: webhook, class: "space-y-6") do |form| %>
+  <% if webhook.errors.any? %>
+    <%= render AlertComponent.new(variant: :danger, dismissable: false, timeout: 0) do %>
+      <strong><%= pluralize(webhook.errors.count, "error") %> prevented this webhook from being saved:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% webhook.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :url, label: "Webhook URL", placeholder: "https://example.com/webhook", hint: "The URL that will receive POST requests") %>
+
+  <% if webhook.new_record? %>
+    <div class="flex items-start gap-2 p-3 rounded-xl bg-info-500/5 border border-info-500/10">
+      <%= heroicon "information-circle", variant: :mini, options: { class: "w-4 h-4 text-info-500 shrink-0 mt-0.5" } %>
+      <p class="text-xs text-text-secondary">
+        A secret key will be generated automatically for signing webhook payloads.
+        You can also provide your own secret below.
+      </p>
+    </div>
+  <% end %>
+
+  <%= render InputComponent.new(form: form, field: :secret, label: "Secret Key", placeholder: "Leave blank to auto-generate", hint: "Used to sign the webhook payload with HMAC-SHA256") %>
+
+  <%# Events Selection %>
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-text-primary">Events</label>
+    <p class="text-xs text-text-muted">Select which events should trigger this webhook. Leave all unchecked to subscribe to all events.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+      <% Webhook::AVAILABLE_EVENTS.each do |event| %>
+        <label class="flex items-center gap-2.5 p-3 rounded-xl glass border border-glass-border hover:bg-surface-hover/50 transition-all cursor-pointer">
+          <%= check_box_tag "webhook[events][]", event, webhook.events&.include?(event),
+            class: "rounded border-input-border text-primary-600 focus:ring-primary-500 focus:ring-offset-0 transition-all" %>
+          <code class="text-xs font-mono text-text-primary"><%= event %></code>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="space-y-1.5">
+    <label class="block text-sm font-medium text-text-primary">Status</label>
+    <label class="inline-flex items-center gap-2 cursor-pointer">
+      <%= form.check_box :active, class: "rounded border-input-border text-primary-600 focus:ring-primary-500 focus:ring-offset-0 transition-all" %>
+      <span class="text-sm text-text-secondary">Webhook is active</span>
+    </label>
+  </div>
+
+  <div class="pt-2">
+    <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+      <%= webhook.persisted? ? "Update Webhook" : "Create Webhook" %>
+    <% end %>
+  </div>
+<% end %>
