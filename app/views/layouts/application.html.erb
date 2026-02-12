@@ -3,6 +3,7 @@
       <% if user_signed_in? %>
         data-theme-theme-mode-value="<%= current_user.preference&.theme_mode || 'system' %>"
         data-theme-color-mode-value="<%= current_user.preference&.color_mode || 'green' %>"
+        data-theme-style-mode-value="<%= current_user.preference&.style_mode || 'modern' %>"
       <% end %>>
   <head>
     <title><%= content_for(:title) || "FinanceApp" %></title>
@@ -21,6 +22,9 @@
 
     <script>
       (function() {
+        var style = localStorage.getItem("styleMode");
+        var validStyles = ["win95", "winxp", "vista", "win7"];
+        if (validStyles.indexOf(style) !== -1) document.documentElement.classList.add("style-" + style);
         var validThemes = ["light", "dark", "system"];
         var validColors = ["green", "blue", "purple", "rose", "amber", "cyan"];
         var theme = localStorage.getItem("theme");

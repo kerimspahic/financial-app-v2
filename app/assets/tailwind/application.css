@@ -660,3 +660,1258 @@ input[type="checkbox"]:not(.sr-only):disabled:hover {
 .color-preview-rose { background: linear-gradient(135deg, #f43f5e, #e11d48); }
 .color-preview-amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
 .color-preview-cyan { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+/* ════════════════════════════════════════════════════════════════
+   ██  WINDOWS 95 STYLE OVERRIDE
+   ══════════════════════════════════════════════════════════════
+   Applied via `.style-win95` class on <html>.
+   Overrides ALL design tokens and visual effects to produce
+   an authentic Windows 95 aesthetic. The existing modern
+   glassmorphism styles remain untouched for the "Modern" style.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Win95: Design Token Overrides ── */
+.style-win95 {
+  /* Win95 Silver Surface palette */
+  --primary-50: #dfdfdf;
+  --primary-100: #c0c0c0;
+  --primary-500: #000080;
+  --primary-600: #000080;
+  --primary-700: #00006b;
+  --primary-800: #000058;
+
+  --surface: #c0c0c0;
+  --surface-alt: #c0c0c0;
+  --surface-hover: #d4d0c8;
+
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-muted: #808080;
+
+  --border-color: #808080;
+  --border-hover: #404040;
+
+  --success-50: #c0c0c0;
+  --success-500: #008000;
+  --success-600: #006400;
+  --success-700: #004b00;
+
+  --warning-50: #c0c0c0;
+  --warning-500: #808000;
+  --warning-600: #6b6b00;
+  --warning-700: #585800;
+
+  --danger-50: #c0c0c0;
+  --danger-500: #ff0000;
+  --danger-600: #cc0000;
+  --danger-700: #990000;
+
+  --info-50: #c0c0c0;
+  --info-500: #000080;
+  --info-600: #00006b;
+  --info-700: #000058;
+
+  --input-bg: #ffffff;
+  --input-border: #808080;
+  --input-focus: #000080;
+
+  --nav-bg: #c0c0c0;
+  --nav-border: #808080;
+
+  --overlay: rgba(0, 0, 0, 0.5);
+  --glass-bg: #c0c0c0;
+  --glass-bg-strong: #c0c0c0;
+  --glass-border: #808080;
+
+  /* Win95 3D border tones */
+  --win95-highlight: #ffffff;
+  --win95-face: #dfdfdf;
+  --win95-shadow: #808080;
+  --win95-frame: #0a0a0a;
+
+  /* Typography */
+  font-family: "Segoe UI", "Microsoft Sans Serif", Tahoma, Geneva, sans-serif;
+  font-size: 13px;
+}
+
+/* ── Win95: Neutralize dark mode ── */
+.style-win95.dark {
+  --primary-50: #dfdfdf;
+  --primary-100: #c0c0c0;
+  --primary-500: #000080;
+  --primary-600: #000080;
+  --primary-700: #00006b;
+  --primary-800: #000058;
+  --surface: #c0c0c0;
+  --surface-alt: #c0c0c0;
+  --surface-hover: #d4d0c8;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-muted: #808080;
+  --border-color: #808080;
+  --border-hover: #404040;
+  --success-50: #c0c0c0; --success-500: #008000; --success-600: #006400; --success-700: #004b00;
+  --warning-50: #c0c0c0; --warning-500: #808000; --warning-600: #6b6b00; --warning-700: #585800;
+  --danger-50: #c0c0c0; --danger-500: #ff0000; --danger-600: #cc0000; --danger-700: #990000;
+  --info-50: #c0c0c0; --info-500: #000080; --info-600: #00006b; --info-700: #000058;
+  --input-bg: #ffffff; --input-border: #808080; --input-focus: #000080;
+  --nav-bg: #c0c0c0; --nav-border: #808080;
+  --glass-bg: #c0c0c0; --glass-bg-strong: #c0c0c0; --glass-border: #808080;
+}
+
+/* ── Win95: Neutralize color themes ── */
+.style-win95.color-blue,
+.style-win95.color-purple,
+.style-win95.color-rose,
+.style-win95.color-amber,
+.style-win95.color-cyan,
+.style-win95.dark.color-blue,
+.style-win95.dark.color-purple,
+.style-win95.dark.color-rose,
+.style-win95.dark.color-amber,
+.style-win95.dark.color-cyan {
+  --primary-50: #dfdfdf;
+  --primary-100: #c0c0c0;
+  --primary-500: #000080;
+  --primary-600: #000080;
+  --primary-700: #00006b;
+  --primary-800: #000058;
+  --surface: #c0c0c0;
+  --surface-alt: #c0c0c0;
+  --surface-hover: #d4d0c8;
+  --input-focus: #000080;
+  --glass-bg: #c0c0c0;
+  --glass-bg-strong: #c0c0c0;
+  --glass-border: #808080;
+}
+
+/* ── Win95: Desktop Background — Solid Teal ── */
+.style-win95 body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #008080 !important;
+  z-index: -2;
+  pointer-events: none;
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+.style-win95 body::after {
+  display: none !important;
+}
+
+/* ── Win95: Glass → Raised 3D Panel ── */
+.style-win95 .glass {
+  background: var(--surface) !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-frame),
+    inset 1px 1px 0 0 var(--win95-highlight),
+    inset -2px -2px 0 0 var(--win95-shadow),
+    inset 2px 2px 0 0 var(--win95-face) !important;
+}
+
+.style-win95 .glass-strong {
+  background: var(--surface) !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-frame),
+    inset 1px 1px 0 0 var(--win95-highlight),
+    inset -2px -2px 0 0 var(--win95-shadow),
+    inset 2px 2px 0 0 var(--win95-face) !important;
+}
+
+/* ── Win95: Gradients → Solid Colors ── */
+.style-win95 .gradient-primary {
+  background: #000080 !important;
+}
+.style-win95 .gradient-success {
+  background: #008000 !important;
+}
+.style-win95 .gradient-danger {
+  background: #ff0000 !important;
+}
+
+/* ── Win95: Force Sharp Corners ── */
+.style-win95 *,
+.style-win95 *::before,
+.style-win95 *::after {
+  border-radius: 0 !important;
+}
+
+/* ── Win95: Kill Backdrop Blur ── */
+.style-win95 [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ── Win95: Kill Scale/Transform Hover Effects ── */
+.style-win95 [class*="hover\:scale-"]:hover {
+  transform: none !important;
+}
+
+/* ── Win95: Disable All Animations ── */
+.style-win95 .animate-fade-in,
+.style-win95 .animate-fade-up,
+.style-win95 .animate-card-entrance,
+.style-win95 .animate-slide-in-right,
+.style-win95 .animate-skeleton {
+  animation: none !important;
+}
+
+.style-win95 .stagger-1, .style-win95 .stagger-2,
+.style-win95 .stagger-3, .style-win95 .stagger-4,
+.style-win95 .stagger-5, .style-win95 .stagger-6,
+.style-win95 .stagger-7, .style-win95 .stagger-8 {
+  animation-delay: 0s !important;
+}
+
+/* ── Win95: Hover-Lift → Sunken 3D on Hover ── */
+.style-win95 .hover-lift {
+  transition: none !important;
+}
+.style-win95 .hover-lift:hover {
+  transform: none !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-highlight),
+    inset 1px 1px 0 0 var(--win95-frame),
+    inset -2px -2px 0 0 var(--win95-face),
+    inset 2px 2px 0 0 var(--win95-shadow) !important;
+}
+
+/* ── Win95: Shadow Overrides (soft → 3D raised) ── */
+.style-win95 [class*="shadow-lg"],
+.style-win95 [class*="shadow-xl"],
+.style-win95 [class*="shadow-2xl"],
+.style-win95 [class*="shadow-md"] {
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-frame),
+    inset 1px 1px 0 0 var(--win95-highlight),
+    inset -2px -2px 0 0 var(--win95-shadow),
+    inset 2px 2px 0 0 var(--win95-face) !important;
+}
+
+/* ── Win95: Form Controls — Sunken Inputs ── */
+.style-win95 input[type="text"],
+.style-win95 input[type="email"],
+.style-win95 input[type="password"],
+.style-win95 input[type="number"],
+.style-win95 input[type="search"],
+.style-win95 input[type="date"],
+.style-win95 input[type="url"],
+.style-win95 input[type="tel"],
+.style-win95 textarea,
+.style-win95 select {
+  background: #ffffff !important;
+  border: none !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-highlight),
+    inset 1px 1px 0 0 var(--win95-frame),
+    inset -2px -2px 0 0 var(--win95-face),
+    inset 2px 2px 0 0 var(--win95-shadow) !important;
+  padding: 3px 6px !important;
+  font-size: 13px !important;
+  color: #000000 !important;
+}
+
+.style-win95 input:focus,
+.style-win95 textarea:focus,
+.style-win95 select:focus {
+  outline: 1px dotted #000000 !important;
+  outline-offset: -3px !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-highlight),
+    inset 1px 1px 0 0 var(--win95-frame),
+    inset -2px -2px 0 0 var(--win95-face),
+    inset 2px 2px 0 0 var(--win95-shadow) !important;
+}
+
+/* ── Win95: Checkboxes ── */
+.style-win95 input[type="checkbox"]:not(.sr-only) {
+  background-color: #ffffff !important;
+  border: none !important;
+  transition: none !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-highlight),
+    inset 1px 1px 0 0 var(--win95-frame),
+    inset -2px -2px 0 0 var(--win95-face),
+    inset 2px 2px 0 0 var(--win95-shadow) !important;
+}
+.style-win95 input[type="checkbox"]:not(.sr-only):checked {
+  background-color: #ffffff !important;
+  border-color: transparent !important;
+}
+.style-win95 input[type="checkbox"]:not(.sr-only):checked::after {
+  border-left-color: #000000 !important;
+  border-bottom-color: #000000 !important;
+}
+.style-win95 input[type="checkbox"]:not(.sr-only):focus-visible {
+  outline: 1px dotted #000000 !important;
+  outline-offset: 2px !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-highlight),
+    inset 1px 1px 0 0 var(--win95-frame),
+    inset -2px -2px 0 0 var(--win95-face),
+    inset 2px 2px 0 0 var(--win95-shadow) !important;
+}
+
+/* ── Win95: Toggle Switch ── */
+.style-win95 .toggle-track:has(input:checked) {
+  background-color: #000080 !important;
+  border-color: #000080 !important;
+}
+.style-win95 .toggle-track:has(input:not(:checked)) {
+  background-color: var(--surface) !important;
+  border: none !important;
+  box-shadow:
+    inset -1px -1px 0 0 var(--win95-highlight),
+    inset 1px 1px 0 0 var(--win95-frame),
+    inset -2px -2px 0 0 var(--win95-face),
+    inset 2px 2px 0 0 var(--win95-shadow) !important;
+}
+
+/* ── Win95: Tooltip ── */
+.style-win95 .tooltip-popup {
+  color: #000000 !important;
+  background: #ffffe1 !important;
+  border: 1px solid #000000 !important;
+  box-shadow: 1px 1px 0 0 #000000 !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+}
+
+/* ── Win95: Turbo Progress Bar ── */
+.style-win95 .turbo-progress-bar {
+  background: #000080 !important;
+  box-shadow: none !important;
+}
+
+/* ── Win95: Scrollbars ── */
+.style-win95 ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+.style-win95 ::-webkit-scrollbar-track {
+  background: #c0c0c0;
+}
+.style-win95 ::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  box-shadow:
+    inset -1px -1px 0 0 #0a0a0a,
+    inset 1px 1px 0 0 #ffffff,
+    inset -2px -2px 0 0 #808080,
+    inset 2px 2px 0 0 #dfdfdf;
+}
+.style-win95 ::-webkit-scrollbar-button {
+  background: #c0c0c0;
+  display: block;
+  height: 16px;
+  width: 16px;
+  box-shadow:
+    inset -1px -1px 0 0 #0a0a0a,
+    inset 1px 1px 0 0 #ffffff,
+    inset -2px -2px 0 0 #808080,
+    inset 2px 2px 0 0 #dfdfdf;
+}
+
+/* ── Win95: Modal Title Bar Override ── */
+.style-win95 [data-controller="modal"] [data-modal-target="dialog"] .glass-strong {
+  background: var(--surface) !important;
+}
+.style-win95 [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] {
+  background: linear-gradient(90deg, #000080, #1084d0) !important;
+  border: none !important;
+  padding: 3px 6px !important;
+}
+.style-win95 [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] h3,
+.style-win95 [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] .text-lg {
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
+.style-win95 [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] button {
+  color: #000000 !important;
+  background: #c0c0c0 !important;
+  width: 16px !important;
+  height: 14px !important;
+  box-shadow:
+    inset -1px -1px 0 0 #0a0a0a,
+    inset 1px 1px 0 0 #ffffff !important;
+}
+
+/* ── Win95: Gradient overlay removal ── */
+.style-win95 [class*="from-white\\/5"],
+.style-win95 [class*="from-primary-500\\/5"] {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* ── Win95: Focus ring → Dotted outline ── */
+.style-win95 *:focus {
+  box-shadow: none;
+}
+.style-win95 button:focus-visible,
+.style-win95 a:focus-visible,
+.style-win95 [tabindex]:focus-visible {
+  outline: 1px dotted #000000 !important;
+  outline-offset: -3px !important;
+}
+
+/* ── Win95: Account type colors ── */
+.style-win95 {
+  --color-account-checking: #000080;
+  --color-account-savings: #008080;
+  --color-account-credit: #800000;
+  --color-account-cash: #808000;
+  --color-account-investment: #800080;
+}
+
+/* ── Win95: Style Preview Swatch ── */
+.style-preview-modern {
+  background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.3));
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.style-preview-win95 {
+  background: #c0c0c0;
+  box-shadow:
+    inset -1px -1px 0 0 #0a0a0a,
+    inset 1px 1px 0 0 #ffffff,
+    inset -2px -2px 0 0 #808080,
+    inset 2px 2px 0 0 #dfdfdf;
+}
+.style-preview-winxp {
+  background: linear-gradient(180deg, #0054E3 50%, #58B947 50%);
+  border: 2px solid #ACA899;
+  border-radius: 4px;
+}
+.style-preview-vista {
+  background: linear-gradient(180deg, rgba(155,180,210,0.6), rgba(235,240,248,0.5));
+  border: 1px solid rgba(155,180,210,0.4);
+  backdrop-filter: blur(6px);
+  border-radius: 2px;
+}
+.style-preview-win7 {
+  background: linear-gradient(180deg, #4da3e8, rgba(230,238,248,0.7));
+  border: 1px solid rgba(130,160,200,0.4);
+  backdrop-filter: blur(4px);
+  border-radius: 4px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   ██  WINDOWS XP (LUNA) STYLE OVERRIDE
+   ════════════════════════════════════════════════════════════════
+   Vivid blue title bars, warm beige surfaces (#ECE9D8),
+   glossy plastic rounded buttons, Tahoma font, Bliss desktop.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── XP: Design Token Overrides ── */
+.style-winxp {
+  --primary-50: #e8f0fe;
+  --primary-100: #d0e1fc;
+  --primary-500: #0054E3;
+  --primary-600: #003c9e;
+  --primary-700: #003380;
+  --primary-800: #002660;
+
+  --surface: #ECE9D8;
+  --surface-alt: #F5F3EA;
+  --surface-hover: #e0dccb;
+
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-muted: #808080;
+
+  --border-color: #ACA899;
+  --border-hover: #716f64;
+
+  --success-50: #e8f5e9;
+  --success-500: #339933;
+  --success-600: #2d862d;
+  --success-700: #267326;
+
+  --warning-50: #fff8e1;
+  --warning-500: #e6a800;
+  --warning-600: #cc9500;
+  --warning-700: #b38200;
+
+  --danger-50: #fbe9e7;
+  --danger-500: #cc3300;
+  --danger-600: #b32d00;
+  --danger-700: #992600;
+
+  --info-50: #e3f2fd;
+  --info-500: #0054E3;
+  --info-600: #003c9e;
+  --info-700: #003380;
+
+  --input-bg: #ffffff;
+  --input-border: #7F9DB9;
+  --input-focus: #0054E3;
+
+  --nav-bg: #ECE9D8;
+  --nav-border: #ACA899;
+
+  --overlay: rgba(0, 0, 0, 0.4);
+  --glass-bg: #ECE9D8;
+  --glass-bg-strong: #ECE9D8;
+  --glass-border: #ACA899;
+
+  font-family: Tahoma, "Segoe UI", Geneva, sans-serif;
+  font-size: 13px;
+}
+
+/* ── XP: Account type colors ── */
+.style-winxp {
+  --color-account-checking: #0054E3;
+  --color-account-savings: #339933;
+  --color-account-credit: #cc3300;
+  --color-account-cash: #e6a800;
+  --color-account-investment: #663399;
+}
+
+/* ── XP: Neutralize dark mode ── */
+.style-winxp.dark {
+  --surface: #ECE9D8; --surface-alt: #F5F3EA; --surface-hover: #e0dccb;
+  --text-primary: #000000; --text-secondary: #333333; --text-muted: #808080;
+  --border-color: #ACA899; --border-hover: #716f64;
+  --glass-bg: #ECE9D8; --glass-bg-strong: #ECE9D8; --glass-border: #ACA899;
+  --primary-50: #e8f0fe; --primary-100: #d0e1fc; --primary-500: #0054E3;
+  --primary-600: #003c9e; --primary-700: #003380; --primary-800: #002660;
+  --input-bg: #ffffff; --input-border: #7F9DB9; --input-focus: #0054E3;
+  --nav-bg: #ECE9D8; --nav-border: #ACA899;
+  --success-50: #e8f5e9; --success-500: #339933; --success-600: #2d862d; --success-700: #267326;
+  --warning-50: #fff8e1; --warning-500: #e6a800; --warning-600: #cc9500; --warning-700: #b38200;
+  --danger-50: #fbe9e7; --danger-500: #cc3300; --danger-600: #b32d00; --danger-700: #992600;
+  --info-50: #e3f2fd; --info-500: #0054E3; --info-600: #003c9e; --info-700: #003380;
+}
+
+/* ── XP: Neutralize color themes ── */
+.style-winxp.color-blue, .style-winxp.color-purple, .style-winxp.color-rose,
+.style-winxp.color-amber, .style-winxp.color-cyan,
+.style-winxp.dark.color-blue, .style-winxp.dark.color-purple, .style-winxp.dark.color-rose,
+.style-winxp.dark.color-amber, .style-winxp.dark.color-cyan {
+  --primary-50: #e8f0fe; --primary-100: #d0e1fc; --primary-500: #0054E3;
+  --primary-600: #003c9e; --primary-700: #003380; --primary-800: #002660;
+  --surface: #ECE9D8; --surface-alt: #F5F3EA; --surface-hover: #e0dccb;
+  --input-focus: #0054E3;
+  --glass-bg: #ECE9D8; --glass-bg-strong: #ECE9D8; --glass-border: #ACA899;
+}
+
+/* ── XP: Desktop — Bliss-inspired gradient ── */
+.style-winxp body::before {
+  background: linear-gradient(180deg, #245EDB 0%, #3a8cf0 40%, #58B947 40.5%, #3f9a2f 100%) !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+.style-winxp body::after { display: none !important; }
+
+/* ── XP: Glass → Opaque beige panel with top highlight (plastic feel) ── */
+.style-winxp .glass,
+.style-winxp .glass-strong {
+  background: var(--surface) !important;
+  border: 1px solid #ACA899 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.15),
+    inset 0 1px 0 #ffffff !important;
+  border-radius: 6px !important;
+}
+
+/* ── XP: Rounded corners (plastic, glossy — NOT sharp like 95) ── */
+.style-winxp .glass, .style-winxp .glass-strong { border-radius: 6px !important; }
+.style-winxp button, .style-winxp [type="button"], .style-winxp [type="submit"],
+.style-winxp a[class*="inline-flex"] {
+  border-radius: 3px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+}
+.style-winxp input, .style-winxp select, .style-winxp textarea { border-radius: 2px !important; }
+
+/* ── XP: Gradients → Luna blue glossy ── */
+.style-winxp .gradient-primary {
+  background: linear-gradient(180deg, #3a6ea5, #0054E3) !important;
+}
+.style-winxp .gradient-success {
+  background: linear-gradient(180deg, #44a344, #339933) !important;
+}
+.style-winxp .gradient-danger {
+  background: linear-gradient(180deg, #dd4422, #cc3300) !important;
+}
+
+/* ── XP: Hover-lift → Inset press with blue outline ── */
+.style-winxp .hover-lift { transition: box-shadow 0.1s ease !important; }
+.style-winxp .hover-lift:hover {
+  transform: none !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,84,227,0.3) !important;
+}
+
+/* ── XP: Shadow overrides ── */
+.style-winxp [class*="shadow-lg"],
+.style-winxp [class*="shadow-xl"],
+.style-winxp [class*="shadow-2xl"],
+.style-winxp [class*="shadow-md"] {
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.2), inset 0 1px 0 #ffffff !important;
+}
+
+/* ── XP: Disable fancy animations ── */
+.style-winxp .animate-fade-in, .style-winxp .animate-fade-up,
+.style-winxp .animate-card-entrance, .style-winxp .animate-slide-in-right,
+.style-winxp .animate-skeleton { animation: none !important; }
+.style-winxp .stagger-1, .style-winxp .stagger-2, .style-winxp .stagger-3,
+.style-winxp .stagger-4, .style-winxp .stagger-5, .style-winxp .stagger-6,
+.style-winxp .stagger-7, .style-winxp .stagger-8 { animation-delay: 0s !important; }
+
+/* ── XP: Kill backdrop blur ── */
+.style-winxp [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ── XP: Kill scale hover ── */
+.style-winxp [class*="hover\:scale-"]:hover { transform: none !important; }
+
+/* ── XP: Form inputs — White with blue border, sunken ── */
+.style-winxp input[type="text"], .style-winxp input[type="email"],
+.style-winxp input[type="password"], .style-winxp input[type="number"],
+.style-winxp input[type="search"], .style-winxp input[type="date"],
+.style-winxp input[type="url"], .style-winxp input[type="tel"],
+.style-winxp textarea, .style-winxp select {
+  background: #ffffff !important;
+  border: 1px solid #7F9DB9 !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.10) !important;
+  border-radius: 2px !important;
+}
+.style-winxp input:focus, .style-winxp textarea:focus, .style-winxp select:focus {
+  border-color: #0054E3 !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.10), 0 0 3px rgba(0,84,227,0.35) !important;
+  outline: none !important;
+}
+
+/* ── XP: Checkboxes ── */
+.style-winxp input[type="checkbox"]:not(.sr-only) {
+  background-color: #ffffff !important;
+  border: 1px solid #7F9DB9 !important;
+  border-radius: 2px !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.10) !important;
+  transition: none !important;
+}
+.style-winxp input[type="checkbox"]:not(.sr-only):checked {
+  background-color: #0054E3 !important;
+  border-color: #003c9e !important;
+}
+.style-winxp input[type="checkbox"]:not(.sr-only):checked::after {
+  border-left-color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+}
+
+/* ── XP: Toggle Switch ── */
+.style-winxp .toggle-track:has(input:checked) {
+  background-color: #0054E3 !important;
+  border-color: #003c9e !important;
+  border-radius: 3px !important;
+}
+.style-winxp .toggle-track:has(input:not(:checked)) {
+  background-color: #ECE9D8 !important;
+  border: 1px solid #ACA899 !important;
+  border-radius: 3px !important;
+}
+
+/* ── XP: Modal title bar — Luna vivid blue gradient ── */
+.style-winxp [data-controller="modal"] [data-modal-target="dialog"] .glass-strong {
+  background: var(--surface) !important;
+}
+.style-winxp [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] {
+  background: linear-gradient(90deg, #0054E3, #2E8AEB) !important;
+  border: none !important;
+  border-radius: 6px 6px 0 0 !important;
+  padding: 4px 8px !important;
+}
+.style-winxp [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] h3,
+.style-winxp [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] .text-lg {
+  color: #ffffff !important;
+  font-weight: bold !important;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4) !important;
+}
+
+/* ── XP: Tooltip ── */
+.style-winxp .tooltip-popup {
+  background: #ffffe1 !important;
+  border: 1px solid #000 !important;
+  border-radius: 2px !important;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.2) !important;
+  color: #000 !important;
+}
+
+/* ── XP: Gradient overlay removal ── */
+.style-winxp [class*="from-white\\/5"],
+.style-winxp [class*="from-primary-500\\/5"] {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* ── XP: Turbo progress bar ── */
+.style-winxp .turbo-progress-bar {
+  background: linear-gradient(180deg, #3a6ea5, #0054E3) !important;
+  box-shadow: none !important;
+}
+
+/* ── XP: Scrollbars — XP-style with beige tones ── */
+.style-winxp ::-webkit-scrollbar { width: 17px; height: 17px; }
+.style-winxp ::-webkit-scrollbar-track { background: #ECE9D8; }
+.style-winxp ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ECE9D8, #d4d0c8);
+  border: 1px solid #ACA899;
+  border-radius: 2px;
+}
+.style-winxp ::-webkit-scrollbar-thumb:hover { background: #d4d0c8; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   ██  WINDOWS VISTA (AERO) STYLE OVERRIDE
+   ════════════════════════════════════════════════════════════════
+   Heavy glass transparency, light translucent panels, desaturated
+   blue (#99B4D1), sharp corners, blue glow hover, Segoe UI font.
+   Dark slate desktop makes the floating glass panels pop.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Vista: Design Token Overrides — LIGHT translucent theme ── */
+.style-vista {
+  --primary-50: #e3ecf7;
+  --primary-100: #c0d4ee;
+  --primary-500: #3399FF;
+  --primary-600: #1a7aee;
+  --primary-700: #0060dd;
+  --primary-800: #004cb8;
+
+  --surface: rgba(240, 243, 249, 0.75);
+  --surface-alt: rgba(245, 247, 252, 0.80);
+  --surface-hover: rgba(225, 232, 242, 0.80);
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #7a7a7a;
+
+  --border-color: rgba(155, 180, 210, 0.35);
+  --border-hover: rgba(155, 180, 210, 0.50);
+
+  --success-50: #e8f5e9;
+  --success-500: #5cb85c;
+  --success-600: #4cae4c;
+  --success-700: #3d9e3d;
+
+  --warning-50: #fff8e1;
+  --warning-500: #f0ad4e;
+  --warning-600: #eea236;
+  --warning-700: #ec971f;
+
+  --danger-50: #fbe9e7;
+  --danger-500: #d9534f;
+  --danger-600: #d43f3a;
+  --danger-700: #c9302c;
+
+  --info-50: #e3f2fd;
+  --info-500: #5bc0de;
+  --info-600: #46b8da;
+  --info-700: #31b0d5;
+
+  --input-bg: rgba(255, 255, 255, 0.85);
+  --input-border: rgba(155, 180, 210, 0.45);
+  --input-focus: #3399FF;
+
+  --nav-bg: rgba(235, 240, 248, 0.80);
+  --nav-border: rgba(155, 180, 210, 0.25);
+
+  --overlay: rgba(0, 0, 0, 0.45);
+  --glass-bg: rgba(235, 240, 248, 0.55);
+  --glass-bg-strong: rgba(235, 240, 248, 0.75);
+  --glass-border: rgba(155, 180, 210, 0.30);
+
+  font-family: "Segoe UI", Tahoma, Geneva, sans-serif;
+  font-size: 13px;
+}
+
+/* ── Vista: Account type colors ── */
+.style-vista {
+  --color-account-checking: #3399FF;
+  --color-account-savings: #5cb85c;
+  --color-account-credit: #d9534f;
+  --color-account-cash: #f0ad4e;
+  --color-account-investment: #8066cc;
+}
+
+/* ── Vista: Neutralize dark mode & color themes ── */
+.style-vista.dark {
+  --surface: rgba(240, 243, 249, 0.75); --surface-alt: rgba(245, 247, 252, 0.80);
+  --surface-hover: rgba(225, 232, 242, 0.80);
+  --text-primary: #1a1a1a; --text-secondary: #4a4a4a; --text-muted: #7a7a7a;
+  --border-color: rgba(155, 180, 210, 0.35); --border-hover: rgba(155, 180, 210, 0.50);
+  --glass-bg: rgba(235, 240, 248, 0.55); --glass-bg-strong: rgba(235, 240, 248, 0.75);
+  --glass-border: rgba(155, 180, 210, 0.30);
+  --primary-50: #e3ecf7; --primary-100: #c0d4ee; --primary-500: #3399FF;
+  --primary-600: #1a7aee; --primary-700: #0060dd; --primary-800: #004cb8;
+  --input-bg: rgba(255, 255, 255, 0.85); --input-border: rgba(155, 180, 210, 0.45);
+  --input-focus: #3399FF;
+  --nav-bg: rgba(235, 240, 248, 0.80); --nav-border: rgba(155, 180, 210, 0.25);
+  --success-50: #e8f5e9; --success-500: #5cb85c; --success-600: #4cae4c; --success-700: #3d9e3d;
+  --warning-50: #fff8e1; --warning-500: #f0ad4e; --warning-600: #eea236; --warning-700: #ec971f;
+  --danger-50: #fbe9e7; --danger-500: #d9534f; --danger-600: #d43f3a; --danger-700: #c9302c;
+  --info-50: #e3f2fd; --info-500: #5bc0de; --info-600: #46b8da; --info-700: #31b0d5;
+}
+
+.style-vista.color-blue, .style-vista.color-purple, .style-vista.color-rose,
+.style-vista.color-amber, .style-vista.color-cyan,
+.style-vista.dark.color-blue, .style-vista.dark.color-purple, .style-vista.dark.color-rose,
+.style-vista.dark.color-amber, .style-vista.dark.color-cyan {
+  --primary-50: #e3ecf7; --primary-100: #c0d4ee; --primary-500: #3399FF;
+  --primary-600: #1a7aee; --primary-700: #0060dd; --primary-800: #004cb8;
+  --surface: rgba(240, 243, 249, 0.75); --surface-alt: rgba(245, 247, 252, 0.80);
+  --surface-hover: rgba(225, 232, 242, 0.80);
+  --input-focus: #3399FF;
+  --glass-bg: rgba(235, 240, 248, 0.55); --glass-bg-strong: rgba(235, 240, 248, 0.75);
+  --glass-border: rgba(155, 180, 210, 0.30);
+}
+
+/* ── Vista: Desktop — Dark slate (makes light glass panels pop) ── */
+.style-vista body::before {
+  background: linear-gradient(135deg, #1a252f 0%, #2c3e50 30%, #34495e 60%, #1a252f 100%) !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+.style-vista body::after { display: none !important; }
+
+/* ── Vista: Glass → Translucent light panels with heavy blur ── */
+.style-vista .glass {
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(155, 180, 210, 0.25) !important;
+  backdrop-filter: blur(20px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.50) !important;
+}
+.style-vista .glass-strong {
+  background: var(--glass-bg-strong) !important;
+  border: 1px solid rgba(155, 180, 210, 0.30) !important;
+  backdrop-filter: blur(28px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(140%) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.60) !important;
+}
+
+/* ── Vista: Sharp corners (angular, modern — NOT rounded like XP) ── */
+.style-vista .glass, .style-vista .glass-strong { border-radius: 2px !important; }
+.style-vista button, .style-vista [type="button"], .style-vista [type="submit"],
+.style-vista a[class*="inline-flex"] { border-radius: 2px !important; }
+.style-vista input, .style-vista select, .style-vista textarea { border-radius: 1px !important; }
+
+/* ── Vista: Gradients → Aero gloss ── */
+.style-vista .gradient-primary {
+  background: linear-gradient(180deg, #55aaff, #3399FF) !important;
+}
+.style-vista .gradient-success {
+  background: linear-gradient(180deg, #6ec06e, #4cae4c) !important;
+}
+.style-vista .gradient-danger {
+  background: linear-gradient(180deg, #e25855, #c9302c) !important;
+}
+
+/* ── Vista: Hover → Blue glow (NOT lift, NOT press) ── */
+.style-vista .hover-lift { transition: box-shadow 0.2s ease !important; }
+.style-vista .hover-lift:hover {
+  transform: none !important;
+  box-shadow: 0 0 8px rgba(51,153,255,0.35), 0 4px 16px rgba(0,0,0,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+/* ── Vista: Shadow overrides — soft diffuse ── */
+.style-vista [class*="shadow-lg"], .style-vista [class*="shadow-xl"],
+.style-vista [class*="shadow-2xl"], .style-vista [class*="shadow-md"] {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+}
+
+/* ── Vista: Disable card entrance ── */
+.style-vista .animate-card-entrance { animation: none !important; }
+.style-vista .stagger-1, .style-vista .stagger-2, .style-vista .stagger-3,
+.style-vista .stagger-4, .style-vista .stagger-5, .style-vista .stagger-6,
+.style-vista .stagger-7, .style-vista .stagger-8 { animation-delay: 0s !important; }
+
+/* ── Vista: Kill scale hover ── */
+.style-vista [class*="hover\:scale-"]:hover { transform: none !important; }
+
+/* ── Vista: Form inputs — White glass, subtle border ── */
+.style-vista input[type="text"], .style-vista input[type="email"],
+.style-vista input[type="password"], .style-vista input[type="number"],
+.style-vista input[type="search"], .style-vista input[type="date"],
+.style-vista input[type="url"], .style-vista input[type="tel"],
+.style-vista textarea, .style-vista select {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(155, 180, 210, 0.40) !important;
+  color: #1a1a1a !important;
+  border-radius: 1px !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04) !important;
+}
+.style-vista input:focus, .style-vista textarea:focus, .style-vista select:focus {
+  border-color: #3399FF !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04), 0 0 6px rgba(51,153,255,0.35) !important;
+  outline: none !important;
+}
+.style-vista input::placeholder, .style-vista textarea::placeholder {
+  color: #999999 !important;
+}
+
+/* ── Vista: Checkboxes ── */
+.style-vista input[type="checkbox"]:not(.sr-only) {
+  background-color: rgba(255,255,255,0.85) !important;
+  border: 1px solid rgba(155,180,210,0.45) !important;
+  border-radius: 2px !important;
+  transition: none !important;
+}
+.style-vista input[type="checkbox"]:not(.sr-only):checked {
+  background-color: #3399FF !important;
+  border-color: #1a7aee !important;
+}
+
+/* ── Vista: Toggle Switch ── */
+.style-vista .toggle-track:has(input:checked) {
+  background-color: #3399FF !important;
+  border-color: #1a7aee !important;
+  border-radius: 2px !important;
+}
+.style-vista .toggle-track:has(input:not(:checked)) {
+  background-color: rgba(240,243,249,0.75) !important;
+  border: 1px solid rgba(155,180,210,0.35) !important;
+  border-radius: 2px !important;
+}
+
+/* ── Vista: Modal title bar — Translucent Aero glass ── */
+.style-vista [data-controller="modal"] [data-modal-target="dialog"] .glass-strong {
+  background: var(--glass-bg-strong) !important;
+}
+.style-vista [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] {
+  background: rgba(155, 180, 210, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(155,180,210,0.25) !important;
+  padding: 6px 12px !important;
+  border-radius: 2px 2px 0 0 !important;
+}
+.style-vista [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] h3,
+.style-vista [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] .text-lg {
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
+}
+
+/* ── Vista: Tooltip ── */
+.style-vista .tooltip-popup {
+  background: rgba(245, 247, 252, 0.95) !important;
+  border: 1px solid rgba(155,180,210,0.40) !important;
+  color: #1a1a1a !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  border-radius: 2px !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* ── Vista: Gradient overlay removal ── */
+.style-vista [class*="from-white\\/5"],
+.style-vista [class*="from-primary-500\\/5"] {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* ── Vista: Turbo progress bar ── */
+.style-vista .turbo-progress-bar {
+  background: linear-gradient(90deg, #55aaff, #3399FF) !important;
+  box-shadow: 0 0 8px rgba(51,153,255,0.3) !important;
+}
+
+/* ── Vista: Scrollbars — Translucent glass ── */
+.style-vista ::-webkit-scrollbar { width: 14px; height: 14px; }
+.style-vista ::-webkit-scrollbar-track { background: rgba(235,240,248,0.5); }
+.style-vista ::-webkit-scrollbar-thumb {
+  background: rgba(155,180,210,0.45);
+  border-radius: 1px;
+  border: 2px solid rgba(235,240,248,0.4);
+}
+.style-vista ::-webkit-scrollbar-thumb:hover { background: rgba(155,180,210,0.65); }
+
+
+/* ════════════════════════════════════════════════════════════════
+   ██  WINDOWS 7 (AERO REFINED) STYLE OVERRIDE
+   ════════════════════════════════════════════════════════════════
+   Polished, refined glass. Medium blur (less than Vista),
+   deeper blue (#2672C0), soft 4px corners, subtle lift hover,
+   prominent white inset highlight, Segoe UI, calm blue desktop.
+   "Vista but mature and polished."
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Win7: Design Token Overrides — Refined glass ── */
+.style-win7 {
+  --primary-50: #eaf2fc;
+  --primary-100: #d0e2f7;
+  --primary-500: #2672C0;
+  --primary-600: #1e5ea0;
+  --primary-700: #174b82;
+  --primary-800: #103862;
+
+  --surface: rgba(235, 241, 250, 0.82);
+  --surface-alt: rgba(240, 245, 252, 0.85);
+  --surface-hover: rgba(220, 230, 245, 0.85);
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #3c3c56;
+  --text-muted: #7a7a94;
+
+  --border-color: rgba(130, 160, 200, 0.35);
+  --border-hover: rgba(100, 140, 200, 0.50);
+
+  --success-50: rgba(220, 245, 220, 0.8);
+  --success-500: #2d9f2d;
+  --success-600: #258825;
+  --success-700: #1d701d;
+
+  --warning-50: rgba(255, 245, 220, 0.8);
+  --warning-500: #e09c00;
+  --warning-600: #c88a00;
+  --warning-700: #a87300;
+
+  --danger-50: rgba(255, 225, 225, 0.8);
+  --danger-500: #d03030;
+  --danger-600: #b82828;
+  --danger-700: #a02020;
+
+  --info-50: rgba(220, 235, 255, 0.8);
+  --info-500: #2672C0;
+  --info-600: #1e5ea0;
+  --info-700: #174b82;
+
+  --input-bg: rgba(255, 255, 255, 0.92);
+  --input-border: rgba(130, 160, 200, 0.45);
+  --input-focus: #2672C0;
+
+  --nav-bg: rgba(235, 241, 250, 0.88);
+  --nav-border: rgba(130, 160, 200, 0.25);
+
+  --overlay: rgba(0, 0, 0, 0.35);
+  --glass-bg: rgba(230, 238, 248, 0.68);
+  --glass-bg-strong: rgba(230, 238, 248, 0.82);
+  --glass-border: rgba(130, 160, 200, 0.25);
+
+  font-family: "Segoe UI", Tahoma, Geneva, sans-serif;
+  font-size: 13px;
+}
+
+/* ── Win7: Account type colors ── */
+.style-win7 {
+  --color-account-checking: #2672C0;
+  --color-account-savings: #2d9f2d;
+  --color-account-credit: #d03030;
+  --color-account-cash: #e09c00;
+  --color-account-investment: #7b5ea7;
+}
+
+/* ── Win7: Neutralize dark mode & color themes ── */
+.style-win7.dark {
+  --surface: rgba(235, 241, 250, 0.82); --surface-alt: rgba(240, 245, 252, 0.85);
+  --surface-hover: rgba(220, 230, 245, 0.85);
+  --text-primary: #1a1a2e; --text-secondary: #3c3c56; --text-muted: #7a7a94;
+  --border-color: rgba(130, 160, 200, 0.35); --border-hover: rgba(100, 140, 200, 0.50);
+  --glass-bg: rgba(230, 238, 248, 0.68); --glass-bg-strong: rgba(230, 238, 248, 0.82);
+  --glass-border: rgba(130, 160, 200, 0.25);
+  --primary-50: #eaf2fc; --primary-100: #d0e2f7; --primary-500: #2672C0;
+  --primary-600: #1e5ea0; --primary-700: #174b82; --primary-800: #103862;
+  --input-bg: rgba(255, 255, 255, 0.92); --input-border: rgba(130, 160, 200, 0.45);
+  --input-focus: #2672C0;
+  --nav-bg: rgba(235, 241, 250, 0.88); --nav-border: rgba(130, 160, 200, 0.25);
+  --success-50: rgba(220, 245, 220, 0.8); --success-500: #2d9f2d; --success-600: #258825; --success-700: #1d701d;
+  --warning-50: rgba(255, 245, 220, 0.8); --warning-500: #e09c00; --warning-600: #c88a00; --warning-700: #a87300;
+  --danger-50: rgba(255, 225, 225, 0.8); --danger-500: #d03030; --danger-600: #b82828; --danger-700: #a02020;
+  --info-50: rgba(220, 235, 255, 0.8); --info-500: #2672C0; --info-600: #1e5ea0; --info-700: #174b82;
+}
+
+.style-win7.color-blue, .style-win7.color-purple, .style-win7.color-rose,
+.style-win7.color-amber, .style-win7.color-cyan,
+.style-win7.dark.color-blue, .style-win7.dark.color-purple, .style-win7.dark.color-rose,
+.style-win7.dark.color-amber, .style-win7.dark.color-cyan {
+  --primary-50: #eaf2fc; --primary-100: #d0e2f7; --primary-500: #2672C0;
+  --primary-600: #1e5ea0; --primary-700: #174b82; --primary-800: #103862;
+  --surface: rgba(235, 241, 250, 0.82); --surface-alt: rgba(240, 245, 252, 0.85);
+  --surface-hover: rgba(220, 230, 245, 0.85);
+  --input-focus: #2672C0;
+  --glass-bg: rgba(230, 238, 248, 0.68); --glass-bg-strong: rgba(230, 238, 248, 0.82);
+  --glass-border: rgba(130, 160, 200, 0.25);
+}
+
+/* ── Win7: Desktop — Calm soft blue gradient ── */
+.style-win7 body::before {
+  background: linear-gradient(180deg, #2c5b8a 0%, #3d7ab5 30%, #6daad4 60%, #a5cce6 100%) !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+.style-win7 body::after { display: none !important; }
+
+/* ── Win7: Glass → Frosted Aero with prominent white inset ── */
+.style-win7 .glass {
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(130, 160, 200, 0.25) !important;
+  backdrop-filter: blur(12px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.45) !important;
+}
+.style-win7 .glass-strong {
+  background: var(--glass-bg-strong) !important;
+  border: 1px solid rgba(130, 160, 200, 0.30) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.55) !important;
+}
+
+/* ── Win7: Soft corners (between XP rounded and Vista sharp) ── */
+.style-win7 .glass, .style-win7 .glass-strong { border-radius: 4px !important; }
+.style-win7 button, .style-win7 [type="button"], .style-win7 [type="submit"],
+.style-win7 a[class*="inline-flex"] {
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #f8f8f8, #e8e8e8) !important;
+  border: 1px solid rgba(130,160,200,0.35) !important;
+}
+.style-win7 input, .style-win7 select, .style-win7 textarea { border-radius: 2px !important; }
+
+/* ── Win7: Buttons — Larger, with subtle gradient (Vista has flat) ── */
+.style-win7 button, .style-win7 [type="button"], .style-win7 [type="submit"] {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* ── Win7: Colored buttons keep their gradients ── */
+.style-win7 .gradient-primary {
+  background: linear-gradient(180deg, #4da3e8, #2672C0) !important;
+  border-color: #1e5ea0 !important;
+}
+.style-win7 .gradient-success {
+  background: linear-gradient(180deg, #52c252, #2d9f2d) !important;
+  border-color: #258825 !important;
+}
+.style-win7 .gradient-danger {
+  background: linear-gradient(180deg, #e05050, #b82828) !important;
+  border-color: #a02020 !important;
+}
+
+/* ── Win7: Hover — Gentle lift with soft glow ── */
+.style-win7 .hover-lift { transition: box-shadow 0.2s ease, transform 0.2s ease !important; }
+.style-win7 .hover-lift:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12), 0 0 6px rgba(38,114,192,0.20),
+    inset 0 1px 0 rgba(255,255,255,0.45) !important;
+}
+
+/* ── Win7: Shadow overrides — medium with white inset ── */
+.style-win7 [class*="shadow-lg"], .style-win7 [class*="shadow-xl"],
+.style-win7 [class*="shadow-2xl"], .style-win7 [class*="shadow-md"] {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.35) !important;
+}
+
+/* ── Win7: Disable card entrance ── */
+.style-win7 .animate-card-entrance { animation: none !important; }
+.style-win7 .stagger-1, .style-win7 .stagger-2, .style-win7 .stagger-3,
+.style-win7 .stagger-4, .style-win7 .stagger-5, .style-win7 .stagger-6,
+.style-win7 .stagger-7, .style-win7 .stagger-8 { animation-delay: 0s !important; }
+
+/* ── Win7: Kill scale hover ── */
+.style-win7 [class*="hover\:scale-"]:hover { transform: none !important; }
+
+/* ── Win7: Form inputs — Frosted white, refined border ── */
+.style-win7 input[type="text"], .style-win7 input[type="email"],
+.style-win7 input[type="password"], .style-win7 input[type="number"],
+.style-win7 input[type="search"], .style-win7 input[type="date"],
+.style-win7 input[type="url"], .style-win7 input[type="tel"],
+.style-win7 textarea, .style-win7 select {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(130, 160, 200, 0.40) !important;
+  color: #1a1a2e !important;
+  border-radius: 2px !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06) !important;
+}
+.style-win7 input:focus, .style-win7 textarea:focus, .style-win7 select:focus {
+  border-color: #5ba3e6 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06), 0 0 5px rgba(38,114,192,0.25) !important;
+  outline: none !important;
+}
+
+/* ── Win7: Checkboxes ── */
+.style-win7 input[type="checkbox"]:not(.sr-only) {
+  background-color: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(130,160,200,0.40) !important;
+  border-radius: 2px !important;
+  transition: none !important;
+}
+.style-win7 input[type="checkbox"]:not(.sr-only):checked {
+  background-color: #2672C0 !important;
+  border-color: #1e5ea0 !important;
+}
+
+/* ── Win7: Toggle Switch ── */
+.style-win7 .toggle-track:has(input:checked) {
+  background-color: #2672C0 !important;
+  border-color: #1e5ea0 !important;
+  border-radius: 3px !important;
+}
+.style-win7 .toggle-track:has(input:not(:checked)) {
+  background-color: rgba(235,241,250,0.82) !important;
+  border: 1px solid rgba(130,160,200,0.35) !important;
+  border-radius: 3px !important;
+}
+
+/* ── Win7: Modal title bar — Translucent frosted blue ── */
+.style-win7 [data-controller="modal"] [data-modal-target="dialog"] .glass-strong {
+  background: var(--glass-bg-strong) !important;
+}
+.style-win7 [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] {
+  background: linear-gradient(180deg, rgba(180,210,240,0.80), rgba(150,190,230,0.75)) !important;
+  backdrop-filter: blur(12px) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(130,160,200,0.25) !important;
+  padding: 8px 14px !important;
+  border-radius: 4px 4px 0 0 !important;
+}
+.style-win7 [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] h3,
+.style-win7 [data-controller="modal"] [class*="border-b"][class*="border-glass-border"] .text-lg {
+  color: #1a1a2e !important;
+  font-weight: 600 !important;
+}
+
+/* ── Win7: Tooltip ── */
+.style-win7 .tooltip-popup {
+  background: rgba(240, 245, 252, 0.96) !important;
+  border: 1px solid rgba(130,160,200,0.35) !important;
+  color: #1a1a2e !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12) !important;
+  border-radius: 3px !important;
+}
+
+/* ── Win7: Gradient overlay removal ── */
+.style-win7 [class*="from-white\\/5"],
+.style-win7 [class*="from-primary-500\\/5"] {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* ── Win7: Turbo progress bar ── */
+.style-win7 .turbo-progress-bar {
+  background: linear-gradient(90deg, #4da3e8, #2672C0) !important;
+  box-shadow: 0 0 6px rgba(38,114,192,0.25) !important;
+}
+
+/* ── Win7: Scrollbars — Refined frosted ── */
+.style-win7 ::-webkit-scrollbar { width: 14px; height: 14px; }
+.style-win7 ::-webkit-scrollbar-track { background: rgba(230,238,248,0.5); }
+.style-win7 ::-webkit-scrollbar-thumb {
+  background: rgba(130,160,200,0.40);
+  border-radius: 3px;
+  border: 2px solid rgba(230,238,248,0.4);
+}
+.style-win7 ::-webkit-scrollbar-thumb:hover { background: rgba(130,160,200,0.60); }

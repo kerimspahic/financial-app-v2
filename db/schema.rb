@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_12_300008) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_12_300009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -483,6 +483,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_12_300008) do
     t.string "color_mode", default: "green", null: false
     t.datetime "created_at", null: false
     t.integer "per_page", default: 25, null: false
+    t.string "style_mode", default: "modern", null: false
     t.jsonb "table_configs", default: {}
     t.jsonb "table_settings", default: {}
     t.string "theme_mode", default: "system", null: false

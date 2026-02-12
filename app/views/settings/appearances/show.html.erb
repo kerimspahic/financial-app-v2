@@ -22,6 +22,39 @@
       <div class="animate-card-entrance stagger-1">
         <%= render CardComponent.new do |card| %>
           <% card.with_header do %>
+            <h2 class="text-lg font-semibold text-text-primary">Style</h2>
+          <% end %>
+          <p class="text-sm text-text-secondary mb-4">Choose your interface style</p>
+          <%
+            style_labels = {
+              "modern" => { name: "Modern", desc: "Glassmorphism & gradients" },
+              "win95"  => { name: "Windows 95", desc: "Classic 3D beveled panels" },
+              "winxp"  => { name: "Windows XP", desc: "Luna blue with glossy buttons" },
+              "vista"  => { name: "Vista", desc: "Aero glass & translucent panels" },
+              "win7"   => { name: "Windows 7", desc: "Refined Aero with polished glass" }
+            }
+          %>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <% UserPreference::STYLE_MODES.each do |style| %>
+              <label class="cursor-pointer">
+                <%= form.radio_button :style_mode, style, class: "peer sr-only",
+                    data: { action: "change->theme#setStyle", theme_style_param: style } %>
+                <div class="peer-checked:ring-2 peer-checked:ring-primary-500 peer-checked:ring-offset-2
+                            glass rounded-xl p-4 text-center transition-all hover-lift
+                            hover:shadow-md">
+                  <div class="mx-auto w-12 h-10 rounded mb-2 <%= "style-preview-#{style}" %>"></div>
+                  <span class="text-sm font-medium text-text-primary"><%= style_labels.dig(style, :name) %></span>
+                  <p class="text-xs text-text-muted mt-1"><%= style_labels.dig(style, :desc) %></p>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="animate-card-entrance stagger-2">
+        <%= render CardComponent.new do |card| %>
+          <% card.with_header do %>
             <h2 class="text-lg font-semibold text-text-primary">Color Theme</h2>
           <% end %>
           <p class="text-sm text-text-secondary mb-4">Choose your accent color</p>
@@ -42,7 +75,7 @@
         <% end %>
       </div>
 
-      <div class="animate-card-entrance stagger-2">
+      <div class="animate-card-entrance stagger-3">
         <%= render CardComponent.new do |card| %>
           <% card.with_header do %>
             <h2 class="text-lg font-semibold text-text-primary">Theme Mode</h2>

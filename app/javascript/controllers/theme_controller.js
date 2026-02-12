@@ -2,17 +2,21 @@ import { Controller } from "@hotwired/stimulus"
 
 const VALID_COLORS = ["green", "blue", "purple", "rose", "amber", "cyan"]
 const VALID_THEMES = ["light", "dark", "system"]
+const VALID_STYLES = ["modern", "win95", "winxp", "vista", "win7"]
+const STYLE_CLASSES = VALID_STYLES.filter(s => s !== "modern").map(s => `style-${s}`)
 const COLOR_CLASSES = VALID_COLORS.map(c => `color-${c}`)
 
 export default class extends Controller {
   static targets = ["icon", "label"]
   static values = {
     themeMode: { type: String, default: "" },
-    colorMode: { type: String, default: "" }
+    colorMode: { type: String, default: "" },
+    styleMode: { type: String, default: "" }
   }
 
   connect() {
     this.syncFromServer()
+    this.applyStyle()
     this.applyTheme()
     this.applyColor()
     this.mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
@@ -30,6 +34,9 @@ export default class extends Controller {
     }
     if (this.colorModeValue) {
       localStorage.setItem("colorMode", this.colorModeValue)
+    }
+    if (this.styleModeValue) {
+      localStorage.setItem("styleMode", this.styleModeValue)
     }
   }
 
@@ -79,6 +86,26 @@ export default class extends Controller {
     }
   }
 
+  // --- Style mode (modern/win95) ---
+
+  setStyle(event) {
+    const style = event.params?.style || event.currentTarget.dataset.themeStyleParam
+    if (!style || !VALID_STYLES.includes(style)) return
+
+    localStorage.setItem("styleMode", style)
+    this.applyStyle()
+    this.persistToServer({ style_mode: style })
+  }
+
+  applyStyle() {
+    const style = this.currentStyle
+    const root = document.documentElement
+    STYLE_CLASSES.forEach(cls => root.classList.remove(cls))
+    if (style !== "modern") {
+      root.classList.add(`style-${style}`)
+    }
+  }
+
   // --- Helpers ---
 
   updateIndicator(theme) {
@@ -108,13 +135,18 @@ export default class extends Controller {
     return VALID_COLORS.includes(color) ? color : "green"
   }
 
+  get currentStyle() {
+    const style = localStorage.getItem("styleMode")
+    return VALID_STYLES.includes(style) ? style : "modern"
+  }
+
   get systemPrefersDark() {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
   }
 
   // Only persist to DB when a user is signed in (server-provided values present)
   get isSignedIn() {
-    return this.themeModeValue !== "" || this.colorModeValue !== ""
+    return this.themeModeValue !== "" || this.colorModeValue !== "" || this.styleModeValue !== ""
   }
 
   persistToServer(params) {

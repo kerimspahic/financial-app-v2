@@ -332,7 +332,9 @@
     <div data-receipt-upload-target="preview" class="flex flex-wrap gap-2 mt-3"></div>
   </div>
 
-  <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
-    <%= transaction.persisted? ? "Update Transaction" : "Create Transaction" %>
-  <% end %>
+  <div class="sticky bottom-0 z-10 -mx-6 px-6 py-4 mt-2 border-t border-glass-border bg-surface/80 backdrop-blur-xl">
+    <%= render ButtonComponent.new(variant: :primary, type: "submit", submit: true) do %>
+      <%= transaction.persisted? ? "Update Transaction" : "Create Transaction" %>
+    <% end %>
+  </div>
 <% end %>

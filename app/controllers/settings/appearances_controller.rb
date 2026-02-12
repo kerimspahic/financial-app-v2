@@ -27,11 +27,11 @@ module Settings
     private
 
     def appearance_params
-      params.expect(user_preference: [ :theme_mode, :color_mode ])
+      params.expect(user_preference: [ :theme_mode, :color_mode, :style_mode ])
     end
 
     def theme_params
-      params.permit(:theme_mode, :color_mode)
+      params.permit(:theme_mode, :color_mode, :style_mode)
     end
   end
 end
